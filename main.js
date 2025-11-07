@@ -163,33 +163,152 @@ const contentDatabase = {
     }
 };
 
-// Function to get content based on board and subject
-function getContentForBoardSubject(board, subject) {
-    if (!board || !subject) {
-        console.error('❌ Board or subject is missing!', { board, subject });
-        return contentDatabase['default'];
+// Fetch content from Supabase database
+async function getContentFromDatabase(board, subject, contentType) {
+    if (!supabaseClient) {
+        console.error('❌ Supabase client not available');
+        return [];
+    }
+
+    try {
+        console.log(`🔍 Fetching ${contentType} for ${board} - ${subject}`);
+        
+        const tableName = contentType === 'recorded' ? 'recorded_videos' : contentType;
+        
+        const { data, error } = await supabaseClient
+            .from(tableName)
+            .select('*')
+            .eq('board', board)
+            .eq('subject', subject)
+            .order('created_at', { ascending: true });
+
+        if (error) {
+            console.error(`❌ Error fetching ${contentType}:`, error);
+            return [];
+        }
+
+        console.log(`✅ Fetched ${data.length} ${contentType} items`);
+        return data;
+        
+    } catch (error) {
+        console.error(`❌ Exception fetching ${contentType}:`, error);
+        return [];
+    }
+}
+
+// Fetch topic detail with content paragraphs
+async function getTopicDetail(topicId) {
+    if (!supabaseClient) {
+        console.error('❌ Supabase client not available');
+        return null;
+    }
+
+    try {
+        console.log(`🔍 Fetching topic detail for ID: ${topicId}`);
+        
+        // Fetch topic info
+        const { data: topic, error: topicError } = await supabaseClient
+            .from('topics')
+            .select('*')
+            .eq('id', topicId)
+            .single();
+
+        if (topicError) {
+            console.error('❌ Error fetching topic:', topicError);
+            return null;
+        }
+
+        // Fetch topic content (paragraphs)
+        const { data: content, error: contentError } = await supabaseClient
+            .from('topic_content')
+            .select('*')
+            .eq('topic_id', topicId)
+            .order('order_index', { ascending: true });
+
+        if (contentError) {
+            console.error('❌ Error fetching topic content:', contentError);
+            return { ...topic, content: [] };
+        }
+
+        console.log(`✅ Fetched topic with ${content.length} paragraphs`);
+        return { ...topic, content };
+        
+    } catch (error) {
+        console.error('❌ Exception fetching topic detail:', error);
+        return null;
+    }
+}
+
+// Show topic detail page
+async function showTopicDetail(topicId, topicName) {
+    console.log('📖 Opening topic detail:', topicName);
+    
+    // Hide all sections
+    document.querySelectorAll('.content-area > div:not(.welcome-screen)').forEach(el => {
+        el.classList.add('hidden');
+    });
+    
+    // Show topic detail section
+    const detailSection = document.getElementById('topicDetailSection');
+    detailSection.classList.remove('hidden');
+    
+    // Set title
+    document.getElementById('topicDetailTitle').textContent = topicName;
+    document.getElementById('topicDetailDesc').textContent = 'Loading...';
+    document.getElementById('topicDetailContent').innerHTML = '<p style="padding: 20px;">Loading content...</p>';
+    
+    // Fetch topic details
+    const topicData = await getTopicDetail(topicId);
+    
+    if (!topicData) {
+        document.getElementById('topicDetailDesc').textContent = 'Error loading topic';
+        document.getElementById('topicDetailContent').innerHTML = '<p style="color: #dc3545;">Failed to load content. Please try again.</p>';
+        return;
     }
     
-    // Extract board name - handle formats like "AP", "CBSE-XII", "ISC-XII"
-    let boardKey = board.trim();
+    // Set description
+    document.getElementById('topicDetailDesc').textContent = topicData.description || '';
     
-    // Create content key
-    const contentKey = `${boardKey}-${subject}`;
+    // Display content paragraphs
+    const contentDiv = document.getElementById('topicDetailContent');
+    contentDiv.innerHTML = '';
     
-    console.log('🔍 Looking for content with key:', contentKey);
-    console.log('📌 Board:', board, '| Subject:', subject);
-    console.log('💾 Available keys in database:', Object.keys(contentDatabase));
-    
-    // Check if content exists
-    if (contentDatabase[contentKey]) {
-        console.log('✅ Found content for:', contentKey);
-        return contentDatabase[contentKey];
+    if (!topicData.content || topicData.content.length === 0) {
+        contentDiv.innerHTML = '<p style="color: #666;">No detailed content available yet.</p>';
+        return;
     }
     
-    // Fallback to default
-    console.warn('⚠️ Content not found for:', contentKey);
-    console.warn('💡 Using default content instead');
-    return contentDatabase['default'];
+    topicData.content.forEach(item => {
+        const section = document.createElement('div');
+        section.style.marginBottom = '25px';
+        section.style.padding = '20px';
+        section.style.background = '#f8f9fa';
+        section.style.borderRadius = '8px';
+        section.style.borderLeft = '4px solid #667eea';
+        
+        if (item.heading) {
+            const heading = document.createElement('h3');
+            heading.textContent = item.heading;
+            heading.style.color = '#333';
+            heading.style.marginBottom = '10px';
+            section.appendChild(heading);
+        }
+        
+        const para = document.createElement('p');
+        para.textContent = item.paragraph;
+        para.style.color = '#555';
+        para.style.lineHeight = '1.6';
+        section.appendChild(para);
+        
+        contentDiv.appendChild(section);
+    });
+    
+    console.log('✅ Topic detail loaded successfully');
+}
+
+// Back to topics list
+function backToTopics() {
+    showSection('topics');
 }
 
 // Initialize the application
@@ -506,17 +625,10 @@ function showSection(section) {
     loadContent(section);
 }
 
-// Load Content - Updated to use board/subject specific data
-function loadContent(section) {
+// Load Content - Fetch from Supabase Database
+async function loadContent(section) {
     console.log('📖 Loading content for section:', section);
     console.log('👤 Current user board:', selectedBoard, '| Subject:', selectedSubject);
-    
-    // Get content based on current user's board and subject
-    const contentData = getContentForBoardSubject(selectedBoard, selectedSubject);
-    
-    console.log('📦 Content data retrieved:', contentData);
-    
-    const data = contentData[section];
     
     // Fix: Correct element IDs (singular, not plural)
     const listId = section === 'topics' ? 'topicList' :
@@ -533,13 +645,20 @@ function loadContent(section) {
         return;
     }
     
-    list.innerHTML = '';
+    // Show loading message
+    list.innerHTML = '<p style="padding: 20px; color: #666;">Loading...</p>';
+
+    // Fetch data from Supabase
+    const data = await getContentFromDatabase(selectedBoard, selectedSubject, section);
 
     if (!data || data.length === 0) {
         console.warn('⚠️ No data found for section:', section);
         list.innerHTML = '<p style="padding: 20px; color: #666;">No content available for this section yet.</p>';
         return;
     }
+
+    // Clear loading message
+    list.innerHTML = '';
 
     console.log(`✅ Loading ${data.length} items for section: ${section}`);
 
@@ -549,7 +668,16 @@ function loadContent(section) {
         const card = document.createElement('div');
         card.className = 'item-card';
 
-        if (item.locked && !hasPaidSubscription) {
+        // For topics section, make cards clickable to show detail
+        if (section === 'topics') {
+            card.style.cursor = 'pointer';
+            card.onclick = () => showTopicDetail(item.id, item.name);
+        }
+
+        // Check if locked (for tests and recorded videos)
+        const isLocked = item.is_locked !== undefined ? item.is_locked : (item.locked || false);
+        
+        if (isLocked && !hasPaidSubscription && section !== 'topics') {
             card.classList.add('locked');
             card.onclick = () => showPaymentAlert();
         }
@@ -560,7 +688,12 @@ function loadContent(section) {
         if (item.instructor) content += `<p>👨‍🏫 ${item.instructor}</p>`;
         if (item.questions) content += `<p>📝 ${item.questions} Questions | ⏱️ ${item.duration}</p>`;
         if (item.duration && !item.questions) content += `<p>⏱️ ${item.duration}</p>`;
-        if (item.locked && !hasPaidSubscription) content += `<span class="lock-icon">🔒</span>`;
+        if (isLocked && !hasPaidSubscription) content += `<span class="lock-icon">🔒</span>`;
+        
+        // Add click indicator for topics
+        if (section === 'topics') {
+            content += `<span style="float: right; color: #667eea;">→</span>`;
+        }
 
         card.innerHTML = content;
         list.appendChild(card);
