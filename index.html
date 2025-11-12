@@ -4,9 +4,479 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peak Study Dashboard</title>
+    <title>Peak Study - AP Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="./style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Header Styles */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .nav-section {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-top: 10px;
+            z-index: 1000;
+        }
+
+        .dropdown-content.active {
+            display: block;
+        }
+
+        .dropdown-content a {
+            display: block;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.3s;
+        }
+
+        .dropdown-content a:hover {
+            background: #f5f5f5;
+            color: #667eea;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-signin {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-signin:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-close {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-close:hover {
+            background: #c82333;
+        }
+
+        /* Dashboard Layout */
+        .dashboard-container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 30px 20px;
+            box-shadow: 4px 0 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-item {
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+        }
+
+        .sidebar-item:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateX(5px);
+            border-left-color: #764ba2;
+        }
+
+        .sidebar-item.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-left-color: #764ba2;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        /* Topic Cards */
+        .topic-card {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #667eea;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .topic-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .topic-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Topic Detail */
+        .topic-detail {
+            background: white;
+            padding: 25px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .topic-detail h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .topic-detail p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        /* Class Cards */
+        .class-card {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #28a745;
+        }
+
+        .class-info h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .class-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .btn-join {
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-join:hover {
+            background: #218838;
+        }
+
+        /* Test Cards */
+        .test-card {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #ffc107;
+            position: relative;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(255, 193, 7, 0.3);
+        }
+
+        .test-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .test-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .lock-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+        }
+
+        /* Video Cards */
+        .video-card {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #dc3545;
+            position: relative;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(220, 53, 69, 0.3);
+        }
+
+        .video-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .video-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+        }
+
+        .user-profile {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .welcome-screen {
+            text-align: center;
+            padding: 100px 20px;
+            color: white;
+        }
+
+        .welcome-screen h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-screen p {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Payment Alert */
+        .payment-alert {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .payment-alert p {
+            color: #856404;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .btn-payment {
+            background: #ffc107;
+            color: #333;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-payment:hover {
+            background: #e0a800;
+        }
+    </style>
 </head>
 
 <body>
@@ -16,53 +486,68 @@
             <div class="logo">PS</div>
             <div class="brand-name">Peak Study</div>
         </div>
+        
+        <!-- Public Navigation (Before Login) -->
         <div class="nav-section" id="publicNav">
             <a href="#" class="nav-link">About</a>
-            <div class="dropdown" id="curriculumDropdown">
-                <a href="#" class="nav-link" onclick="toggleCurriculumDropdown(event)">Curriculum</a>
-                <div class="dropdown-content" id="boardDropdown"></div>
+            <a href="#" class="nav-link">AP (Advanced Placement)</a>
+            
+            <div class="dropdown" id="subjectDropdown">
+                <a href="#" class="nav-link" onclick="toggleSubjectDropdown(event)">Select Subject</a>
+                <div class="dropdown-content" id="subjectList">
+                    <a href="#" onclick="selectSubject(event, 'Mathematics')">Mathematics</a>
+                    <a href="#" onclick="selectSubject(event, 'Chemistry')">Chemistry</a>
+                    <a href="#" onclick="selectSubject(event, 'Physics')">Physics</a>
+                    <a href="#" onclick="selectSubject(event, 'Biology')">Biology</a>
+                    <a href="#" onclick="selectSubject(event, 'Macroeconomics')">Macroeconomics</a>
+                    <a href="#" onclick="selectSubject(event, 'Microeconomics')">Microeconomics</a>
+                </div>
             </div>
+            
             <button class="btn btn-signin" onclick="showSignInModal()">Sign In</button>
             <button class="btn btn-login" onclick="showLoginModal()">Login</button>
         </div>
+        
+        <!-- User Navigation (After Login) -->
         <div class="nav-section hidden" id="userNav">
             <div class="user-profile" id="userProfile"></div>
             <button class="btn btn-close" onclick="logout()">Logout</button>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Sidebar (Hidden initially) -->
-        <div class="sidebar hidden" id="sidebar">
-            <div class="sidebar-item" onclick="showSection('topics')">&#128218; Topics</div>
-            <div class="sidebar-item" onclick="showSection('classes')">&#127891; Classes</div>
-            <div class="sidebar-item" onclick="showSection('tests')">&#128221; Tests</div>
-            <div class="sidebar-item" onclick="showSection('recorded')">&#127909; Recorded</div>
+    <!-- Welcome Screen (Before Login) -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <h1>Welcome to Peak Study</h1>
+        <p>Your AP (Advanced Placement) Learning Platform</p>
+        <p>Please select your subject and login to access your personalized dashboard!</p>
+    </div>
+
+    <!-- Dashboard (After Login) -->
+    <div class="dashboard-container hidden" id="dashboardContainer">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-item" onclick="showSection('topics')">📚 Topics</div>
+            <div class="sidebar-item" onclick="showSection('classes')">🎓 Classes</div>
+            <div class="sidebar-item" onclick="showSection('tests')">📝 Tests</div>
+            <div class="sidebar-item" onclick="showSection('recorded')">🎬 Recorded Classes</div>
         </div>
 
         <!-- Content Area -->
-        <div class="content-area" id="contentArea">
-            <div class="welcome-screen" id="welcomeScreen">
-                <h1>Welcome to Peak Study</h1>
-                <p>Your personalized learning platform</p>
-                <p>Please select your board and subject, then login to get started!</p>
-            </div>
-
+        <div class="content-area">
             <!-- Topics Section -->
             <div class="hidden" id="topicsSection">
                 <div class="content-card">
-                    <h2>&#128218; Your Topics</h2>
-                    <div class="topic-list" id="topicList"></div>
+                    <h2>📚 Your Topics</h2>
+                    <div id="topicsList"></div>
                 </div>
             </div>
 
             <!-- Topic Detail Section -->
             <div class="hidden" id="topicDetailSection">
                 <div class="content-card">
-                    <button class="btn btn-close" onclick="backToTopics()" style="margin-bottom: 15px;">&#8592; Back to Topics</button>
+                    <button class="btn btn-close" onclick="backToTopics()">← Back to Topics</button>
                     <h2 id="topicDetailTitle"></h2>
-                    <p id="topicDetailDesc" style="color: #666; margin-bottom: 20px;"></p>
+                    <p id="topicDetailDesc" style="color: #666; margin: 15px 0;"></p>
                     <div id="topicDetailContent"></div>
                 </div>
             </div>
@@ -70,24 +555,24 @@
             <!-- Classes Section -->
             <div class="hidden" id="classesSection">
                 <div class="content-card">
-                    <h2>&#127891; Live & Upcoming Classes</h2>
-                    <div class="class-list" id="classList"></div>
+                    <h2>🎓 Live & Upcoming Classes</h2>
+                    <div id="classesList"></div>
                 </div>
             </div>
 
             <!-- Tests Section -->
             <div class="hidden" id="testsSection">
                 <div class="content-card">
-                    <h2>&#128221; Topic-wise Tests</h2>
-                    <div class="test-list" id="testList"></div>
+                    <h2>📝 Tests</h2>
+                    <div id="testsList"></div>
                 </div>
             </div>
 
             <!-- Recorded Section -->
             <div class="hidden" id="recordedSection">
                 <div class="content-card">
-                    <h2>&#127909; Recorded Classes</h2>
-                    <div class="recorded-list" id="recordedList"></div>
+                    <h2>🎬 Recorded Classes</h2>
+                    <div id="recordedList"></div>
                 </div>
             </div>
         </div>
@@ -146,16 +631,16 @@
         </div>
     </div>
 
-    <!-- Subject Selection Modal -->
-    <div class="modal" id="subjectModal">
+    <!-- Payment Modal -->
+    <div class="modal" id="paymentModal">
         <div class="modal-content">
-            <h3>Select Subject</h3>
-            <div class="form-group">
-                <label>Choose your subject:</label>
-                <div id="subjectList"></div>
+            <h3>🔒 Payment Required</h3>
+            <div class="payment-alert">
+                <p>Please complete your payment to access this content.</p>
+                <button class="btn-payment" onclick="processPayment()">Proceed to Payment</button>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-close" onclick="closeModal('subjectModal')">Close</button>
+                <button class="btn btn-close" onclick="closeModal('paymentModal')">Cancel</button>
             </div>
         </div>
     </div>

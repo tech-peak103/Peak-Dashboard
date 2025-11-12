@@ -1,8 +1,8 @@
-// Application State - Declare first before everything
+// Application State
 let currentUser = null;
-let selectedBoard = null;
 let selectedSubject = null;
 let hasPaidSubscription = false;
+let currentTopicId = null;
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://zggtadgymqkszwizvono.supabase.co';
@@ -21,275 +21,148 @@ try {
     console.error('❌ Supabase initialization error:', error);
 }
 
-// Board and Subject Data (Only for dropdowns)
-const boardsData = {
-    'ISC-XI': ['Math', 'English', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Accounts'],
-    'ISC-XII': ['Math', 'English', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Accounts'],
-    'CBSE-XI': ['Math', 'English', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Accounts'],
-    'CBSE-XII': ['Math', 'English', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Accounts'],
-    'IB-XI': ['Math', 'English', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Computer Science'],
-    'IB-XII': ['Math', 'English', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Computer Science'],
-    'A LEVEL': ['Math', 'English', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Computer Science'],
-    'AP': ['Math', 'English', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Computer Science'],
-    'ICSE': ['Math', 'English', 'Economics', 'Physics', 'Chemistry', 'Biology', 'Computer Science']
-};
-
-// NOTE: All content (topics, classes, tests, videos) is now fetched from Supabase database
-// No hardcoded content in frontend - everything is dynamic from backend
-
-// Fetch content from Supabase database
-async function getContentFromDatabase(board, subject, contentType) {
-    if (!supabaseClient) {
-        console.error('❌ Supabase client not available');
-        return [];
-    }
-
-    try {
-        console.log(`🔍 Fetching ${contentType} for ${board} - ${subject}`);
-        
-        const tableName = contentType === 'recorded' ? 'recorded_videos' : contentType;
-        
-        const { data, error } = await supabaseClient
-            .from(tableName)
-            .select('*')
-            .eq('board', board)
-            .eq('subject', subject)
-            .order('created_at', { ascending: true });
-
-        if (error) {
-            console.error(`❌ Error fetching ${contentType}:`, error);
-            return [];
-        }
-
-        console.log(`✅ Fetched ${data.length} ${contentType} items`);
-        return data;
-        
-    } catch (error) {
-        console.error(`❌ Exception fetching ${contentType}:`, error);
-        return [];
-    }
-}
-
-// Fetch topic detail with content paragraphs
-async function getTopicDetail(topicId) {
-    if (!supabaseClient) {
-        console.error('❌ Supabase client not available');
-        return null;
-    }
-
-    try {
-        console.log(`🔍 Fetching topic detail for ID: ${topicId}`);
-        
-        // Fetch topic info
-        const { data: topic, error: topicError } = await supabaseClient
-            .from('topics')
-            .select('*')
-            .eq('id', topicId)
-            .single();
-
-        if (topicError) {
-            console.error('❌ Error fetching topic:', topicError);
-            return null;
-        }
-
-        // Fetch topic content (paragraphs)
-        const { data: content, error: contentError } = await supabaseClient
-            .from('topic_content')
-            .select('*')
-            .eq('topic_id', topicId)
-            .order('order_index', { ascending: true });
-
-        if (contentError) {
-            console.error('❌ Error fetching topic content:', contentError);
-            return { ...topic, content: [] };
-        }
-
-        console.log(`✅ Fetched topic with ${content.length} paragraphs`);
-        return { ...topic, content };
-        
-    } catch (error) {
-        console.error('❌ Exception fetching topic detail:', error);
-        return null;
-    }
-}
-
-// Show topic detail page
-async function showTopicDetail(topicId, topicName) {
-    console.log('📖 Opening topic detail:', topicName);
-    
-    // Hide all sections
-    document.querySelectorAll('.content-area > div:not(.welcome-screen)').forEach(el => {
-        el.classList.add('hidden');
-    });
-    
-    // Show topic detail section
-    const detailSection = document.getElementById('topicDetailSection');
-    detailSection.classList.remove('hidden');
-    
-    // Set title
-    document.getElementById('topicDetailTitle').textContent = topicName;
-    document.getElementById('topicDetailDesc').textContent = 'Loading...';
-    document.getElementById('topicDetailContent').innerHTML = '<p style="padding: 20px;">Loading content...</p>';
-    
-    // Fetch topic details
-    const topicData = await getTopicDetail(topicId);
-    
-    if (!topicData) {
-        document.getElementById('topicDetailDesc').textContent = 'Error loading topic';
-        document.getElementById('topicDetailContent').innerHTML = '<p style="color: #dc3545;">Failed to load content. Please try again.</p>';
-        return;
-    }
-    
-    // Set description
-    document.getElementById('topicDetailDesc').textContent = topicData.description || '';
-    
-    // Display content paragraphs
-    const contentDiv = document.getElementById('topicDetailContent');
-    contentDiv.innerHTML = '';
-    
-    if (!topicData.content || topicData.content.length === 0) {
-        contentDiv.innerHTML = '<p style="color: #666;">No detailed content available yet.</p>';
-        return;
-    }
-    
-    topicData.content.forEach(item => {
-        const section = document.createElement('div');
-        section.style.marginBottom = '25px';
-        section.style.padding = '20px';
-        section.style.background = '#f8f9fa';
-        section.style.borderRadius = '8px';
-        section.style.borderLeft = '4px solid #667eea';
-        
-        if (item.heading) {
-            const heading = document.createElement('h3');
-            heading.textContent = item.heading;
-            heading.style.color = '#333';
-            heading.style.marginBottom = '10px';
-            section.appendChild(heading);
-        }
-        
-        const para = document.createElement('p');
-        para.textContent = item.paragraph;
-        para.style.color = '#555';
-        para.style.lineHeight = '1.6';
-        section.appendChild(para);
-        
-        contentDiv.appendChild(section);
-    });
-    
-    console.log('✅ Topic detail loaded successfully');
-}
-
-// Back to topics list
-function backToTopics() {
-    showSection('topics');
-}
-
 // Initialize the application
 function init() {
-    populateBoardDropdown();
     checkAuthStatus();
 }
 
-// Populate Board Dropdown
-function populateBoardDropdown() {
-    const dropdown = document.getElementById('boardDropdown');
-    dropdown.innerHTML = '';
+// Toggle Subject Dropdown
+function toggleSubjectDropdown(event) {
+    event.preventDefault();
+    const dropdown = document.getElementById('subjectList');
+    dropdown.classList.toggle('active');
+}
 
-    Object.keys(boardsData).forEach(board => {
-        const link = document.createElement('a');
-        link.href = '#';
-        link.textContent = board;
-        link.onclick = (e) => {
-            e.preventDefault();
-            selectBoard(board);
-        };
-        dropdown.appendChild(link);
+// Close all dropdowns
+function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+        dropdown.classList.remove('active');
     });
 }
 
-// Select Board
-function selectBoard(board) {
-    selectedBoard = board;
-    closeAllDropdowns();
-    showSubjectModal(board);
-}
-
-// Show Subject Modal
-function showSubjectModal(board) {
-    const modal = document.getElementById('subjectModal');
-    const subjectList = document.getElementById('subjectList');
-    subjectList.innerHTML = '';
-
-    boardsData[board].forEach(subject => {
-        const btn = document.createElement('button');
-        btn.className = 'btn btn-login';
-        btn.style.margin = '5px';
-        btn.textContent = subject;
-        btn.onclick = () => selectSubject(subject);
-        subjectList.appendChild(btn);
-    });
-
-    modal.classList.add('active');
-}
-
-// Select Subject
-function selectSubject(subject) {
-    selectedSubject = subject;
-    closeModal('subjectModal');
-    showAlert('Selection Complete', `You have selected ${selectedBoard} - ${selectedSubject}`);
-}
-
-// Toggle Curriculum Dropdown
-function toggleCurriculumDropdown(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    const dropdown = document.getElementById('boardDropdown');
-    dropdown.classList.toggle('show');
-}
-
-// Close all dropdowns when clicking outside
-document.addEventListener('click', function (e) {
-    if (!e.target.closest('.dropdown')) {
+// Click outside to close dropdowns
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.dropdown')) {
         closeAllDropdowns();
     }
 });
 
-function closeAllDropdowns() {
-    const dropdowns = document.querySelectorAll('.dropdown-content');
-    dropdowns.forEach(d => d.classList.remove('show'));
+// Select Subject
+function selectSubject(event, subject) {
+    event.preventDefault();
+    selectedSubject = subject;
+    closeAllDropdowns();
+    showAlert('Success', `Subject selected: ${subject}. Please login to continue.`);
 }
 
-// Show Modals
-function showLoginModal() {
-    if (!selectedBoard || !selectedSubject) {
-        showAlert('Selection Required', 'Please select your Board and Subject first.');
-        return;
-    }
-    document.getElementById('loginModal').classList.add('active');
-}
-
-function showSignInModal() {
-    if (!selectedBoard || !selectedSubject) {
-        showAlert('Selection Required', 'Please select your Board and Subject first.');
-        return;
-    }
-    document.getElementById('signInModal').classList.add('active');
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
-}
-
+// Show Alert
 function showAlert(title, message) {
     document.getElementById('alertTitle').textContent = title;
     document.getElementById('alertMessage').textContent = message;
     document.getElementById('alertModal').classList.add('active');
 }
 
-// Handle Login - WITH SUPABASE (NO EMAIL VERIFICATION)
+// Close Modal
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+// Show Sign In Modal
+function showSignInModal() {
+    if (!selectedSubject) {
+        showAlert('Error', 'Please select a subject first!');
+        return;
+    }
+    document.getElementById('signInModal').classList.add('active');
+}
+
+// Show Login Modal
+function showLoginModal() {
+    if (!selectedSubject) {
+        showAlert('Error', 'Please select a subject first!');
+        return;
+    }
+    document.getElementById('loginModal').classList.add('active');
+}
+
+// Handle Sign In
+async function handleSignIn() {
+    const name = document.getElementById('signInName').value.trim();
+    const email = document.getElementById('signInEmail').value.trim();
+    const password = document.getElementById('signInPassword').value;
+
+    if (!name || !email || !password) {
+        showAlert('Error', 'Please fill in all fields');
+        return;
+    }
+
+    if (password.length < 6) {
+        showAlert('Error', 'Password must be at least 6 characters');
+        return;
+    }
+
+    if (!selectedSubject) {
+        showAlert('Error', 'Please select a subject first!');
+        return;
+    }
+
+    try {
+        console.log('📝 Creating new account...');
+
+        // Sign up with Supabase Auth
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password
+        });
+
+        if (authError) {
+            console.error('Auth error:', authError);
+            showAlert('Error', authError.message);
+            return;
+        }
+
+        // Insert student data
+        const { data: studentData, error: studentError } = await supabaseClient
+            .from('Students')
+            .insert([{
+                user_id: authData.user.id,
+                name: name,
+                email: email,
+                board: 'AP',
+                subject: selectedSubject,
+                has_paid: false
+            }])
+            .select();
+
+        if (studentError) {
+            console.error('Student insert error:', studentError);
+            showAlert('Error', 'Failed to create account: ' + studentError.message);
+            return;
+        }
+
+        console.log('✅ Account created successfully');
+        
+        currentUser = {
+            id: authData.user.id,
+            name: name,
+            email: email,
+            board: 'AP',
+            subject: selectedSubject
+        };
+
+        closeModal('signInModal');
+        showDashboard();
+        showAlert('Success', 'Account created successfully! Welcome to Peak Study.');
+
+    } catch (error) {
+        console.error('Exception:', error);
+        showAlert('Error', 'Something went wrong. Please try again.');
+    }
+}
+
+// Handle Login
 async function handleLogin() {
-    const email = document.getElementById('loginEmail').value;
+    const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
 
     if (!email || !password) {
@@ -297,29 +170,27 @@ async function handleLogin() {
         return;
     }
 
-    if (!supabaseClient) {
-        showAlert('Error', 'Database connection not available');
+    if (!selectedSubject) {
+        showAlert('Error', 'Please select a subject first!');
         return;
     }
 
     try {
-        console.log('🔐 Attempting login for:', email);
+        console.log('🔐 Logging in...');
 
-        // Supabase auth login
+        // Sign in with Supabase Auth
         const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
 
         if (authError) {
-            console.error('❌ Auth error:', authError);
-            showAlert('Login Error', authError.message);
+            console.error('Login error:', authError);
+            showAlert('Error', authError.message);
             return;
         }
 
-        console.log('✅ User authenticated:', authData.user.id);
-
-        // Students table se data fetch karo
+        // Fetch student data
         const { data: studentData, error: studentError } = await supabaseClient
             .from('Students')
             .select('*')
@@ -327,14 +198,13 @@ async function handleLogin() {
             .single();
 
         if (studentError) {
-            console.error('❌ Student fetch error:', studentError);
-            showAlert('Error', 'Unable to fetch student data. Please try again.');
+            console.error('Student fetch error:', studentError);
+            showAlert('Error', 'Failed to fetch student data');
             return;
         }
 
-        console.log('✅ Student data fetched:', studentData);
+        console.log('✅ Login successful');
 
-        // Set current user
         currentUser = {
             id: authData.user.id,
             name: studentData.name,
@@ -343,255 +213,381 @@ async function handleLogin() {
             subject: studentData.subject
         };
 
-        selectedBoard = studentData.board;
+        hasPaidSubscription = studentData.has_paid || false;
         selectedSubject = studentData.subject;
 
         closeModal('loginModal');
-        showAlert('Success', `Welcome back, ${studentData.name}!`);
-        
-        setTimeout(() => {
-            closeModal('alertModal');
-            showDashboard();
-        }, 1500);
+        showDashboard();
 
     } catch (error) {
-        console.error('❌ Login error:', error);
-        showAlert('Error', 'Something went wrong: ' + error.message);
-    }
-}
-
-// Handle Sign In - WITH SUPABASE (NO EMAIL VERIFICATION REQUIRED)
-async function handleSignIn() {
-    const name = document.getElementById('signInName').value;
-    const email = document.getElementById('signInEmail').value;
-    const password = document.getElementById('signInPassword').value;
-
-    if (!name || !email || !password) {
-        showAlert('Error', 'Please fill in all fields');
-        return;
-    }
-
-    if (!supabaseClient) {
-        showAlert('Error', 'Database connection not available');
-        return;
-    }
-
-    try {
-        console.log('📝 Attempting signup for:', email);
-
-        // Supabase auth me user banao (EMAIL VERIFICATION SKIP)
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-                emailRedirectTo: window.location.origin,
-                data: {
-                    name: name
-                }
-            }
-        });
-
-        if (authError) {
-            console.error('❌ Auth signup error:', authError);
-            showAlert('Sign Up Error', authError.message);
-            return;
-        }
-
-        // Check if email confirmation is required
-        if (authData.user && !authData.session) {
-            showAlert('Email Verification Required', 'Please check your email to verify your account before logging in.');
-            closeModal('signInModal');
-            return;
-        }
-
-        console.log('✅ Auth user created:', authData.user.id);
-
-        // Students table me data save karo
-        const { data: studentData, error: studentError } = await supabaseClient
-            .from('Students')
-            .insert([{
-                user_id: authData.user.id,
-                name: name,
-                email: email,
-                board: selectedBoard,
-                subject: selectedSubject
-            }])
-            .select();
-
-        if (studentError) {
-            console.error('❌ Student insert error:', studentError);
-            showAlert('Error', 'Failed to save student data: ' + studentError.message);
-            return;
-        }
-
-        console.log('✅ Student data saved:', studentData);
-
-        // Success - Auto login if session exists
-        if (authData.session) {
-            currentUser = {
-                id: authData.user.id,
-                name: name,
-                email: email,
-                board: selectedBoard,
-                subject: selectedSubject
-            };
-
-            showAlert('Success', 'Account created successfully!');
-            closeModal('signInModal');
-            
-            setTimeout(() => {
-                closeModal('alertModal');
-                showDashboard();
-            }, 1500);
-        } else {
-            showAlert('Success', 'Account created! You can now login.');
-            closeModal('signInModal');
-        }
-
-    } catch (error) {
-        console.error('❌ Signup error:', error);
-        showAlert('Error', 'Something went wrong: ' + error.message);
+        console.error('Exception:', error);
+        showAlert('Error', 'Something went wrong. Please try again.');
     }
 }
 
 // Show Dashboard
 function showDashboard() {
-    console.log('🏠 Opening dashboard...');
-    console.log('👤 User:', currentUser);
-    console.log('📚 Board:', selectedBoard, '| Subject:', selectedSubject);
+    // Hide welcome screen
+    document.getElementById('welcomeScreen').classList.add('hidden');
     
+    // Hide public nav, show user nav
     document.getElementById('publicNav').classList.add('hidden');
     document.getElementById('userNav').classList.remove('hidden');
-    document.getElementById('sidebar').classList.remove('hidden');
-    document.getElementById('welcomeScreen').classList.add('hidden');
-
-    const boardClass = selectedBoard.includes('XI') ? 'XI' : 'XII';
-    const userProfile = document.getElementById('userProfile');
-    userProfile.innerHTML = `
-        <div class="user-avatar">${currentUser.name.charAt(0).toUpperCase()}</div>
-        <div>${currentUser.name}_${selectedBoard.split('-')[0]}_${boardClass}_${selectedSubject}</div>
-    `;
-
-    console.log('🎯 Loading Topics section...');
+    
+    // Show dashboard
+    document.getElementById('dashboardContainer').classList.remove('hidden');
+    
+    // Update user profile
+    document.getElementById('userProfile').textContent = 
+        `${currentUser.name} | AP - ${currentUser.subject}`;
+    
+    // Show topics by default
     showSection('topics');
 }
 
-// Show Section - Fixed event handling
-function showSection(section) {
-    console.log('📂 Switching to section:', section);
-    
-    // Hide all content sections
-    document.querySelectorAll('.content-area > div:not(.welcome-screen)').forEach(el => {
-        el.classList.add('hidden');
-    });
+// Show Section
+async function showSection(section) {
+    console.log('📂 Opening section:', section);
     
     // Remove active class from all sidebar items
     document.querySelectorAll('.sidebar-item').forEach(item => {
         item.classList.remove('active');
     });
     
-    // Add active class to clicked item (if event target exists)
-    if (window.event && window.event.target) {
-        window.event.target.classList.add('active');
-    }
-
-    const sectionMap = {
-        'topics': 'topicsSection',
-        'classes': 'classesSection',
-        'tests': 'testsSection',
-        'recorded': 'recordedSection'
-    };
-
-    const sectionId = sectionMap[section];
+    // Add active class to clicked item
+    event.target.classList.add('active');
     
-    if (sectionId) {
-        document.getElementById(sectionId).classList.remove('hidden');
-        loadContent(section);
-    } else {
-        console.error('❌ Invalid section:', section);
+    // Hide all sections
+    document.getElementById('topicsSection').classList.add('hidden');
+    document.getElementById('topicDetailSection').classList.add('hidden');
+    document.getElementById('classesSection').classList.add('hidden');
+    document.getElementById('testsSection').classList.add('hidden');
+    document.getElementById('recordedSection').classList.add('hidden');
+    
+    // Show selected section
+    document.getElementById(`${section}Section`).classList.remove('hidden');
+    
+    // Load content based on section
+    if (section === 'topics') {
+        await loadTopics();
+    } else if (section === 'classes') {
+        await loadClasses();
+    } else if (section === 'tests') {
+        await loadTests();
+    } else if (section === 'recorded') {
+        await loadRecordedVideos();
     }
 }
 
-// Load Content - Fetch from Supabase Database
-async function loadContent(section) {
-    console.log('📖 Loading content for section:', section);
-    console.log('👤 Current user board:', selectedBoard, '| Subject:', selectedSubject);
+// Load Topics
+async function loadTopics() {
+    const container = document.getElementById('topicsList');
+    container.innerHTML = '<p style="padding: 20px;">Loading topics...</p>';
     
-    // Fix: Correct element IDs (singular, not plural)
-    const listId = section === 'topics' ? 'topicList' :
-                   section === 'classes' ? 'classList' :
-                   section === 'tests' ? 'testList' :
-                   section === 'recorded' ? 'recordedList' : section + 'List';
-    
-    console.log('🎯 Looking for element with ID:', listId);
-    
-    const list = document.getElementById(listId);
-    
-    if (!list) {
-        console.error('❌ List element not found:', listId);
-        return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('topics')
+            .select('*')
+            .eq('board', 'AP')
+            .eq('subject', currentUser.subject)
+            .order('created_at', { ascending: true });
+        
+        if (error) {
+            console.error('Error fetching topics:', error);
+            container.innerHTML = '<p style="padding: 20px; color: red;">Failed to load topics</p>';
+            return;
+        }
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="padding: 20px; color: #666;">No topics available yet.</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        data.forEach(topic => {
+            const card = document.createElement('div');
+            card.className = 'topic-card';
+            card.onclick = () => showTopicDetail(topic.id, topic.name);
+            
+            card.innerHTML = `
+                <h3>${topic.name}</h3>
+                <p>${topic.description || 'Click to view detailed content'}</p>
+            `;
+            
+            container.appendChild(card);
+        });
+        
+        console.log(`✅ Loaded ${data.length} topics`);
+        
+    } catch (error) {
+        console.error('Exception:', error);
+        container.innerHTML = '<p style="padding: 20px; color: red;">Error loading topics</p>';
     }
-    
-    // Show loading message
-    list.innerHTML = '<p style="padding: 20px; color: #666;">Loading...</p>';
-
-    // Fetch data from Supabase
-    const data = await getContentFromDatabase(selectedBoard, selectedSubject, section);
-
-    if (!data || data.length === 0) {
-        console.warn('⚠️ No data found for section:', section);
-        list.innerHTML = '<p style="padding: 20px; color: #666;">No content available for this section yet.</p>';
-        return;
-    }
-
-    // Clear loading message
-    list.innerHTML = '';
-
-    console.log(`✅ Loading ${data.length} items for section: ${section}`);
-
-    data.forEach((item, index) => {
-        console.log(`  ${index + 1}. ${item.name}`);
-        
-        const card = document.createElement('div');
-        card.className = 'item-card';
-
-        // For topics section, make cards clickable to show detail
-        if (section === 'topics') {
-            card.style.cursor = 'pointer';
-            card.onclick = () => showTopicDetail(item.id, item.name);
-        }
-
-        // Check if locked (for tests and recorded videos)
-        const isLocked = item.is_locked !== undefined ? item.is_locked : (item.locked || false);
-        
-        if (isLocked && !hasPaidSubscription && section !== 'topics') {
-            card.classList.add('locked');
-            card.onclick = () => showPaymentAlert();
-        }
-
-        let content = `<h3>${item.name}</h3>`;
-        if (item.description) content += `<p>${item.description}</p>`;
-        if (item.time) content += `<p>⏰ ${item.time}</p>`;
-        if (item.instructor) content += `<p>👨‍🏫 ${item.instructor}</p>`;
-        if (item.questions) content += `<p>📝 ${item.questions} Questions | ⏱️ ${item.duration}</p>`;
-        if (item.duration && !item.questions) content += `<p>⏱️ ${item.duration}</p>`;
-        if (isLocked && !hasPaidSubscription) content += `<span class="lock-icon">🔒</span>`;
-        
-        // Add click indicator for topics
-        if (section === 'topics') {
-            content += `<span style="float: right; color: #667eea;">→</span>`;
-        }
-
-        card.innerHTML = content;
-        list.appendChild(card);
-    });
-    
-    console.log(`✅ Successfully loaded ${data.length} items for ${selectedBoard} - ${selectedSubject} (${section})`);
 }
 
-// Show Payment Alert
-function showPaymentAlert() {
-    showAlert('Payment Required', 'Please complete your payment to access this content.');
+// Show Topic Detail
+async function showTopicDetail(topicId, topicName) {
+    console.log('📖 Opening topic:', topicName);
+    currentTopicId = topicId;
+    
+    // Hide topics list, show detail
+    document.getElementById('topicsSection').classList.add('hidden');
+    document.getElementById('topicDetailSection').classList.remove('hidden');
+    
+    // Set title
+    document.getElementById('topicDetailTitle').textContent = topicName;
+    document.getElementById('topicDetailDesc').textContent = 'Loading...';
+    document.getElementById('topicDetailContent').innerHTML = '<p>Loading content...</p>';
+    
+    try {
+        // Fetch topic info
+        const { data: topic, error: topicError } = await supabaseClient
+            .from('topics')
+            .select('*')
+            .eq('id', topicId)
+            .single();
+        
+        if (topicError) {
+            console.error('Error:', topicError);
+            document.getElementById('topicDetailContent').innerHTML = 
+                '<p style="color: red;">Failed to load topic details</p>';
+            return;
+        }
+        
+        document.getElementById('topicDetailDesc').textContent = topic.description || '';
+        
+        // Fetch topic content (paragraphs)
+        const { data: content, error: contentError } = await supabaseClient
+            .from('topic_content')
+            .select('*')
+            .eq('topic_id', topicId)
+            .order('order_index', { ascending: true });
+        
+        if (contentError) {
+            console.error('Error:', contentError);
+            document.getElementById('topicDetailContent').innerHTML = 
+                '<p style="color: red;">Failed to load content</p>';
+            return;
+        }
+        
+        const contentDiv = document.getElementById('topicDetailContent');
+        
+        if (!content || content.length === 0) {
+            contentDiv.innerHTML = '<p style="color: #666;">No detailed content available yet.</p>';
+            return;
+        }
+        
+        contentDiv.innerHTML = '';
+        
+        content.forEach(item => {
+            const section = document.createElement('div');
+            section.className = 'topic-detail';
+            
+            let html = '';
+            if (item.heading) {
+                html += `<h3>${item.heading}</h3>`;
+            }
+            html += `<p>${item.paragraph}</p>`;
+            
+            section.innerHTML = html;
+            contentDiv.appendChild(section);
+        });
+        
+        console.log(`✅ Loaded ${content.length} paragraphs`);
+        
+    } catch (error) {
+        console.error('Exception:', error);
+        document.getElementById('topicDetailContent').innerHTML = 
+            '<p style="color: red;">Error loading content</p>';
+    }
+}
+
+// Back to Topics
+function backToTopics() {
+    document.getElementById('topicDetailSection').classList.add('hidden');
+    document.getElementById('topicsSection').classList.remove('hidden');
+}
+
+// Load Classes
+async function loadClasses() {
+    const container = document.getElementById('classesList');
+    container.innerHTML = '<p style="padding: 20px;">Loading classes...</p>';
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('classes')
+            .select('*')
+            .eq('board', 'AP')
+            .eq('subject', currentUser.subject)
+            .order('created_at', { ascending: true });
+        
+        if (error) {
+            console.error('Error:', error);
+            container.innerHTML = '<p style="padding: 20px; color: red;">Failed to load classes</p>';
+            return;
+        }
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="padding: 20px; color: #666;">No classes available yet.</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        data.forEach(classItem => {
+            const card = document.createElement('div');
+            card.className = 'class-card';
+            
+            card.innerHTML = `
+                <div class="class-info">
+                    <h3>${classItem.name}</h3>
+                    <p>${classItem.description || ''}</p>
+                    ${classItem.time ? `<p>⏰ ${classItem.time}</p>` : ''}
+                    ${classItem.instructor ? `<p>👨‍🏫 ${classItem.instructor}</p>` : ''}
+                </div>
+                <button class="btn-join" onclick="joinClass('${classItem.class_link || '#'}')">
+                    Join Class
+                </button>
+            `;
+            
+            container.appendChild(card);
+        });
+        
+        console.log(`✅ Loaded ${data.length} classes`);
+        
+    } catch (error) {
+        console.error('Exception:', error);
+        container.innerHTML = '<p style="padding: 20px; color: red;">Error loading classes</p>';
+    }
+}
+
+// Join Class
+function joinClass(link) {
+    if (!link || link === '#') {
+        showAlert('Error', 'Class link not available yet');
+        return;
+    }
+    window.open(link, '_blank');
+}
+
+// Load Tests - NO PAYMENT CHECK
+async function loadTests() {
+    const container = document.getElementById('testsList');
+    container.innerHTML = '<p style="padding: 20px;">Loading tests...</p>';
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('tests')
+            .select('*')
+            .eq('board', 'AP')
+            .eq('subject', currentUser.subject)
+            .order('created_at', { ascending: true });
+        
+        if (error) {
+            console.error('Error:', error);
+            container.innerHTML = '<p style="padding: 20px; color: red;">Failed to load tests</p>';
+            return;
+        }
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="padding: 20px; color: #666;">No tests available yet.</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        data.forEach(test => {
+            const card = document.createElement('div');
+            card.className = 'test-card';
+            
+            // NO PAYMENT CHECK - Directly open test
+            card.onclick = () => openTest(test.typeform_link);
+            
+            card.innerHTML = `
+                <h3>${test.name}</h3>
+                <p>${test.description || ''}</p>
+                ${test.duration ? `<p>⏱️ Duration: ${test.duration}</p>` : ''}
+                ${test.total_marks ? `<p>📊 Total Marks: ${test.total_marks}</p>` : ''}
+            `;
+            
+            container.appendChild(card);
+        });
+        
+        console.log(`✅ Loaded ${data.length} tests`);
+        
+    } catch (error) {
+        console.error('Exception:', error);
+        container.innerHTML = '<p style="padding: 20px; color: red;">Error loading tests</p>';
+    }
+}
+
+// Open Test
+function openTest(link) {
+    if (!link) {
+        showAlert('Error', 'Test link not available yet');
+        return;
+    }
+    window.open(link, '_blank');
+}
+
+// Load Recorded Videos - NO PAYMENT CHECK
+async function loadRecordedVideos() {
+    const container = document.getElementById('recordedList');
+    container.innerHTML = '<p style="padding: 20px;">Loading recorded classes...</p>';
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('recorded_videos')
+            .select('*')
+            .eq('board', 'AP')
+            .eq('subject', currentUser.subject)
+            .order('created_at', { ascending: true });
+        
+        if (error) {
+            console.error('Error:', error);
+            container.innerHTML = '<p style="padding: 20px; color: red;">Failed to load videos</p>';
+            return;
+        }
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="padding: 20px; color: #666;">No recorded classes available yet.</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        data.forEach(video => {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            
+            // NO PAYMENT CHECK - Directly open video
+            card.onclick = () => watchVideo(video.video_url);
+            
+            card.innerHTML = `
+                <h3>${video.title}</h3>
+                <p>${video.description || ''}</p>
+                ${video.duration ? `<p>⏱️ ${video.duration}</p>` : ''}
+            `;
+            
+            container.appendChild(card);
+        });
+        
+        console.log(`✅ Loaded ${data.length} videos`);
+        
+    } catch (error) {
+        console.error('Exception:', error);
+        container.innerHTML = '<p style="padding: 20px; color: red;">Error loading videos</p>';
+    }
+}
+
+// Watch Video
+function watchVideo(link) {
+    if (!link) {
+        showAlert('Error', 'Video link not available yet');
+        return;
+    }
+    window.open(link, '_blank');
 }
 
 // Logout
@@ -606,21 +602,19 @@ async function logout() {
     } catch (error) {
         console.error('Logout error:', error);
     }
-
+    
     currentUser = null;
-    selectedBoard = null;
     selectedSubject = null;
     hasPaidSubscription = false;
-
+    
+    // Hide dashboard, show welcome
+    document.getElementById('dashboardContainer').classList.add('hidden');
+    document.getElementById('welcomeScreen').classList.remove('hidden');
+    
+    // Show public nav, hide user nav
     document.getElementById('publicNav').classList.remove('hidden');
     document.getElementById('userNav').classList.add('hidden');
-    document.getElementById('sidebar').classList.add('hidden');
-    document.getElementById('welcomeScreen').classList.remove('hidden');
-
-    document.querySelectorAll('.content-area > div:not(.welcome-screen)').forEach(el => {
-        el.classList.add('hidden');
-    });
-
+    
     showAlert('Success', 'You have been logged out successfully.');
 }
 
@@ -630,44 +624,42 @@ async function checkAuthStatus() {
         console.log('Supabase client not available');
         return;
     }
-
+    
     try {
         const { data: { user }, error } = await supabaseClient.auth.getUser();
         
-        if (error) {
+        if (error || !user) {
             console.log('No active session');
             return;
         }
-
-        if (user) {
-            console.log('✅ Active session found for user:', user.id);
-            
-            // Fetch student data
-            const { data: studentData, error: studentError } = await supabaseClient
-                .from('Students')
-                .select('*')
-                .eq('user_id', user.id)
-                .single();
-
-            if (studentError) {
-                console.error('Error fetching student data:', studentError);
-                return;
-            }
-
-            // Set current user
-            currentUser = {
-                id: user.id,
-                name: studentData.name,
-                email: studentData.email,
-                board: studentData.board,
-                subject: studentData.subject
-            };
-
-            selectedBoard = studentData.board;
-            selectedSubject = studentData.subject;
-
-            showDashboard();
+        
+        console.log('✅ Active session found');
+        
+        // Fetch student data
+        const { data: studentData, error: studentError } = await supabaseClient
+            .from('Students')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+        
+        if (studentError) {
+            console.error('Error fetching student data:', studentError);
+            return;
         }
+        
+        currentUser = {
+            id: user.id,
+            name: studentData.name,
+            email: studentData.email,
+            board: studentData.board,
+            subject: studentData.subject
+        };
+        
+        hasPaidSubscription = studentData.has_paid || false;
+        selectedSubject = studentData.subject;
+        
+        showDashboard();
+        
     } catch (error) {
         console.error('Auth check error:', error);
     }
