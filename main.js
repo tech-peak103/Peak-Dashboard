@@ -10,8 +10,8 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 // Razorpay Configuration
 // IMPORTANT: Replace these with your actual Razorpay keys
-const RAZORPAY_KEY_ID = 'rzp_test_YOUR_KEY_ID'; // Replace with your Razorpay Key ID
-const RAZORPAY_KEY_SECRET = 'YOUR_KEY_SECRET'; // This should be on backend only
+const RAZORPAY_KEY_ID = 'rzp_test_RhTQNYDy5R6FqT'; // Replace with your Razorpay Key ID
+const RAZORPAY_KEY_SECRET = 'WDKMq6GBshqJMbjFpXoQs3Vp'; // This should be on backend only
 
 // Initialize Supabase client
 let supabaseClient = null;
