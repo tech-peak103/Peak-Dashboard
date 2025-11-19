@@ -8,6 +8,11 @@ let currentTopicId = null;
 const SUPABASE_URL = 'https://zggtadgymqkszwizvono.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZ3RhZGd5bXFrc3p3aXp2b25vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzMTg4NTAsImV4cCI6MjA3Nzg5NDg1MH0.A2R9qcrwKq7qSGbGXUwHYRzregQGy4SMYU7yQAZwm1Q';
 
+// Razorpay Configuration
+// IMPORTANT: Replace these with your actual Razorpay keys
+const RAZORPAY_KEY_ID = 'rzp_test_YOUR_KEY_ID'; // Replace with your Razorpay Key ID
+const RAZORPAY_KEY_SECRET = 'YOUR_KEY_SECRET'; // This should be on backend only
+
 // Initialize Supabase client
 let supabaseClient = null;
 
@@ -471,7 +476,7 @@ function joinClass(link) {
     window.open(link, '_blank');
 }
 
-// Load Tests - NO PAYMENT CHECK
+// Load Tests - WITH PAYMENT CHECK
 async function loadTests() {
     const container = document.getElementById('testsList');
     container.innerHTML = '<p style="padding: 20px;">Loading tests...</p>';
@@ -501,15 +506,27 @@ async function loadTests() {
             const card = document.createElement('div');
             card.className = 'test-card';
             
-            // NO PAYMENT CHECK - Directly open test
-            card.onclick = () => openTest(test.typeform_link);
+            // Check if test is locked and user hasn't paid
+            const isLocked = test.is_locked && !hasPaidSubscription;
             
-            card.innerHTML = `
-                <h3>${test.name}</h3>
-                <p>${test.description || ''}</p>
-                ${test.duration ? `<p>⏱️ Duration: ${test.duration}</p>` : ''}
-                ${test.total_marks ? `<p>📊 Total Marks: ${test.total_marks}</p>` : ''}
-            `;
+            if (isLocked) {
+                card.onclick = () => showPaymentModal();
+                card.innerHTML = `
+                    <h3>${test.name}</h3>
+                    <p>${test.description || ''}</p>
+                    ${test.duration ? `<p>⏱️ Duration: ${test.duration}</p>` : ''}
+                    ${test.total_marks ? `<p>📊 Total Marks: ${test.total_marks}</p>` : ''}
+                    <span style="position: absolute; top: 20px; right: 20px; font-size: 24px;">🔒</span>
+                `;
+            } else {
+                card.onclick = () => openTest(test.typeform_link);
+                card.innerHTML = `
+                    <h3>${test.name}</h3>
+                    <p>${test.description || ''}</p>
+                    ${test.duration ? `<p>⏱️ Duration: ${test.duration}</p>` : ''}
+                    ${test.total_marks ? `<p>📊 Total Marks: ${test.total_marks}</p>` : ''}
+                `;
+            }
             
             container.appendChild(card);
         });
@@ -531,7 +548,7 @@ function openTest(link) {
     window.open(link, '_blank');
 }
 
-// Load Recorded Videos - NO PAYMENT CHECK
+// Load Recorded Videos - WITH PAYMENT CHECK
 async function loadRecordedVideos() {
     const container = document.getElementById('recordedList');
     container.innerHTML = '<p style="padding: 20px;">Loading recorded classes...</p>';
@@ -561,14 +578,25 @@ async function loadRecordedVideos() {
             const card = document.createElement('div');
             card.className = 'video-card';
             
-            // NO PAYMENT CHECK - Directly open video
-            card.onclick = () => watchVideo(video.video_url);
+            // Check if video is locked and user hasn't paid
+            const isLocked = video.is_locked && !hasPaidSubscription;
             
-            card.innerHTML = `
-                <h3>${video.title}</h3>
-                <p>${video.description || ''}</p>
-                ${video.duration ? `<p>⏱️ ${video.duration}</p>` : ''}
-            `;
+            if (isLocked) {
+                card.onclick = () => showPaymentModal();
+                card.innerHTML = `
+                    <h3>${video.title}</h3>
+                    <p>${video.description || ''}</p>
+                    ${video.duration ? `<p>⏱️ ${video.duration}</p>` : ''}
+                    <span style="position: absolute; top: 20px; right: 20px; font-size: 24px;">🔒</span>
+                `;
+            } else {
+                card.onclick = () => watchVideo(video.video_url);
+                card.innerHTML = `
+                    <h3>${video.title}</h3>
+                    <p>${video.description || ''}</p>
+                    ${video.duration ? `<p>⏱️ ${video.duration}</p>` : ''}
+                `;
+            }
             
             container.appendChild(card);
         });
@@ -588,6 +616,93 @@ function watchVideo(link) {
         return;
     }
     window.open(link, '_blank');
+}
+
+// Show Payment Modal
+function showPaymentModal() {
+    document.getElementById('paymentModal').classList.add('active');
+}
+
+// Process Payment with Razorpay
+function processPayment() {
+    // Razorpay payment options
+    const options = {
+        key: RAZORPAY_KEY_ID, // Enter your Razorpay Key ID
+        amount: 49900, // Amount in paise (₹499 = 49900 paise)
+        currency: 'INR',
+        name: 'Peak Study',
+        description: 'Monthly Subscription',
+        image: 'https://your-logo-url.com/logo.png', // Optional: Add your logo URL
+        handler: async function (response) {
+            // Payment successful
+            console.log('Payment successful:', response);
+            
+            // Verify payment and update subscription
+            await updateSubscriptionStatus(response);
+        },
+        prefill: {
+            name: currentUser.name,
+            email: currentUser.email,
+            contact: '' // Optional: Add phone number if available
+        },
+        notes: {
+            user_id: currentUser.id,
+            board: 'AP',
+            subject: currentUser.subject
+        },
+        theme: {
+            color: '#667eea'
+        },
+        modal: {
+            ondismiss: function() {
+                console.log('Payment cancelled');
+            }
+        }
+    };
+
+    // Create Razorpay instance and open checkout
+    const razorpay = new Razorpay(options);
+    razorpay.open();
+}
+
+// Update Subscription Status after successful payment
+async function updateSubscriptionStatus(paymentResponse) {
+    try {
+        console.log('💳 Updating subscription status...');
+        
+        // Update student's has_paid status in database
+        const { data, error } = await supabaseClient
+            .from('Students')
+            .update({ has_paid: true })
+            .eq('user_id', currentUser.id);
+        
+        if (error) {
+            console.error('Error updating subscription:', error);
+            showAlert('Error', 'Payment successful but failed to update subscription. Please contact support.');
+            return;
+        }
+        
+        // Update local state
+        hasPaidSubscription = true;
+        
+        // Close payment modal
+        closeModal('paymentModal');
+        
+        // Show success message
+        showAlert('Success', 'Payment successful! You now have access to all premium content. 🎉');
+        
+        // Reload current section to show unlocked content
+        const currentSection = document.querySelector('.sidebar-item.active');
+        if (currentSection) {
+            currentSection.click();
+        }
+        
+        console.log('✅ Subscription activated successfully');
+        
+    } catch (error) {
+        console.error('Exception:', error);
+        showAlert('Error', 'Failed to update subscription. Please contact support.');
+    }
 }
 
 // Logout
