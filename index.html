@@ -18,28 +18,29 @@
             <div class="logo">PS</div>
             <div class="brand-name">Peak Study</div>
         </div>
-        
+
         <!-- Public Navigation (Before Login) -->
         <div class="nav-section" id="publicNav">
             <a href="#" class="nav-link">About</a>
             <a href="#" class="nav-link">AP (Advanced Placement)</a>
-            
+
             <div class="dropdown" id="subjectDropdown">
                 <a href="#" class="nav-link" onclick="toggleSubjectDropdown(event)">Select Subject</a>
                 <div class="dropdown-content" id="subjectList">
                     <a href="#" onclick="selectSubject(event, 'Mathematics')">Mathematics</a>
                     <a href="#" onclick="selectSubject(event, 'Chemistry')">Chemistry</a>
-                    <a href="#" onclick="selectSubject(event, 'Physics')">Physics</a>
                     <a href="#" onclick="selectSubject(event, 'Biology')">Biology</a>
                     <a href="#" onclick="selectSubject(event, 'Macroeconomics')">Macroeconomics</a>
                     <a href="#" onclick="selectSubject(event, 'Microeconomics')">Microeconomics</a>
+                    <a href="#" onclick="selectSubject(event, 'Microeconomics')">Psychology</a>
+                    <a href="#" onclick="selectSubject(event, 'Microeconomics')">Computer Science</a>
                 </div>
             </div>
-            
+
             <button class="btn btn-signin" onclick="showSignInModal()">Sign In</button>
             <button class="btn btn-login" onclick="showLoginModal()">Login</button>
         </div>
-        
+
         <!-- User Navigation (After Login) -->
         <div class="nav-section hidden" id="userNav">
             <div class="user-profile" id="userProfile"></div>
@@ -167,10 +168,12 @@
     <div class="modal" id="paymentModal">
         <div class="modal-content" style="max-width: 600px;">
             <h3>🔒 Unlock Premium Content</h3>
-            <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin: 15px 0;">
+            <div
+                style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin: 15px 0;">
                 <h4 style="color: #856404; margin-bottom: 15px; font-size: 20px;">Subscribe to Access All Content</h4>
-                <p style="color: #856404; margin-bottom: 15px;">Get unlimited access to all tests and recorded classes</p>
-                
+                <p style="color: #856404; margin-bottom: 15px;">Get unlimited access to all tests and recorded classes
+                </p>
+
                 <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
                     <p style="color: #333; margin: 8px 0;"><strong>Subscription Plan:</strong> Monthly</p>
                     <p style="color: #333; margin: 8px 0;"><strong>Price:</strong> ₹499/month</p>
@@ -182,8 +185,9 @@
                         <li>Study materials & notes</li>
                     </ul>
                 </div>
-                
-                <button onclick="processPayment()" style="background: linear-gradient(135deg, #ffc107, #ff9800); color: white; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px;">
+
+                <button onclick="processPayment()"
+                    style="background: linear-gradient(135deg, #ffc107, #ff9800); color: white; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px;">
                     Pay ₹499 with Razorpay
                 </button>
             </div>
