@@ -1,784 +1,1312 @@
-// Application State
-let currentUser = null;
-let selectedSubject = null;
-let hasPaidSubscription = false;
-let currentTopicId = null;
+// ============================================================================
+// SUPABASE CONFIGURATION
+// ============================================================================
+// IMPORTANT: Replace these with your actual Supabase credentials
+// Get them from: Supabase Dashboard → Settings → API
 
-// Supabase Configuration
-const SUPABASE_URL = 'https://zggtadgymqkszwizvono.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpnZ3RhZGd5bXFrc3p3aXp2b25vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzMTg4NTAsImV4cCI6MjA3Nzg5NDg1MH0.A2R9qcrwKq7qSGbGXUwHYRzregQGy4SMYU7yQAZwm1Q';
+const SUPABASE_URL = 'https://gkloowizszlxzxdhnszm.supabase.co'; // ← Replace this
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrbG9vd2l6c3pseHp4ZGhuc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTY5MzQsImV4cCI6MjA3OTc5MjkzNH0.0ZQXY5xKMkP1_pY0mb2RxGFGCMeQZbPU0Zu6DVTRc1o'; // ← Replace this
 
-// Razorpay Configuration
-// IMPORTANT: Replace these with your actual Razorpay keys
-const RAZORPAY_KEY_ID = 'rzp_test_RhTQNYDy5R6FqT'; // Replace with your Razorpay Key ID
-const RAZORPAY_KEY_SECRET = 'WDKMq6GBshqJMbjFpXoQs3Vp'; // This should be on backend only
+// Initialize Supabase Client
+let supabase = null;
+let supabaseEnabled = false;
 
-// Initialize Supabase client
-let supabaseClient = null;
-
+// Try to initialize Supabase
 try {
-    if (typeof supabase !== 'undefined') {
-        const { createClient } = supabase;
-        supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-        console.log('✅ Supabase client initialized successfully');
+    // Check if Supabase library is loaded
+    if (typeof window.supabase !== 'undefined') {
+        // Create client even if credentials look like defaults
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Check if credentials are actually configured
+        // Check if credentials are placeholder values only
+        if (SUPABASE_URL.includes('your-project') || SUPABASE_KEY === 'your-anon-key') {
+            console.warn('⚠️ SUPABASE NOT CONFIGURED!');
+            console.warn('📝 To enable Supabase backend:');
+            console.warn('1. Go to https://supabase.com');
+            console.warn('2. Create project and run SQL script');
+            console.warn('3. Get URL and Key from Settings → API');
+            console.warn('4. Update main.js lines 6-7 with your credentials');
+            console.warn('5. Currently using localStorage only');
+            supabaseEnabled = false;
+        } else {
+            supabaseEnabled = true;
+            console.log('✅ Supabase connected successfully!');
+            console.log('📊 Data will be saved to Supabase backend');
+        }
+    } else {
+        console.error('❌ Supabase library not loaded');
+        supabaseEnabled = false;
     }
 } catch (error) {
     console.error('❌ Supabase initialization error:', error);
+    supabaseEnabled = false;
 }
 
-// Initialize the application
-function init() {
-    checkAuthStatus();
-}
+// Razorpay Configuration
+const RAZORPAY_KEY = 'rzp_test_YOUR_KEY'; // Replace with your Razorpay Key
 
-// Toggle Subject Dropdown
-function toggleSubjectDropdown(event) {
-    event.preventDefault();
-    const dropdown = document.getElementById('subjectList');
-    dropdown.classList.toggle('active');
-}
+// Global State
+let currentUser = null;
+let currentSubject = null;
+let pdfTimer = null;
+let testStartTime = null;
 
-// Close all dropdowns
-function closeAllDropdowns() {
-    document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-        dropdown.classList.remove('active');
-    });
-}
+// Subject Data for Different Grades and Boards
+const subjectsByGradeBoard = {
+    '10-ISC': [
+        { name: 'Accounts', code: 'ISC-X' },
+        { name: 'Mathematics', code: 'ISC-X' },
+        { name: 'Physics', code: 'ISC-X' },
+        { name: 'Chemistry', code: 'ISC-X' },
+        { name: 'Biology', code: 'ISC-X' },
+        { name: 'English', code: 'ISC-X' }
+    ],
+    '10-CBSE': [
+        { name: 'Mathematics', code: 'CBSE-X' },
+        { name: 'Science', code: 'CBSE-X' },
+        { name: 'Social Science', code: 'CBSE-X' },
+        { name: 'English', code: 'CBSE-X' },
+        { name: 'Hindi', code: 'CBSE-X' }
+    ],
+    '10-ICSE': [
+        { name: 'Mathematics', code: 'ICSE-X' },
+        { name: 'Physics', code: 'ICSE-X' },
+        { name: 'Chemistry', code: 'ICSE-X' },
+        { name: 'Biology', code: 'ICSE-X' },
+        { name: 'English', code: 'ICSE-X' }
+    ],
+    '12-ISC': [
+        { name: 'Psychology', code: 'ISC-XII' },
+        { name: 'Physics', code: 'ISC-XII' },
+        { name: 'Chemistry', code: 'ISC-XII' },
+        { name: 'Mathematics', code: 'ISC-XII' },
+        { name: 'Biology', code: 'ISC-XII' },
+        { name: 'Accounts', code: 'ISC-XII' }
+    ],
+    '12-CBSE': [
+        { name: 'Physics', code: 'CBSE-XII' },
+        { name: 'Chemistry', code: 'CBSE-XII' },
+        { name: 'Mathematics', code: 'CBSE-XII' },
+        { name: 'Biology', code: 'CBSE-XII' },
+        { name: 'English', code: 'CBSE-XII' }
+    ],
+    '12-ICSE': [
+        { name: 'Physics', code: 'ICSE-XII' },
+        { name: 'Chemistry', code: 'ICSE-XII' },
+        { name: 'Mathematics', code: 'ICSE-XII' },
+        { name: 'Biology', code: 'ICSE-XII' },
+        { name: 'English', code: 'ICSE-XII' }
+    ]
+};
 
-// Click outside to close dropdowns
-document.addEventListener('click', function(event) {
-    if (!event.target.closest('.dropdown')) {
-        closeAllDropdowns();
+// Check if user is already logged in
+window.addEventListener('DOMContentLoaded', async () => {
+    const userData = localStorage.getItem('peakTestUser');
+    if (userData) {
+        currentUser = JSON.parse(userData);
+        showDashboard();
     }
 });
 
-// Select Subject
-function selectSubject(event, subject) {
-    event.preventDefault();
-    selectedSubject = subject;
-    closeAllDropdowns();
-    showAlert('Success', `Subject selected: ${subject}. Please login to continue.`);
-}
+// Registration Handler
+async function handleRegistration() {
+    const name = document.getElementById('studentName').value.trim();
+    const email = document.getElementById('studentEmail').value.trim();
+    const grade = document.getElementById('studentGrade').value;
+    const board = document.getElementById('studentBoard').value;
+    const address = document.getElementById('studentAddress').value.trim();
+    const password = document.getElementById('studentPassword').value;
 
-// Show Alert
-function showAlert(title, message) {
-    document.getElementById('alertTitle').textContent = title;
-    document.getElementById('alertMessage').textContent = message;
-    document.getElementById('alertModal').classList.add('active');
-}
-
-// Close Modal
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
-}
-
-// Show Sign In Modal
-function showSignInModal() {
-    if (!selectedSubject) {
-        showAlert('Error', 'Please select a subject first!');
-        return;
-    }
-    document.getElementById('signInModal').classList.add('active');
-}
-
-// Show Login Modal
-function showLoginModal() {
-    if (!selectedSubject) {
-        showAlert('Error', 'Please select a subject first!');
-        return;
-    }
-    document.getElementById('loginModal').classList.add('active');
-}
-
-// Handle Sign In
-async function handleSignIn() {
-    const name = document.getElementById('signInName').value.trim();
-    const email = document.getElementById('signInEmail').value.trim();
-    const password = document.getElementById('signInPassword').value;
-
-    if (!name || !email || !password) {
-        showAlert('Error', 'Please fill in all fields');
+    // Validation
+    if (!name || !email || !grade || !board || !address || !password) {
+        alert('Please fill all fields!');
         return;
     }
 
     if (password.length < 6) {
-        showAlert('Error', 'Password must be at least 6 characters');
+        alert('Password must be at least 6 characters long!');
         return;
     }
 
-    if (!selectedSubject) {
-        showAlert('Error', 'Please select a subject first!');
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address!');
         return;
     }
+
+    // Create user object
+    const userData = {
+        name: name,
+        email: email,
+        grade: grade,
+        board: board,
+        address: address,
+        password: password,
+        registered_at: new Date().toISOString(),
+        paid_subjects: {},
+        test_access: {}
+    };
 
     try {
-        console.log('📝 Creating new account...');
+        let savedToSupabase = false;
 
-        // Sign up with Supabase Auth
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password
-        });
+        // Try to save to Supabase if enabled
+        if (supabaseEnabled && supabase) {
+            try {
+                console.log('📤 Attempting to save to Supabase...');
 
-        if (authError) {
-            console.error('Auth error:', authError);
-            showAlert('Error', authError.message);
-            return;
+                // Check if email already exists
+                const { data: existingUsers, error: checkError } = await supabase
+                    .from('students')
+                    .select('email')
+                    .eq('email', email);
+
+                if (checkError) {
+                    console.error('❌ Error checking existing user:', checkError);
+                    throw checkError;
+                }
+
+                if (existingUsers && existingUsers.length > 0) {
+                    alert('This email is already registered! Please use a different email.');
+                    return;
+                }
+
+                // Insert new student
+                const { data: insertedData, error: insertError } = await supabase
+                    .from('students')
+                    .insert([userData])
+                    .select();
+
+                if (insertError) {
+                    console.error('❌ Supabase insert error:', insertError);
+                    console.error('Error details:', JSON.stringify(insertError, null, 2));
+                    throw insertError;
+                }
+
+                if (insertedData && insertedData.length > 0) {
+                    userData.id = insertedData[0].id;
+                    savedToSupabase = true;
+                    console.log('✅ Student data saved to Supabase successfully!');
+                    console.log('💾 Saved data:', insertedData[0]);
+                }
+            } catch (supabaseError) {
+                console.error('❌ Supabase save failed:', supabaseError);
+                console.warn('⚠️ Falling back to localStorage only');
+                savedToSupabase = false;
+            }
+        } else {
+            console.log('ℹ️ Supabase not enabled. Using localStorage only.');
         }
 
-        // Insert student data
-        const { data: studentData, error: studentError } = await supabaseClient
-            .from('Students')
-            .insert([{
-                user_id: authData.user.id,
-                name: name,
-                email: email,
-                board: 'AP',
-                subject: selectedSubject,
-                has_paid: false
-            }])
-            .select();
+        // Always save to localStorage as backup
+        localStorage.setItem('peakTestUser', JSON.stringify(userData));
 
-        if (studentError) {
-            console.error('Student insert error:', studentError);
-            showAlert('Error', 'Failed to create account: ' + studentError.message);
-            return;
+        // Set current user
+        currentUser = userData;
+
+        // Log registration
+        console.log('═══════════════════════════════════════════════');
+        console.log('📝 NEW STUDENT REGISTRATION');
+        console.log('═══════════════════════════════════════════════');
+        console.log('Name:', userData.name);
+        console.log('Email:', userData.email);
+        console.log('Grade:', userData.grade);
+        console.log('Board:', userData.board);
+        console.log('Address:', userData.address);
+        console.log('Registered At:', new Date(userData.registered_at).toLocaleString());
+        console.log('Backend Status:');
+        console.log('  • Supabase:', savedToSupabase ? '✅ SAVED' : '❌ NOT SAVED');
+        console.log('  • localStorage: ✅ SAVED');
+        console.log('═══════════════════════════════════════════════');
+
+        if (savedToSupabase) {
+            alert('Registration Successful! 🎉\n\nYour data has been saved to the backend database.');
+        } else {
+            alert('Registration Successful! 🎉\n\nNote: Configure Supabase to save data to backend.\nCheck console (F12) for details.');
         }
 
-        console.log('✅ Account created successfully');
-        
-        currentUser = {
-            id: authData.user.id,
-            name: name,
-            email: email,
-            board: 'AP',
-            subject: selectedSubject
-        };
-
-        closeModal('signInModal');
         showDashboard();
-        showAlert('Success', 'Account created successfully! Welcome to Peak Study.');
-
     } catch (error) {
-        console.error('Exception:', error);
-        showAlert('Error', 'Something went wrong. Please try again.');
-    }
-}
-
-// Handle Login
-async function handleLogin() {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-
-    if (!email || !password) {
-        showAlert('Error', 'Please fill in all fields');
-        return;
-    }
-
-    if (!selectedSubject) {
-        showAlert('Error', 'Please select a subject first!');
-        return;
-    }
-
-    try {
-        console.log('🔐 Logging in...');
-
-        // Sign in with Supabase Auth
-        const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-
-        if (authError) {
-            console.error('Login error:', authError);
-            showAlert('Error', authError.message);
-            return;
-        }
-
-        // Fetch student data
-        const { data: studentData, error: studentError } = await supabaseClient
-            .from('Students')
-            .select('*')
-            .eq('user_id', authData.user.id)
-            .single();
-
-        if (studentError) {
-            console.error('Student fetch error:', studentError);
-            showAlert('Error', 'Failed to fetch student data');
-            return;
-        }
-
-        console.log('✅ Login successful');
-
-        currentUser = {
-            id: authData.user.id,
-            name: studentData.name,
-            email: studentData.email,
-            board: studentData.board,
-            subject: studentData.subject
-        };
-
-        hasPaidSubscription = studentData.has_paid || false;
-        selectedSubject = studentData.subject;
-
-        closeModal('loginModal');
-        showDashboard();
-
-    } catch (error) {
-        console.error('Exception:', error);
-        showAlert('Error', 'Something went wrong. Please try again.');
+        console.error('❌ Registration error:', error);
+        alert('Registration failed: ' + (error.message || 'Please try again.'));
     }
 }
 
 // Show Dashboard
 function showDashboard() {
-    // Hide welcome screen
-    document.getElementById('welcomeScreen').classList.add('hidden');
-    
-    // Hide public nav, show user nav
-    document.getElementById('publicNav').classList.add('hidden');
-    document.getElementById('userNav').classList.remove('hidden');
-    
-    // Show dashboard
+    document.getElementById('registrationContainer').classList.add('hidden');
     document.getElementById('dashboardContainer').classList.remove('hidden');
-    
-    // Update user profile
-    document.getElementById('userProfile').textContent = 
-        `${currentUser.name} | AP - ${currentUser.subject}`;
-    
-    // Show topics by default
-    showSection('topics');
+
+    // Update header with user info
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('userGradeBoard').textContent = `Grade ${currentUser.grade} - ${currentUser.board}`;
+
+    // Load subjects
+    loadSubjects();
 }
 
-// Show Section
-async function showSection(section) {
-    console.log('📂 Opening section:', section);
-    
-    // Remove active class from all sidebar items
-    document.querySelectorAll('.sidebar-item').forEach(item => {
-        item.classList.remove('active');
+// Load Subjects Based on Grade and Board
+function loadSubjects() {
+    const key = `${currentUser.grade}-${currentUser.board}`;
+    const subjects = subjectsByGradeBoard[key] || [];
+
+    const subjectsGrid = document.getElementById('subjectsGrid');
+    subjectsGrid.innerHTML = '';
+
+    subjects.forEach(subject => {
+        const subjectKey = `${subject.name}-${subject.code}`;
+        const isPaid = currentUser.paid_subjects && currentUser.paid_subjects[subjectKey];
+
+        const card = document.createElement('div');
+        card.className = 'subject-card';
+        card.innerHTML = `
+            ${!isPaid ? '<span class="locked-icon">🔒</span>' : '<span class="locked-icon">✅</span>'}
+            <h3>${subject.name}</h3>
+            <p>${subject.code}</p>
+            ${isPaid ? '<p style="color: #4caf50; font-weight: 600; margin-top: 10px;">Paid ✓</p>' : '<p style="color: #f44336; font-weight: 600; margin-top: 10px;">₹15,000</p>'}
+        `;
+
+        card.onclick = () => openSubject(subject);
+        subjectsGrid.appendChild(card);
     });
-    
-    // Add active class to clicked item
-    event.target.classList.add('active');
-    
-    // Hide all sections
-    document.getElementById('topicsSection').classList.add('hidden');
-    document.getElementById('topicDetailSection').classList.add('hidden');
-    document.getElementById('classesSection').classList.add('hidden');
-    document.getElementById('testsSection').classList.add('hidden');
-    document.getElementById('recordedSection').classList.add('hidden');
-    
-    // Show selected section
-    document.getElementById(`${section}Section`).classList.remove('hidden');
-    
-    // Load content based on section
-    if (section === 'topics') {
-        await loadTopics();
-    } else if (section === 'classes') {
-        await loadClasses();
-    } else if (section === 'tests') {
-        await loadTests();
-    } else if (section === 'recorded') {
-        await loadRecordedVideos();
-    }
 }
 
-// Load Topics
-async function loadTopics() {
-    const container = document.getElementById('topicsList');
-    container.innerHTML = '<p style="padding: 20px;">Loading topics...</p>';
-    
-    try {
-        const { data, error } = await supabaseClient
-            .from('topics')
-            .select('*')
-            .eq('board', 'AP')
-            .eq('subject', currentUser.subject)
-            .order('created_at', { ascending: true });
-        
-        if (error) {
-            console.error('Error fetching topics:', error);
-            container.innerHTML = '<p style="padding: 20px; color: red;">Failed to load topics</p>';
-            return;
-        }
-        
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="padding: 20px; color: #666;">No topics available yet.</p>';
-            return;
-        }
-        
-        container.innerHTML = '';
-        
-        data.forEach(topic => {
-            const card = document.createElement('div');
-            card.className = 'topic-card';
-            card.onclick = () => showTopicDetail(topic.id, topic.name);
-            
-            card.innerHTML = `
-                <h3>${topic.name}</h3>
-                <p>${topic.description || 'Click to view detailed content'}</p>
-            `;
-            
-            container.appendChild(card);
-        });
-        
-        console.log(`✅ Loaded ${data.length} topics`);
-        
-    } catch (error) {
-        console.error('Exception:', error);
-        container.innerHTML = '<p style="padding: 20px; color: red;">Error loading topics</p>';
-    }
-}
+// Open Subject
+function openSubject(subject) {
+    const subjectKey = `${subject.name}-${subject.code}`;
+    const isPaid = currentUser.paid_subjects && currentUser.paid_subjects[subjectKey];
 
-// Show Topic Detail
-async function showTopicDetail(topicId, topicName) {
-    console.log('📖 Opening topic:', topicName);
-    currentTopicId = topicId;
-    
-    // Hide topics list, show detail
-    document.getElementById('topicsSection').classList.add('hidden');
-    document.getElementById('topicDetailSection').classList.remove('hidden');
-    
-    // Set title
-    document.getElementById('topicDetailTitle').textContent = topicName;
-    document.getElementById('topicDetailDesc').textContent = 'Loading...';
-    document.getElementById('topicDetailContent').innerHTML = '<p>Loading content...</p>';
-    
-    try {
-        // Fetch topic info
-        const { data: topic, error: topicError } = await supabaseClient
-            .from('topics')
-            .select('*')
-            .eq('id', topicId)
-            .single();
-        
-        if (topicError) {
-            console.error('Error:', topicError);
-            document.getElementById('topicDetailContent').innerHTML = 
-                '<p style="color: red;">Failed to load topic details</p>';
-            return;
-        }
-        
-        document.getElementById('topicDetailDesc').textContent = topic.description || '';
-        
-        // Fetch topic content (paragraphs)
-        const { data: content, error: contentError } = await supabaseClient
-            .from('topic_content')
-            .select('*')
-            .eq('topic_id', topicId)
-            .order('order_index', { ascending: true });
-        
-        if (contentError) {
-            console.error('Error:', contentError);
-            document.getElementById('topicDetailContent').innerHTML = 
-                '<p style="color: red;">Failed to load content</p>';
-            return;
-        }
-        
-        const contentDiv = document.getElementById('topicDetailContent');
-        
-        if (!content || content.length === 0) {
-            contentDiv.innerHTML = '<p style="color: #666;">No detailed content available yet.</p>';
-            return;
-        }
-        
-        contentDiv.innerHTML = '';
-        
-        content.forEach(item => {
-            const section = document.createElement('div');
-            section.className = 'topic-detail';
-            
-            let html = '';
-            if (item.heading) {
-                html += `<h3>${item.heading}</h3>`;
-            }
-            html += `<p>${item.paragraph}</p>`;
-            
-            section.innerHTML = html;
-            contentDiv.appendChild(section);
-        });
-        
-        console.log(`✅ Loaded ${content.length} paragraphs`);
-        
-    } catch (error) {
-        console.error('Exception:', error);
-        document.getElementById('topicDetailContent').innerHTML = 
-            '<p style="color: red;">Error loading content</p>';
-    }
-}
-
-// Back to Topics
-function backToTopics() {
-    document.getElementById('topicDetailSection').classList.add('hidden');
-    document.getElementById('topicsSection').classList.remove('hidden');
-}
-
-// Load Classes
-async function loadClasses() {
-    const container = document.getElementById('classesList');
-    container.innerHTML = '<p style="padding: 20px;">Loading classes...</p>';
-    
-    try {
-        const { data, error } = await supabaseClient
-            .from('classes')
-            .select('*')
-            .eq('board', 'AP')
-            .eq('subject', currentUser.subject)
-            .order('created_at', { ascending: true });
-        
-        if (error) {
-            console.error('Error:', error);
-            container.innerHTML = '<p style="padding: 20px; color: red;">Failed to load classes</p>';
-            return;
-        }
-        
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="padding: 20px; color: #666;">No classes available yet.</p>';
-            return;
-        }
-        
-        container.innerHTML = '';
-        
-        data.forEach(classItem => {
-            const card = document.createElement('div');
-            card.className = 'class-card';
-            
-            card.innerHTML = `
-                <div class="class-info">
-                    <h3>${classItem.name}</h3>
-                    <p>${classItem.description || ''}</p>
-                    ${classItem.time ? `<p>⏰ ${classItem.time}</p>` : ''}
-                    ${classItem.instructor ? `<p>👨‍🏫 ${classItem.instructor}</p>` : ''}
-                </div>
-                <button class="btn-join" onclick="joinClass('${classItem.class_link || '#'}')">
-                    Join Class
-                </button>
-            `;
-            
-            container.appendChild(card);
-        });
-        
-        console.log(`✅ Loaded ${data.length} classes`);
-        
-    } catch (error) {
-        console.error('Exception:', error);
-        container.innerHTML = '<p style="padding: 20px; color: red;">Error loading classes</p>';
-    }
-}
-
-// Join Class
-function joinClass(link) {
-    if (!link || link === '#') {
-        showAlert('Error', 'Class link not available yet');
+    if (!isPaid) {
+        currentSubject = subject;
+        showPaymentModal();
         return;
     }
-    window.open(link, '_blank');
+
+    currentSubject = subject;
+    document.getElementById('subjectsView').classList.add('hidden');
+    document.getElementById('testsView').classList.remove('hidden');
+    document.getElementById('subjectTitle').textContent = `${subject.name} ${subject.code}`;
+
+    loadTests();
 }
 
-// Load Tests - WITH PAYMENT CHECK
-async function loadTests() {
-    const container = document.getElementById('testsList');
-    container.innerHTML = '<p style="padding: 20px;">Loading tests...</p>';
-    
-    try {
-        const { data, error } = await supabaseClient
-            .from('tests')
-            .select('*')
-            .eq('board', 'AP')
-            .eq('subject', currentUser.subject)
-            .order('created_at', { ascending: true });
-        
-        if (error) {
-            console.error('Error:', error);
-            container.innerHTML = '<p style="padding: 20px; color: red;">Failed to load tests</p>';
-            return;
-        }
-        
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="padding: 20px; color: #666;">No tests available yet.</p>';
-            return;
-        }
-        
-        container.innerHTML = '';
-        
-        data.forEach(test => {
-            const card = document.createElement('div');
-            card.className = 'test-card';
-            
-            // Check if test is locked and user hasn't paid
-            const isLocked = test.is_locked && !hasPaidSubscription;
-            
-            if (isLocked) {
-                card.onclick = () => showPaymentModal();
-                card.innerHTML = `
-                    <h3>${test.name}</h3>
-                    <p>${test.description || ''}</p>
-                    ${test.duration ? `<p>⏱️ Duration: ${test.duration}</p>` : ''}
-                    ${test.total_marks ? `<p>📊 Total Marks: ${test.total_marks}</p>` : ''}
-                    <span style="position: absolute; top: 20px; right: 20px; font-size: 24px;">🔒</span>
+// Load Tests for Subject
+function loadTests() {
+    const testsGrid = document.getElementById('testsGrid');
+    testsGrid.innerHTML = '';
+
+    for (let i = 1; i <= 5; i++) {
+        const testKey = `${currentSubject.name}-Test${i}`;
+        const testAccess = currentUser.test_access[testKey];
+
+        const card = document.createElement('div');
+        card.className = 'test-card';
+
+        let statusHTML = '';
+        let clickable = true;
+
+        if (testAccess) {
+            const startTime = new Date(testAccess.start_time);
+            const endTime = new Date(startTime.getTime() + 3 * 60 * 60 * 1000); // 3 hours
+            const now = new Date();
+
+            if (now < endTime && testAccess.status === 'active') {
+                const remainingMs = endTime - now;
+                const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                statusHTML = `
+                    <span class="test-status active">Active</span>
+                    <div class="test-timer">⏰ ${hours}h ${minutes}m remaining</div>
                 `;
+            } else if (testAccess.status === 'completed') {
+                statusHTML = '<span class="test-status locked">Completed</span>';
+                clickable = false;
             } else {
-                card.onclick = () => openTest(test.typeform_link);
-                card.innerHTML = `
-                    <h3>${test.name}</h3>
-                    <p>${test.description || ''}</p>
-                    ${test.duration ? `<p>⏱️ Duration: ${test.duration}</p>` : ''}
-                    ${test.total_marks ? `<p>📊 Total Marks: ${test.total_marks}</p>` : ''}
-                `;
+                statusHTML = '<span class="test-status locked">Expired</span>';
+                clickable = false;
             }
-            
-            container.appendChild(card);
-        });
-        
-        console.log(`✅ Loaded ${data.length} tests`);
-        
-    } catch (error) {
-        console.error('Exception:', error);
-        container.innerHTML = '<p style="padding: 20px; color: red;">Error loading tests</p>';
+        } else {
+            statusHTML = '<span class="test-status">Available</span>';
+        }
+
+        card.innerHTML = `
+            <h4>📝 Test ${i}</h4>
+            ${statusHTML}
+        `;
+
+        if (clickable) {
+            card.onclick = () => openTest(i);
+        } else {
+            card.style.opacity = '0.6';
+            card.style.cursor = 'not-allowed';
+        }
+
+        testsGrid.appendChild(card);
     }
 }
 
-// Open Test
-function openTest(link) {
-    if (!link) {
-        showAlert('Error', 'Test link not available yet');
-        return;
-    }
-    window.open(link, '_blank');
-}
+// Open Test PDF
+async function openTest(testNumber) {
+    const testKey = `${currentSubject.name}-Test${testNumber}`;
 
-// Load Recorded Videos - WITH PAYMENT CHECK
-async function loadRecordedVideos() {
-    const container = document.getElementById('recordedList');
-    container.innerHTML = '<p style="padding: 20px;">Loading recorded classes...</p>';
-    
+    // If test not started, start it now
+    if (!currentUser.test_access[testKey]) {
+        const testData = {
+            start_time: new Date().toISOString(),
+            status: 'active',
+            test_number: testNumber,
+            subject: currentSubject.name
+        };
+
+        currentUser.test_access[testKey] = testData;
+        localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
+
+        try {
+            // Save to Supabase if enabled
+            if (supabaseEnabled && currentUser.email) {
+                const { error } = await supabase
+                    .from('test_attempts')
+                    .insert([{
+                        student_email: currentUser.email,
+                        student_name: currentUser.name,
+                        subject: currentSubject.name,
+                        test_number: testNumber,
+                        start_time: testData.start_time,
+                        status: 'active'
+                    }]);
+
+                if (error) {
+                    console.error('Error saving test attempt to Supabase:', error);
+                } else {
+                    console.log('✅ Test attempt saved to Supabase');
+                }
+            }
+        } catch (error) {
+            console.error('Supabase test save error:', error);
+        }
+
+        // Backend Log
+        console.log('═══════════════════════════════════════════════');
+        console.log('📝 TEST STARTED');
+        console.log('═══════════════════════════════════════════════');
+        console.log('Student:', currentUser.name);
+        console.log('Email:', currentUser.email);
+        console.log('Subject:', currentSubject.name);
+        console.log('Test Number:', testNumber);
+        console.log('Start Time:', new Date().toLocaleString());
+        console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
+        console.log('═══════════════════════════════════════════════');
+    }
+
+    testStartTime = new Date(currentUser.test_access[testKey].start_time);
+
+    // Show PDF viewer
+    document.getElementById('pdfTestTitle').textContent = `${currentSubject.name} - Test ${testNumber}`;
+
     try {
-        const { data, error } = await supabaseClient
-            .from('recorded_videos')
-            .select('*')
-            .eq('board', 'AP')
-            .eq('subject', currentUser.subject)
-            .order('created_at', { ascending: true });
-        
-        if (error) {
-            console.error('Error:', error);
-            container.innerHTML = '<p style="padding: 20px; color: red;">Failed to load videos</p>';
-            return;
-        }
-        
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="padding: 20px; color: #666;">No recorded classes available yet.</p>';
-            return;
-        }
-        
-        container.innerHTML = '';
-        
-        data.forEach(video => {
-            const card = document.createElement('div');
-            card.className = 'video-card';
-            
-            // Check if video is locked and user hasn't paid
-            const isLocked = video.is_locked && !hasPaidSubscription;
-            
-            if (isLocked) {
-                card.onclick = () => showPaymentModal();
-                card.innerHTML = `
-                    <h3>${video.title}</h3>
-                    <p>${video.description || ''}</p>
-                    ${video.duration ? `<p>⏱️ ${video.duration}</p>` : ''}
-                    <span style="position: absolute; top: 20px; right: 20px; font-size: 24px;">🔒</span>
-                `;
-            } else {
-                card.onclick = () => watchVideo(video.video_url);
-                card.innerHTML = `
-                    <h3>${video.title}</h3>
-                    <p>${video.description || ''}</p>
-                    ${video.duration ? `<p>⏱️ ${video.duration}</p>` : ''}
-                `;
+        if (supabaseEnabled) {
+            // Get PDF URL from database
+            const { data, error } = await supabase
+                .from('test_files')
+                .select('file_url')
+                .eq('subject', currentSubject.name)
+                .eq('board', currentUser.board)
+                .eq('grade', currentUser.grade)
+                .eq('test_number', testNumber)
+                .single();
+
+            if (error) {
+                console.error('Error loading PDF URL:', error);
+                throw error;
             }
-            
-            container.appendChild(card);
-        });
-        
-        console.log(`✅ Loaded ${data.length} videos`);
-        
+
+            if (data && data.file_url) {
+                // Load actual PDF from Supabase Storage
+                document.getElementById('pdfFrame').src = data.file_url;
+                console.log('✅ PDF loaded from Supabase Storage:', data.file_url);
+            } else {
+                console.warn('⚠️ PDF not found in database');
+                alert('Test PDF not available. Please contact administrator.');
+                return;
+            }
+        } else {
+            // Fallback: Use demo PDF if Supabase not configured
+            console.warn('⚠️ Supabase not configured. Using demo PDF.');
+            document.getElementById('pdfFrame').src = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+        }
     } catch (error) {
-        console.error('Exception:', error);
-        container.innerHTML = '<p style="padding: 20px; color: red;">Error loading videos</p>';
+        console.error('Failed to load PDF:', error);
+        alert('Failed to load test PDF. Please try again.');
+        return;
+    }
+
+    document.getElementById('pdfViewer').classList.remove('hidden');
+
+    // Start timer
+    startPdfTimer();
+}
+
+// Submit Test Function
+async function submitTest() {
+    if (confirm('Are you sure you want to submit this test?\n\nOnce submitted, you cannot reopen it.')) {
+        const testTitle = document.getElementById('pdfTestTitle').textContent;
+        const timerElement = document.getElementById('pdfTimer');
+        const timeRemaining = timerElement.textContent;
+
+        // Find the test key
+        let testKey = null;
+        for (const key in currentUser.test_access) {
+            if (currentUser.test_access[key].subject === currentSubject.name &&
+                currentUser.test_access[key].status === 'active') {
+                testKey = key;
+                break;
+            }
+        }
+
+        // Mark test as completed
+        if (testKey && currentUser.test_access[testKey]) {
+            currentUser.test_access[testKey].status = 'completed';
+            currentUser.test_access[testKey].submitted_at = new Date().toISOString();
+            currentUser.test_access[testKey].time_remaining = timeRemaining;
+            localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
+
+            try {
+                // Update in Supabase if enabled
+                if (supabaseEnabled && currentUser.email) {
+                    const { error } = await supabase
+                        .from('test_attempts')
+                        .update({
+                            status: 'completed',
+                            submit_time: new Date().toISOString(),
+                            time_remaining: timeRemaining
+                        })
+                        .eq('student_email', currentUser.email)
+                        .eq('subject', currentUser.test_access[testKey].subject)
+                        .eq('test_number', currentUser.test_access[testKey].test_number)
+                        .eq('status', 'active');
+
+                    if (error) {
+                        console.error('Error updating test in Supabase:', error);
+                    } else {
+                        console.log('✅ Test submission saved to Supabase');
+                    }
+                }
+            } catch (error) {
+                console.error('Supabase test update error:', error);
+            }
+        }
+
+        // Backend Log
+        console.log('═══════════════════════════════════════════════');
+        console.log('✅ TEST SUBMITTED');
+        console.log('═══════════════════════════════════════════════');
+        console.log('Student:', currentUser.name);
+        console.log('Email:', currentUser.email);
+        console.log('Test:', testTitle);
+        console.log('Submitted At:', new Date().toLocaleString());
+        console.log('Time Remaining:', timeRemaining);
+        console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
+        console.log('═══════════════════════════════════════════════');
+
+        closePdfViewer();
+        alert('Test submitted successfully! ✅');
     }
 }
 
-// Watch Video
-function watchVideo(link) {
-    if (!link) {
-        showAlert('Error', 'Video link not available yet');
-        return;
+// Start PDF Timer
+function startPdfTimer() {
+    const endTime = new Date(testStartTime.getTime() + 3 * 60 * 60 * 1000); // 3 hours from start
+
+    pdfTimer = setInterval(async () => {
+        const now = new Date();
+        const remainingMs = endTime - now;
+
+        if (remainingMs <= 0) {
+            clearInterval(pdfTimer);
+
+            // Mark test as expired
+            let testKey = null;
+            for (const key in currentUser.test_access) {
+                if (currentUser.test_access[key].subject === currentSubject.name &&
+                    currentUser.test_access[key].status === 'active') {
+                    testKey = key;
+                    break;
+                }
+            }
+
+            if (testKey) {
+                currentUser.test_access[testKey].status = 'expired';
+                currentUser.test_access[testKey].expired_at = new Date().toISOString();
+                localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
+
+                try {
+                    // Update in Supabase if enabled
+                    if (supabaseEnabled && currentUser.email) {
+                        const { error } = await supabase
+                            .from('test_attempts')
+                            .update({
+                                status: 'expired',
+                                submit_time: new Date().toISOString(),
+                                time_remaining: '00:00:00'
+                            })
+                            .eq('student_email', currentUser.email)
+                            .eq('subject', currentUser.test_access[testKey].subject)
+                            .eq('test_number', currentUser.test_access[testKey].test_number)
+                            .eq('status', 'active');
+
+                        if (error) {
+                            console.error('Error updating expired test in Supabase:', error);
+                        } else {
+                            console.log('✅ Test expiry saved to Supabase');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Supabase test expiry error:', error);
+                }
+            }
+
+            // Backend Log
+            console.log('═══════════════════════════════════════════════');
+            console.log('⏰ TEST TIME EXPIRED');
+            console.log('═══════════════════════════════════════════════');
+            console.log('Student:', currentUser.name);
+            console.log('Test:', document.getElementById('pdfTestTitle').textContent);
+            console.log('Expired At:', new Date().toLocaleString());
+            console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
+            console.log('═══════════════════════════════════════════════');
+
+            closePdfViewer();
+            alert('Time is up! Test has been automatically submitted.');
+            return;
+        }
+
+        const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+
+        document.getElementById('pdfTimer').textContent =
+            `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }, 1000);
+}
+
+// Close PDF Viewer
+function closePdfViewer() {
+    if (pdfTimer) {
+        clearInterval(pdfTimer);
+        pdfTimer = null;
     }
-    window.open(link, '_blank');
+    document.getElementById('pdfViewer').classList.add('hidden');
+    document.getElementById('pdfFrame').src = '';
+    loadTests(); // Refresh test list
+}
+
+// Back to Subjects
+function backToSubjects() {
+    document.getElementById('testsView').classList.add('hidden');
+    document.getElementById('subjectsView').classList.remove('hidden');
+    currentSubject = null;
 }
 
 // Show Payment Modal
 function showPaymentModal() {
+    const subjectName = `${currentSubject.name} ${currentSubject.code}`;
+    document.getElementById('paymentSubjectName').textContent = subjectName;
     document.getElementById('paymentModal').classList.add('active');
 }
 
-// Process Payment with Razorpay
+// Close Payment Modal
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.remove('active');
+}
+
+// Process Payment
 function processPayment() {
-    // Razorpay payment options
+    if (!currentSubject) {
+        alert('Please select a subject first!');
+        return;
+    }
+
+    // Check if Razorpay is configured
+    if (RAZORPAY_KEY === 'rzp_test_YOUR_KEY') {
+        // Demo mode - simulate payment
+        if (confirm(`Demo Mode: Pay ₹15,000 for ${currentSubject.name}?\n\nNote: Replace RAZORPAY_KEY in main.js with your actual key for real payments.`)) {
+            handlePaymentSuccess({ razorpay_payment_id: 'demo_payment_' + Date.now() });
+        }
+        return;
+    }
+
+    // Real Razorpay payment
     const options = {
-        key: RAZORPAY_KEY_ID, // Enter your Razorpay Key ID
-        amount: 49900, // Amount in paise (₹499 = 49900 paise)
+        key: RAZORPAY_KEY,
+        amount: 1500000, // ₹15,000 in paise
         currency: 'INR',
-        name: 'Peak Study',
-        description: 'Monthly Subscription',
-        image: 'https://your-logo-url.com/logo.png', // Optional: Add your logo URL
-        handler: async function (response) {
-            // Payment successful
-            console.log('Payment successful:', response);
-            
-            // Verify payment and update subscription
-            await updateSubscriptionStatus(response);
+        name: 'Peak Test Series',
+        description: `${currentSubject.name} ${currentSubject.code} - Test Series`,
+        image: 'https://your-logo-url.com/logo.png',
+        handler: function (response) {
+            handlePaymentSuccess(response);
         },
         prefill: {
             name: currentUser.name,
-            email: currentUser.email,
-            contact: '' // Optional: Add phone number if available
-        },
-        notes: {
-            user_id: currentUser.id,
-            board: 'AP',
-            subject: currentUser.subject
+            email: currentUser.email
         },
         theme: {
             color: '#667eea'
-        },
-        modal: {
-            ondismiss: function() {
-                console.log('Payment cancelled');
-            }
         }
     };
 
-    // Create Razorpay instance and open checkout
-    const razorpay = new Razorpay(options);
-    razorpay.open();
+    const rzp = new Razorpay(options);
+    rzp.on('payment.failed', function (response) {
+        alert('Payment Failed. Please try again.');
+        console.error(response.error);
+    });
+    rzp.open();
 }
 
-// Update Subscription Status after successful payment
-async function updateSubscriptionStatus(paymentResponse) {
-    try {
-        console.log('💳 Updating subscription status...');
-        
-        // Update student's has_paid status in database
-        const { data, error } = await supabaseClient
-            .from('Students')
-            .update({ has_paid: true })
-            .eq('user_id', currentUser.id);
-        
-        if (error) {
-            console.error('Error updating subscription:', error);
-            showAlert('Error', 'Payment successful but failed to update subscription. Please contact support.');
-            return;
-        }
-        
-        // Update local state
-        hasPaidSubscription = true;
-        
-        // Close payment modal
-        closeModal('paymentModal');
-        
-        // Show success message
-        showAlert('Success', 'Payment successful! You now have access to all premium content. 🎉');
-        
-        // Reload current section to show unlocked content
-        const currentSection = document.querySelector('.sidebar-item.active');
-        if (currentSection) {
-            currentSection.click();
-        }
-        
-        console.log('✅ Subscription activated successfully');
-        
-    } catch (error) {
-        console.error('Exception:', error);
-        showAlert('Error', 'Failed to update subscription. Please contact support.');
+// Handle Payment Success
+async function handlePaymentSuccess(response) {
+    const subjectKey = `${currentSubject.name}-${currentSubject.code}`;
+
+    // Initialize paid_subjects if not exists
+    if (!currentUser.paid_subjects) {
+        currentUser.paid_subjects = {};
     }
-}
 
-// Logout
-async function logout() {
+    // Payment data
+    const paymentData = {
+        paid: true,
+        payment_id: response.razorpay_payment_id,
+        payment_date: new Date().toISOString(),
+        amount: 15000
+    };
+
+    // Mark this subject as paid
+    currentUser.paid_subjects[subjectKey] = paymentData;
+
     try {
-        if (supabaseClient) {
-            const { error } = await supabaseClient.auth.signOut();
-            if (error) {
-                console.error('Logout error:', error);
+        // Save to Supabase if enabled
+        if (supabaseEnabled && currentUser.email) {
+            // Insert payment record
+            const { data: paymentRecord, error: paymentError } = await supabase
+                .from('payments')
+                .insert([{
+                    student_email: currentUser.email,
+                    student_name: currentUser.name,
+                    subject: subjectKey,
+                    amount: 15000,
+                    payment_id: response.razorpay_payment_id,
+                    payment_date: new Date().toISOString()
+                }]);
+
+            if (paymentError) {
+                console.error('Error saving payment to Supabase:', paymentError);
+            } else {
+                console.log('✅ Payment saved to Supabase');
+            }
+
+            // Update student's paid_subjects in students table
+            const { error: updateError } = await supabase
+                .from('students')
+                .update({ paid_subjects: currentUser.paid_subjects })
+                .eq('email', currentUser.email);
+
+            if (updateError) {
+                console.error('Error updating student record:', updateError);
             }
         }
     } catch (error) {
-        console.error('Logout error:', error);
+        console.error('Supabase payment save error:', error);
     }
-    
-    currentUser = null;
-    selectedSubject = null;
-    hasPaidSubscription = false;
-    
-    // Hide dashboard, show welcome
-    document.getElementById('dashboardContainer').classList.add('hidden');
-    document.getElementById('welcomeScreen').classList.remove('hidden');
-    
-    // Show public nav, hide user nav
-    document.getElementById('publicNav').classList.remove('hidden');
-    document.getElementById('userNav').classList.add('hidden');
-    
-    showAlert('Success', 'You have been logged out successfully.');
+
+    // Save to localStorage
+    localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
+
+    // Backend Log
+    console.log('═══════════════════════════════════════════════');
+    console.log('💳 PAYMENT SUCCESSFUL');
+    console.log('═══════════════════════════════════════════════');
+    console.log('Student Name:', currentUser.name);
+    console.log('Student Email:', currentUser.email);
+    console.log('Subject:', subjectKey);
+    console.log('Amount:', '₹15,000');
+    console.log('Payment ID:', response.razorpay_payment_id);
+    console.log('Payment Date:', new Date().toLocaleString());
+    console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
+    console.log('═══════════════════════════════════════════════');
+
+    closePaymentModal();
+    alert(`Payment Successful! 🎉\n\nYou now have access to ${currentSubject.name} ${currentSubject.code} test series.`);
+    loadSubjects();
+
+    // Auto open the subject tests
+    setTimeout(() => {
+        openSubject(currentSubject);
+    }, 500);
 }
 
-// Check Auth Status
-async function checkAuthStatus() {
-    if (!supabaseClient) {
-        console.log('Supabase client not available');
+// Logout
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        // 🔥 BACKEND LOG - Logout
+        console.log('═══════════════════════════════════════════════');
+        console.log('👋 STUDENT LOGOUT');
+        console.log('═══════════════════════════════════════════════');
+        console.log('Student:', currentUser.name);
+        console.log('Email:', currentUser.email);
+        console.log('Logout Time:', new Date().toLocaleString());
+        console.log('═══════════════════════════════════════════════');
+
+        localStorage.removeItem('peakTestUser');
+        currentUser = null;
+        location.reload();
+    }
+}
+// ============================================================================
+// FILE UPLOAD FUNCTIONS FOR ANSWER SUBMISSION
+// ============================================================================
+
+// Show upload dialog when student clicks submit
+function showUploadDialog() {
+    document.getElementById('uploadModal').style.display = 'flex';
+}
+
+// Close upload dialog
+function closeUploadDialog() {
+    document.getElementById('uploadModal').style.display = 'none';
+    document.getElementById('answerFile').value = '';
+    document.getElementById('uploadProgress').style.display = 'none';
+}
+
+// Upload answer file to Supabase Storage
+async function uploadAnswerFile() {
+    const fileInput = document.getElementById('answerFile');
+    const file = fileInput.files[0];
+    
+    // Validation
+    if (!file) {
+        alert('Please select a file to upload!');
+        return;
+    }
+    
+    // File size check (50 MB = 50 * 1024 * 1024 bytes)
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+        alert('File size too large! Maximum 50 MB allowed.');
+        return;
+    }
+    
+    // File type check
+    const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'image/jpeg',
+        'image/jpg',
+        'image/png'
+    ];
+    
+    if (!allowedTypes.includes(file.type)) {
+        alert('Invalid file type! Only PDF, Word, and Image files are allowed.');
         return;
     }
     
     try {
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        // Show progress bar
+        document.getElementById('uploadProgress').style.display = 'block';
+        document.getElementById('uploadProgressBar').style.width = '0%';
+        document.getElementById('uploadProgressBar').textContent = '0%';
+        document.getElementById('uploadStatus').textContent = 'Uploading...';
         
-        if (error || !user) {
-            console.log('No active session');
-            return;
+        // Get current test info
+        const testTitle = document.getElementById('pdfTestTitle').textContent;
+        const timerElement = document.getElementById('pdfTimer');
+        const timeRemaining = timerElement ? timerElement.textContent : '00:00:00';
+        
+        if (!supabaseEnabled || !supabase) {
+            throw new Error('Supabase not configured. Cannot upload file.');
         }
         
-        console.log('✅ Active session found');
+        // Generate unique file name
+        const timestamp = Date.now();
+        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const storagePath = `${currentUser.email}/${currentSubject.name}/Test${getCurrentTestNumber()}/${timestamp}_${sanitizedFileName}`;
         
-        // Fetch student data
-        const { data: studentData, error: studentError } = await supabaseClient
-            .from('Students')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
+        console.log('📤 Uploading file to Supabase Storage...');
+        console.log('File:', file.name);
+        console.log('Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+        console.log('Type:', file.type);
+        console.log('Path:', storagePath);
         
-        if (studentError) {
-            console.error('Error fetching student data:', studentError);
-            return;
+        // Simulate progress (for user experience)
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            if (progress < 90) {
+                progress += 10;
+                document.getElementById('uploadProgressBar').style.width = progress + '%';
+                document.getElementById('uploadProgressBar').textContent = progress + '%';
+            }
+        }, 200);
+        
+        // Upload to Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('answer-submissions')
+            .upload(storagePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+        
+        clearInterval(progressInterval);
+        
+        if (uploadError) {
+            console.error('❌ Upload error:', uploadError);
+            throw uploadError;
         }
         
-        currentUser = {
-            id: user.id,
-            name: studentData.name,
-            email: studentData.email,
-            board: studentData.board,
-            subject: studentData.subject
+        console.log('✅ File uploaded successfully!');
+        
+        // Update progress to 100%
+        document.getElementById('uploadProgressBar').style.width = '100%';
+        document.getElementById('uploadProgressBar').textContent = '100%';
+        document.getElementById('uploadStatus').textContent = 'Processing...';
+        
+        // Get public URL
+        const { data: urlData } = supabase.storage
+            .from('answer-submissions')
+            .getPublicUrl(storagePath);
+        
+        const fileUrl = urlData.publicUrl;
+        console.log('📎 File URL:', fileUrl);
+        
+        // Save submission record to database
+        const submissionData = {
+            student_email: currentUser.email,
+            student_name: currentUser.name,
+            subject: currentSubject.name,
+            test_number: getCurrentTestNumber(),
+            file_name: file.name,
+            file_url: fileUrl,
+            file_type: file.type,
+            file_size: file.size,
+            submitted_at: new Date().toISOString(),
+            status: 'submitted'
         };
         
-        hasPaidSubscription = studentData.has_paid || false;
-        selectedSubject = studentData.subject;
+        const { data: dbData, error: dbError } = await supabase
+            .from('answer_submissions')
+            .insert([submissionData])
+            .select();
         
-        showDashboard();
+        if (dbError) {
+            console.error('❌ Database error:', dbError);
+            throw dbError;
+        }
+        
+        console.log('✅ Submission record saved to database!');
+        console.log('💾 Database record:', dbData);
+        
+        // Update test status
+        const testKey = `${currentSubject.name}-Test${getCurrentTestNumber()}`;
+        if (currentUser.test_access[testKey]) {
+            currentUser.test_access[testKey].status = 'submitted';
+            currentUser.test_access[testKey].submitted_at = new Date().toISOString();
+            currentUser.test_access[testKey].time_remaining = timeRemaining;
+            currentUser.test_access[testKey].answer_file_url = fileUrl;
+            localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
+        }
+        
+        // Update test attempt in database
+        try {
+            await supabase
+                .from('test_attempts')
+                .update({
+                    status: 'submitted',
+                    submit_time: new Date().toISOString(),
+                    time_remaining: timeRemaining
+                })
+                .eq('student_email', currentUser.email)
+                .eq('subject', currentSubject.name)
+                .eq('test_number', getCurrentTestNumber())
+                .eq('status', 'active');
+        } catch (updateError) {
+            console.warn('⚠️ Could not update test attempt:', updateError);
+        }
+        
+        // Backend Log
+        console.log('═══════════════════════════════════════════════');
+        console.log('✅ ANSWER SUBMITTED SUCCESSFULLY');
+        console.log('═══════════════════════════════════════════════');
+        console.log('Student:', currentUser.name);
+        console.log('Email:', currentUser.email);
+        console.log('Test:', testTitle);
+        console.log('File Name:', file.name);
+        console.log('File Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+        console.log('File Type:', file.type);
+        console.log('File URL:', fileUrl);
+        console.log('Submitted At:', new Date().toLocaleString());
+        console.log('Time Remaining:', timeRemaining);
+        console.log('Backend: ✅ SAVED TO SUPABASE');
+        console.log('═══════════════════════════════════════════════');
+        
+        // Success message
+        document.getElementById('uploadStatus').textContent = 'Upload successful!';
+        document.getElementById('uploadStatus').style.color = '#4caf50';
+        
+        setTimeout(() => {
+            closeUploadDialog();
+            closePdfViewer();
+            alert('Answer submitted successfully! ✅\n\nYour answer has been uploaded and saved.\n\nFile: ' + file.name);
+        }, 1000);
         
     } catch (error) {
-        console.error('Auth check error:', error);
+        console.error('❌ Upload failed:', error);
+        
+        document.getElementById('uploadProgress').style.display = 'none';
+        
+        let errorMessage = 'Upload failed: ' + (error.message || 'Unknown error');
+        
+        if (error.message && error.message.includes('Bucket not found')) {
+            errorMessage = 'Upload failed: Storage bucket "answer-submissions" not found.\n\nPlease create the bucket in Supabase Dashboard → Storage.';
+        } else if (error.message && error.message.includes('row-level security')) {
+            errorMessage = 'Upload failed: Database permission error.\n\nPlease disable RLS on answer_submissions table.';
+        }
+        
+        alert(errorMessage);
     }
 }
 
-// Initialize on page load
-window.onload = init;
+// Helper function to get current test number from test title
+function getCurrentTestNumber() {
+    const testTitle = document.getElementById('pdfTestTitle').textContent;
+    const match = testTitle.match(/Test\s+(\d+)/i);
+    return match ? parseInt(match[1]) : 1;
+}
+
+// ============================================================================
+// ADD THIS TO YOUR EXISTING main.js FILE
+// ============================================================================
+// Copy the above functions and add them to your main.js file
+// Make sure to add them BEFORE the closing script tag
+
+
+// ============================================================================
+// BALANCED PDF PROTECTION SYSTEM
+// Scrolling: ENABLED ✅
+// Download: BLOCKED ❌
+// Screenshot: BLOCKED ❌
+// Right-click: BLOCKED ❌
+// ============================================================================
+// Add this code to the END of your main.js file
+// ============================================================================
+
+// Initialize PDF Protection System
+function initializePdfProtection() {
+    console.log('🔒 Initializing Balanced PDF Protection System...');
+    
+    // ========================================================================
+    // 1. DISABLE RIGHT-CLICK (But allow scrolling)
+    // ========================================================================
+    document.addEventListener('contextmenu', function(e) {
+        const pdfViewer = document.getElementById('pdfViewer');
+        if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
+            e.preventDefault();
+            e.stopPropagation();
+            showProtectionAlert('⚠️ Right-click is disabled during test!');
+            return false;
+        }
+    }, true);
+
+    // ========================================================================
+    // 2. DISABLE TEXT SELECTION & COPY (But allow scrolling)
+    // ========================================================================
+    document.addEventListener('selectstart', function(e) {
+        const pdfViewer = document.getElementById('pdfViewer');
+        if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    document.addEventListener('copy', function(e) {
+        const pdfViewer = document.getElementById('pdfViewer');
+        if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
+            e.preventDefault();
+            e.clipboardData.setData('text/plain', '');
+            showProtectionAlert('⚠️ Copying is disabled during test!');
+            return false;
+        }
+    });
+
+    // ========================================================================
+    // 3. DISABLE PRINT
+    // ========================================================================
+    window.addEventListener('beforeprint', function(e) {
+        const pdfViewer = document.getElementById('pdfViewer');
+        if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
+            e.preventDefault();
+            e.stopPropagation();
+            showProtectionAlert('⚠️ Printing is disabled during test!');
+            return false;
+        }
+    });
+
+    // ========================================================================
+    // 4. DISABLE KEYBOARD SHORTCUTS (Allow arrow keys for scrolling)
+    // ========================================================================
+    document.addEventListener('keydown', function(e) {
+        const pdfViewer = document.getElementById('pdfViewer');
+        if (!pdfViewer || pdfViewer.classList.contains('hidden')) {
+            return; // PDF not open, allow normal keyboard
+        }
+
+        const key = e.key;
+        const ctrl = e.ctrlKey || e.metaKey;
+        const shift = e.shiftKey;
+
+        // ALLOW these keys for scrolling:
+        const allowedKeys = [
+            'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+            'PageUp', 'PageDown', 'Home', 'End',
+            'Space' // Spacebar for page down
+        ];
+
+        if (allowedKeys.includes(key)) {
+            return; // Allow scrolling keys
+        }
+
+        // BLOCK screenshot and download keys
+        if (
+            key === 'PrintScreen' ||
+            (ctrl && shift && key === 'S') || // Chrome screenshot
+            (ctrl && shift && (key === '3' || key === '4' || key === '5')) || // Mac screenshot
+            (key === 'F12') || // DevTools
+            (ctrl && shift && (key === 'I' || key === 'C' || key === 'J')) || // DevTools variants
+            (ctrl && key === 'U') || // View Source
+            (ctrl && key === 'S') || // Save Page
+            (ctrl && key === 'P') || // Print
+            (ctrl && key === 'D') // Bookmark
+        ) {
+            e.preventDefault();
+            e.stopPropagation();
+            activateScreenshotBlocker();
+            showProtectionAlert('⚠️ This action is disabled during test!');
+            logSuspiciousActivity(`Blocked key: ${key} (Ctrl: ${ctrl}, Shift: ${shift})`);
+            return false;
+        }
+    }, true);
+
+    // PrintScreen key release detection
+    document.addEventListener('keyup', function(e) {
+        if (e.key === 'PrintScreen') {
+            const pdfViewer = document.getElementById('pdfViewer');
+            if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
+                activateScreenshotBlocker();
+                logSuspiciousActivity('PrintScreen key detected');
+            }
+        }
+    });
+
+    // ========================================================================
+    // 5. ALLOW DRAG (for scrollbar) but DISABLE content drag
+    // ========================================================================
+    document.addEventListener('dragstart', function(e) {
+        const pdfViewer = document.getElementById('pdfViewer');
+        if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
+            // Only block if dragging actual content (not scrollbar)
+            if (e.target.tagName !== 'SCROLLBAR') {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+
+    // ========================================================================
+    // 6. MONITOR TAB SWITCHES
+    // ========================================================================
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            const pdfViewer = document.getElementById('pdfViewer');
+            if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
+                console.warn('⚠️ User switched tab during test!');
+                logSuspiciousActivity('Tab switch detected');
+            }
+        }
+    });
+
+    // ========================================================================
+    // 7. MONITOR WINDOW BLUR
+    // ========================================================================
+    window.addEventListener('blur', function() {
+        const pdfViewer = document.getElementById('pdfViewer');
+        if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
+            console.warn('⚠️ Window lost focus during test!');
+            logSuspiciousActivity('Window focus lost');
+        }
+    });
+
+    console.log('✅ Balanced PDF Protection Activated');
+    console.log('✅ Scrolling: ENABLED');
+    console.log('🔒 Download: BLOCKED');
+    console.log('🔒 Screenshot: BLOCKED');
+}
+
+// ============================================================================
+// SCREENSHOT BLOCKER
+// ============================================================================
+function activateScreenshotBlocker() {
+    let blocker = document.getElementById('screenshotBlocker');
+    
+    if (!blocker) {
+        blocker = document.createElement('div');
+        blocker.id = 'screenshotBlocker';
+        blocker.className = 'screenshot-blocker';
+        document.body.appendChild(blocker);
+    }
+    
+    blocker.classList.add('active');
+    blocker.style.background = 'rgba(0, 0, 0, 0.98)';
+    blocker.style.animation = 'flashWarning 0.5s';
+    blocker.innerHTML = `
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white;">
+            <div style="font-size: 80px; margin-bottom: 20px;">⚠️</div>
+            <div style="font-size: 32px; font-weight: bold; margin-bottom: 10px;">SCREENSHOT BLOCKED</div>
+            <div style="font-size: 18px; opacity: 0.8;">This action has been logged</div>
+        </div>
+    `;
+    
+    setTimeout(() => {
+        blocker.classList.remove('active');
+        blocker.style.background = '';
+        blocker.innerHTML = '';
+    }, 1500);
+}
+
+// ============================================================================
+// PROTECTION ALERT
+// ============================================================================
+function showProtectionAlert(message) {
+    const toast = document.createElement('div');
+    toast.className = 'protection-toast';
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-size: 24px;">🔒</div>
+            <div>${message}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(400px)';
+        toast.style.transition = 'all 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+    
+    console.warn('🔒 PROTECTION:', message);
+}
+
+// ============================================================================
+// SET WATERMARK
+// ============================================================================
+function setWatermark(studentName, studentEmail) {
+    let watermark = document.getElementById('pdfWatermark');
+    
+    if (!watermark) {
+        const pdfContent = document.querySelector('.pdf-content');
+        if (pdfContent) {
+            watermark = document.createElement('div');
+            watermark.id = 'pdfWatermark';
+            watermark.className = 'pdf-watermark';
+            pdfContent.appendChild(watermark);
+        }
+    }
+    
+    if (watermark) {
+        watermark.setAttribute('data-watermark', `${studentName} • ${studentEmail}`);
+        console.log('✅ Watermark set:', studentName);
+    }
+}
+
+// ============================================================================
+// LOG SUSPICIOUS ACTIVITY
+// ============================================================================
+async function logSuspiciousActivity(activity) {
+    const timestamp = new Date().toLocaleString();
+    console.log(`📊 [${timestamp}] Suspicious Activity:`, activity);
+    
+    // Optional: Save to database
+    if (typeof supabaseEnabled !== 'undefined' && supabaseEnabled && typeof currentUser !== 'undefined' && currentUser) {
+        try {
+            if (typeof supabase !== 'undefined') {
+                await supabase
+                    .from('test_activity_logs')
+                    .insert([{
+                        student_email: currentUser.email,
+                        student_name: currentUser.name,
+                        activity: activity,
+                        timestamp: new Date().toISOString(),
+                        test_info: document.getElementById('pdfTestTitle')?.textContent || 'Unknown Test'
+                    }]);
+                console.log('✅ Activity logged to database');
+            }
+        } catch (error) {
+            console.error('❌ Failed to log activity:', error);
+        }
+    }
+}
+
+// ============================================================================
+// APPLY IFRAME PROTECTION (Allow scrolling)
+// ============================================================================
+function applyIframeProtection() {
+    const pdfFrame = document.getElementById('pdfFrame');
+    if (pdfFrame) {
+        // Sandbox attribute for security
+        pdfFrame.setAttribute('sandbox', 'allow-same-origin allow-scripts');
+        
+        // IMPORTANT: Keep pointer events AUTO for scrolling
+        pdfFrame.style.pointerEvents = 'auto';
+        
+        // Add event listener for right-click
+        pdfFrame.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            showProtectionAlert('⚠️ Right-click disabled!');
+            return false;
+        });
+        
+        console.log('✅ Iframe protection applied (scrolling enabled)');
+    }
+}
+
+// ============================================================================
+// INITIALIZE ON PAGE LOAD
+// ============================================================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePdfProtection);
+} else {
+    initializePdfProtection();
+}
+
+// ============================================================================
+// INSTRUCTIONS FOR INTEGRATION
+// ============================================================================
+/*
+
+ADD THESE LINES TO YOUR openTest() FUNCTION:
+
+// After loading the PDF URL, add:
+
+// Set watermark with student info
+setWatermark(currentUser.name, currentUser.email);
+
+// Apply iframe protection (allows scrolling)
+applyIframeProtection();
+
+// Log test opening
+console.log('🔒 PDF Protection Active - Scrolling: ✅ | Download: ❌ | Screenshot: ❌');
+
+*/
+
+console.log('📄 Balanced PDF Protection Module Loaded');

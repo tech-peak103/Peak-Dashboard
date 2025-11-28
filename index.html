@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peak Study - AP Dashboard</title>
+    <title>Peak Test Series</title>
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -12,188 +13,161 @@
 </head>
 
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="logo-section">
-            <div class="logo">PS</div>
-            <div class="brand-name">Peak Study</div>
-        </div>
-
-        <!-- Public Navigation (Before Login) -->
-        <div class="nav-section" id="publicNav">
-            <a href="#" class="nav-link">About</a>
-            <a href="#" class="nav-link">AP (Advanced Placement)</a>
-
-            <div class="dropdown" id="subjectDropdown">
-                <a href="#" class="nav-link" onclick="toggleSubjectDropdown(event)">Select Subject</a>
-                <div class="dropdown-content" id="subjectList">
-                    <a href="#" onclick="selectSubject(event, 'Mathematics')">Mathematics</a>
-                    <a href="#" onclick="selectSubject(event, 'Chemistry')">Chemistry</a>
-                    <a href="#" onclick="selectSubject(event, 'Biology')">Biology</a>
-                    <a href="#" onclick="selectSubject(event, 'Macroeconomics')">Macroeconomics</a>
-                    <a href="#" onclick="selectSubject(event, 'Microeconomics')">Microeconomics</a>
-                    <a href="#" onclick="selectSubject(event, 'Microeconomics')">Psychology</a>
-                    <a href="#" onclick="selectSubject(event, 'Microeconomics')">Computer Science</a>
-                </div>
+    <!-- Registration Form -->
+    <div class="registration-container" id="registrationContainer">
+        <div class="registration-form">
+            <h2>🎓 Peak Test Series Registration</h2>
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="studentName" placeholder="Enter your full name" required>
             </div>
-
-            <button class="btn btn-signin" onclick="showSignInModal()">Sign In</button>
-            <button class="btn btn-login" onclick="showLoginModal()">Login</button>
-        </div>
-
-        <!-- User Navigation (After Login) -->
-        <div class="nav-section hidden" id="userNav">
-            <div class="user-profile" id="userProfile"></div>
-            <button class="btn btn-close" onclick="logout()">Logout</button>
+            <div class="form-group">
+                <label>Email Address *</label>
+                <input type="email" id="studentEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label>Grade *</label>
+                <select id="studentGrade" required>
+                    <option value="">Select Grade</option>
+                    <option value="10">10th</option>
+                    <option value="12">12th</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Board *</label>
+                <select id="studentBoard" required>
+                    <option value="">Select Board</option>
+                    <option value="ISC">ISC</option>
+                    <option value="CBSE">CBSE</option>
+                    <option value="ICSE">ICSE</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Address *</label>
+                <input type="text" id="studentAddress" placeholder="Enter your address" required>
+            </div>
+            <div class="form-group">
+                <label>Create Password *</label>
+                <input type="password" id="studentPassword" placeholder="Minimum 6 characters" required>
+            </div>
+            <button class="submit-btn" onclick="handleRegistration()">Submit Registration</button>
         </div>
     </div>
 
-    <!-- Welcome Screen (Before Login) -->
-    <div class="welcome-screen" id="welcomeScreen">
-        <h1>Welcome to Peak Study</h1>
-        <p>Your AP (Advanced Placement) Learning Platform</p>
-        <p>Please select your subject and login to access your personalized dashboard!</p>
-    </div>
-
-    <!-- Dashboard (After Login) -->
-    <div class="dashboard-container hidden" id="dashboardContainer">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-item" onclick="showSection('topics')">📚 Topics</div>
-            <div class="sidebar-item" onclick="showSection('classes')">🎓 Classes</div>
-            <div class="sidebar-item" onclick="showSection('tests')">📝 Tests</div>
-            <div class="sidebar-item" onclick="showSection('recorded')">🎬 Recorded Classes</div>
+    <!-- Dashboard -->
+    <div class="hidden" id="dashboardContainer">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="logo-section">
+                <div class="logo">PT</div>
+                <div class="brand-name">Peak Test Series</div>
+            </div>
+            <div class="user-info-section">
+                <div class="user-details">
+                    <div class="user-name" id="userName"></div>
+                    <div class="user-grade-board" id="userGradeBoard"></div>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            </div>
         </div>
 
-        <!-- Content Area -->
-        <div class="content-area">
-            <!-- Topics Section -->
-            <div class="hidden" id="topicsSection">
-                <div class="content-card">
-                    <h2>📚 Your Topics</h2>
-                    <div id="topicsList"></div>
-                </div>
-            </div>
+        <!-- Subjects View -->
+        <div class="subjects-container" id="subjectsView">
+            <h2 style="color: white; font-size: 32px; margin-bottom: 10px;">Your Subjects</h2>
+            <p style="color: rgba(255,255,255,0.9); font-size: 16px;">Select a subject to access test series</p>
+            <div class="subjects-grid" id="subjectsGrid"></div>
+        </div>
 
-            <!-- Topic Detail Section -->
-            <div class="hidden" id="topicDetailSection">
-                <div class="content-card">
-                    <button class="btn btn-close" onclick="backToTopics()">← Back to Topics</button>
-                    <h2 id="topicDetailTitle"></h2>
-                    <p id="topicDetailDesc" style="color: #666; margin: 15px 0;"></p>
-                    <div id="topicDetailContent"></div>
-                </div>
-            </div>
-
-            <!-- Classes Section -->
-            <div class="hidden" id="classesSection">
-                <div class="content-card">
-                    <h2>🎓 Live & Upcoming Classes</h2>
-                    <div id="classesList"></div>
-                </div>
-            </div>
-
-            <!-- Tests Section -->
-            <div class="hidden" id="testsSection">
-                <div class="content-card">
-                    <h2>📝 Tests</h2>
-                    <div id="testsList"></div>
-                </div>
-            </div>
-
-            <!-- Recorded Section -->
-            <div class="hidden" id="recordedSection">
-                <div class="content-card">
-                    <h2>🎬 Recorded Classes</h2>
-                    <div id="recordedList"></div>
-                </div>
-            </div>
+        <!-- Tests View -->
+        <div class="tests-container hidden" id="testsView">
+            <button class="back-btn" onclick="backToSubjects()">← Back to Subjects</button>
+            <h2 style="color: white; font-size: 28px; margin-bottom: 10px;" id="subjectTitle"></h2>
+            <p style="color: rgba(255,255,255,0.9);">Complete all 5 tests within the time limit</p>
+            <div class="tests-grid" id="testsGrid"></div>
         </div>
     </div>
 
-    <!-- Login Modal -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <h3>Login to Peak Study</h3>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="loginEmail" placeholder="Enter your email">
+    <!-- PDF Viewer -->
+    <div class="pdf-viewer-container hidden" id="pdfViewer">
+        <div class="pdf-header">
+            <div>
+                <h3 id="pdfTestTitle">Test 1</h3>
             </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter your password">
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-login" onclick="handleLogin()">Login</button>
-                <button class="btn btn-close" onclick="closeModal('loginModal')">Cancel</button>
+            <div class="pdf-timer" id="pdfTimer">03:00:00</div>
+            <div style="display: flex; gap: 10px;">
+                <button class="close-pdf-btn" style="background: #4caf50;" onclick="showUploadDialog()">✓ Submit
+                    Test</button>
+                <button class="close-pdf-btn" onclick="closePdfViewer()">✕ Close</button>
             </div>
         </div>
-    </div>
-
-    <!-- Sign In Modal -->
-    <div class="modal" id="signInModal">
-        <div class="modal-content">
-            <h3>Sign Up for Peak Study</h3>
-            <div class="form-group">
-                <label>Name</label>
-                <input type="text" id="signInName" placeholder="Enter your name">
-            </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="signInEmail" placeholder="Enter your email">
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="signInPassword" placeholder="Create a password (min 6 characters)">
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-login" onclick="handleSignIn()">Sign Up</button>
-                <button class="btn btn-close" onclick="closeModal('signInModal')">Cancel</button>
-            </div>
+        <div class="pdf-content">
+            <iframe id="pdfFrame"></iframe>
+            <div class="pdf-watermark" id="pdfWatermark" data-watermark=""></div>
         </div>
     </div>
+    <div class="screenshot-blocker" id="screenshotBlocker"></div>
 
-    <!-- Alert Modal -->
-    <div class="modal" id="alertModal">
-        <div class="modal-content">
-            <h3 id="alertTitle">Alert</h3>
-            <p id="alertMessage"></p>
-            <div class="modal-actions">
-                <button class="btn btn-login" onclick="closeModal('alertModal')">OK</button>
+    <!-- Upload Answer Modal -->
+    <div class="modal" id="uploadModal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <h3>📤 Submit Your Answer</h3>
+            <div style="padding: 20px 0;">
+                <p style="margin-bottom: 15px; color: #555;">
+                    Upload your completed test answer sheet
+                </p>
+
+                <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <label for="answerFile" style="display: block; margin-bottom: 10px; font-weight: 600;">
+                        Select Answer File:
+                    </label>
+                    <input type="file" id="answerFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        style="width: 100%; padding: 10px; border: 2px dashed #667eea; border-radius: 8px; background: white; cursor: pointer;" />
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        ✅ Accepted formats: PDF, Word (.doc, .docx), Images (JPG, PNG)
+                    </p>
+                    <p style="font-size: 12px; color: #666;">
+                        ✅ Max file size: 50 MB
+                    </p>
+                </div>
+
+                <div id="uploadProgress" style="display: none; margin-bottom: 15px;">
+                    <div style="background: #e0e0e0; border-radius: 10px; height: 30px; overflow: hidden;">
+                        <div id="uploadProgressBar"
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px;">
+                            0%
+                        </div>
+                    </div>
+                    <p id="uploadStatus" style="text-align: center; margin-top: 10px; color: #555; font-size: 14px;">
+                        Uploading...
+                    </p>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="pay-btn" onclick="uploadAnswerFile()" style="flex: 1;">
+                        📤 Upload & Submit
+                    </button>
+                    <button class="cancel-btn" onclick="closeUploadDialog()" style="flex: 1;">
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Payment Modal -->
     <div class="modal" id="paymentModal">
-        <div class="modal-content" style="max-width: 600px;">
-            <h3>🔒 Unlock Premium Content</h3>
-            <div
-                style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin: 15px 0;">
-                <h4 style="color: #856404; margin-bottom: 15px; font-size: 20px;">Subscribe to Access All Content</h4>
-                <p style="color: #856404; margin-bottom: 15px;">Get unlimited access to all tests and recorded classes
-                </p>
-
-                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
-                    <p style="color: #333; margin: 8px 0;"><strong>Subscription Plan:</strong> Monthly</p>
-                    <p style="color: #333; margin: 8px 0;"><strong>Price:</strong> ₹499/month</p>
-                    <p style="color: #333; margin: 8px 0;"><strong>Benefits:</strong></p>
-                    <ul style="text-align: left; padding-left: 30px; color: #333;">
-                        <li>Access to all tests</li>
-                        <li>All recorded class videos</li>
-                        <li>Priority support</li>
-                        <li>Study materials & notes</li>
-                    </ul>
-                </div>
-
-                <button onclick="processPayment()"
-                    style="background: linear-gradient(135deg, #ffc107, #ff9800); color: white; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 16px;">
-                    Pay ₹499 with Razorpay
-                </button>
+        <div class="modal-content">
+            <h3>🔒 Unlock Subject</h3>
+            <div class="payment-details">
+                <p><strong id="paymentSubjectName">Subject Name</strong></p>
+                <p>• 5 Tests in this Subject</p>
+                <p>• 3 Hours per Test</p>
+                <p>• Instant PDF Access</p>
+                <p style="font-size: 24px; color: #4caf50; font-weight: 700; margin-top: 15px;">₹15,000</p>
+                <p style="color: #666; font-size: 14px; margin-top: 10px;">Pay separately for each subject</p>
             </div>
-            <div class="modal-actions">
-                <button class="btn btn-close" onclick="closeModal('paymentModal')">Cancel</button>
-            </div>
+            <button class="pay-btn" onclick="processPayment()">Pay ₹15,000 with Razorpay</button>
+            <button class="cancel-btn" onclick="closePaymentModal()">Cancel</button>
         </div>
     </div>
 
