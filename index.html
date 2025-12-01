@@ -84,6 +84,18 @@
             <h2 style="color: white; font-size: 28px; margin-bottom: 10px;" id="subjectTitle"></h2>
             <p style="color: rgba(255,255,255,0.9);">Complete all 5 tests within the time limit</p>
             <div class="tests-grid" id="testsGrid"></div>
+
+            <!-- Results Section -->
+            <div id="submittedTestsSection"
+                style="display: block; margin-top: 40px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px;">
+                <h2 style="color: white; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <span>📊</span>
+                    <span>Your Test Results</span>
+                </h2>
+                <div id="submittedTestsContainer"> 
+                    <!-- Results will load here dynamically -->
+                </div> 
+            </div>
         </div>
     </div>
 
@@ -153,6 +165,9 @@
             </div>
         </div>
     </div>
+
+
+
 
     <!-- Payment Modal -->
     <div class="modal" id="paymentModal">

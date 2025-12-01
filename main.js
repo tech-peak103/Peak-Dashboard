@@ -56,8 +56,8 @@ let testStartTime = null;
 const subjectsByGradeBoard = {
     '10-ISC': [
         { name: 'Accounts', code: 'ISC-X' },
-        { name: 'Mathematics', code: 'ISC-X' },
         { name: 'Physics', code: 'ISC-X' },
+        { name: 'Mathematics', code: 'ISC-X' },
         { name: 'Chemistry', code: 'ISC-X' },
         { name: 'Biology', code: 'ISC-X' },
         { name: 'English', code: 'ISC-X' }
@@ -255,12 +255,14 @@ function loadSubjects() {
     const subjectsGrid = document.getElementById('subjectsGrid');
     subjectsGrid.innerHTML = '';
 
+
     subjects.forEach(subject => {
         const subjectKey = `${subject.name}-${subject.code}`;
         const isPaid = currentUser.paid_subjects && currentUser.paid_subjects[subjectKey];
 
         const card = document.createElement('div');
         card.className = 'subject-card';
+        card.setAttribute('data-subject', subject.name);
         card.innerHTML = `
             ${!isPaid ? '<span class="locked-icon">🔒</span>' : '<span class="locked-icon">✅</span>'}
             <h3>${subject.name}</h3>
@@ -275,6 +277,7 @@ function loadSubjects() {
 
 // Open Subject
 function openSubject(subject) {
+    console.log("Hello")
     const subjectKey = `${subject.name}-${subject.code}`;
     const isPaid = currentUser.paid_subjects && currentUser.paid_subjects[subjectKey];
 
@@ -293,7 +296,7 @@ function openSubject(subject) {
 }
 
 // Load Tests for Subject
-function loadTests() {
+async function loadTests() {
     const testsGrid = document.getElementById('testsGrid');
     testsGrid.innerHTML = '';
 
@@ -345,6 +348,8 @@ function loadTests() {
 
         testsGrid.appendChild(card);
     }
+    console.log('🔄 Calling loadSubmittedTests...');
+    await loadSubmittedTests();
 }
 
 // Open Test PDF
@@ -783,20 +788,20 @@ function closeUploadDialog() {
 async function uploadAnswerFile() {
     const fileInput = document.getElementById('answerFile');
     const file = fileInput.files[0];
-    
+
     // Validation
     if (!file) {
         alert('Please select a file to upload!');
         return;
     }
-    
+
     // File size check (50 MB = 50 * 1024 * 1024 bytes)
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
         alert('File size too large! Maximum 50 MB allowed.');
         return;
     }
-    
+
     // File type check
     const allowedTypes = [
         'application/pdf',
@@ -806,39 +811,39 @@ async function uploadAnswerFile() {
         'image/jpg',
         'image/png'
     ];
-    
+
     if (!allowedTypes.includes(file.type)) {
         alert('Invalid file type! Only PDF, Word, and Image files are allowed.');
         return;
     }
-    
+
     try {
         // Show progress bar
         document.getElementById('uploadProgress').style.display = 'block';
         document.getElementById('uploadProgressBar').style.width = '0%';
         document.getElementById('uploadProgressBar').textContent = '0%';
         document.getElementById('uploadStatus').textContent = 'Uploading...';
-        
+
         // Get current test info
         const testTitle = document.getElementById('pdfTestTitle').textContent;
         const timerElement = document.getElementById('pdfTimer');
         const timeRemaining = timerElement ? timerElement.textContent : '00:00:00';
-        
+
         if (!supabaseEnabled || !supabase) {
             throw new Error('Supabase not configured. Cannot upload file.');
         }
-        
+
         // Generate unique file name
         const timestamp = Date.now();
         const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
         const storagePath = `${currentUser.email}/${currentSubject.name}/Test${getCurrentTestNumber()}/${timestamp}_${sanitizedFileName}`;
-        
+
         console.log('📤 Uploading file to Supabase Storage...');
         console.log('File:', file.name);
         console.log('Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
         console.log('Type:', file.type);
         console.log('Path:', storagePath);
-        
+
         // Simulate progress (for user experience)
         let progress = 0;
         const progressInterval = setInterval(() => {
@@ -848,7 +853,7 @@ async function uploadAnswerFile() {
                 document.getElementById('uploadProgressBar').textContent = progress + '%';
             }
         }, 200);
-        
+
         // Upload to Supabase Storage
         const { data: uploadData, error: uploadError } = await supabase.storage
             .from('answer-submissions')
@@ -856,29 +861,29 @@ async function uploadAnswerFile() {
                 cacheControl: '3600',
                 upsert: false
             });
-        
+
         clearInterval(progressInterval);
-        
+
         if (uploadError) {
             console.error('❌ Upload error:', uploadError);
             throw uploadError;
         }
-        
+
         console.log('✅ File uploaded successfully!');
-        
+
         // Update progress to 100%
         document.getElementById('uploadProgressBar').style.width = '100%';
         document.getElementById('uploadProgressBar').textContent = '100%';
         document.getElementById('uploadStatus').textContent = 'Processing...';
-        
+
         // Get public URL
         const { data: urlData } = supabase.storage
             .from('answer-submissions')
             .getPublicUrl(storagePath);
-        
+
         const fileUrl = urlData.publicUrl;
         console.log('📎 File URL:', fileUrl);
-        
+
         // Save submission record to database
         const submissionData = {
             student_email: currentUser.email,
@@ -892,20 +897,20 @@ async function uploadAnswerFile() {
             submitted_at: new Date().toISOString(),
             status: 'submitted'
         };
-        
+
         const { data: dbData, error: dbError } = await supabase
             .from('answer_submissions')
             .insert([submissionData])
             .select();
-        
+
         if (dbError) {
             console.error('❌ Database error:', dbError);
             throw dbError;
         }
-        
+
         console.log('✅ Submission record saved to database!');
         console.log('💾 Database record:', dbData);
-        
+
         // Update test status
         const testKey = `${currentSubject.name}-Test${getCurrentTestNumber()}`;
         if (currentUser.test_access[testKey]) {
@@ -915,7 +920,7 @@ async function uploadAnswerFile() {
             currentUser.test_access[testKey].answer_file_url = fileUrl;
             localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
         }
-        
+
         // Update test attempt in database
         try {
             await supabase
@@ -932,7 +937,7 @@ async function uploadAnswerFile() {
         } catch (updateError) {
             console.warn('⚠️ Could not update test attempt:', updateError);
         }
-        
+
         // Backend Log
         console.log('═══════════════════════════════════════════════');
         console.log('✅ ANSWER SUBMITTED SUCCESSFULLY');
@@ -948,30 +953,30 @@ async function uploadAnswerFile() {
         console.log('Time Remaining:', timeRemaining);
         console.log('Backend: ✅ SAVED TO SUPABASE');
         console.log('═══════════════════════════════════════════════');
-        
+
         // Success message
         document.getElementById('uploadStatus').textContent = 'Upload successful!';
         document.getElementById('uploadStatus').style.color = '#4caf50';
-        
+
         setTimeout(() => {
             closeUploadDialog();
             closePdfViewer();
             alert('Answer submitted successfully! ✅\n\nYour answer has been uploaded and saved.\n\nFile: ' + file.name);
         }, 1000);
-        
+
     } catch (error) {
         console.error('❌ Upload failed:', error);
-        
+
         document.getElementById('uploadProgress').style.display = 'none';
-        
+
         let errorMessage = 'Upload failed: ' + (error.message || 'Unknown error');
-        
+
         if (error.message && error.message.includes('Bucket not found')) {
             errorMessage = 'Upload failed: Storage bucket "answer-submissions" not found.\n\nPlease create the bucket in Supabase Dashboard → Storage.';
         } else if (error.message && error.message.includes('row-level security')) {
             errorMessage = 'Upload failed: Database permission error.\n\nPlease disable RLS on answer_submissions table.';
         }
-        
+
         alert(errorMessage);
     }
 }
@@ -1003,11 +1008,11 @@ function getCurrentTestNumber() {
 // Initialize PDF Protection System
 function initializePdfProtection() {
     console.log('🔒 Initializing Balanced PDF Protection System...');
-    
+
     // ========================================================================
     // 1. DISABLE RIGHT-CLICK (But allow scrolling)
     // ========================================================================
-    document.addEventListener('contextmenu', function(e) {
+    document.addEventListener('contextmenu', function (e) {
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
             e.preventDefault();
@@ -1020,7 +1025,7 @@ function initializePdfProtection() {
     // ========================================================================
     // 2. DISABLE TEXT SELECTION & COPY (But allow scrolling)
     // ========================================================================
-    document.addEventListener('selectstart', function(e) {
+    document.addEventListener('selectstart', function (e) {
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
             e.preventDefault();
@@ -1028,7 +1033,7 @@ function initializePdfProtection() {
         }
     });
 
-    document.addEventListener('copy', function(e) {
+    document.addEventListener('copy', function (e) {
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
             e.preventDefault();
@@ -1041,7 +1046,7 @@ function initializePdfProtection() {
     // ========================================================================
     // 3. DISABLE PRINT
     // ========================================================================
-    window.addEventListener('beforeprint', function(e) {
+    window.addEventListener('beforeprint', function (e) {
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
             e.preventDefault();
@@ -1054,7 +1059,7 @@ function initializePdfProtection() {
     // ========================================================================
     // 4. DISABLE KEYBOARD SHORTCUTS (Allow arrow keys for scrolling)
     // ========================================================================
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         const pdfViewer = document.getElementById('pdfViewer');
         if (!pdfViewer || pdfViewer.classList.contains('hidden')) {
             return; // PDF not open, allow normal keyboard
@@ -1097,7 +1102,7 @@ function initializePdfProtection() {
     }, true);
 
     // PrintScreen key release detection
-    document.addEventListener('keyup', function(e) {
+    document.addEventListener('keyup', function (e) {
         if (e.key === 'PrintScreen') {
             const pdfViewer = document.getElementById('pdfViewer');
             if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
@@ -1110,7 +1115,7 @@ function initializePdfProtection() {
     // ========================================================================
     // 5. ALLOW DRAG (for scrollbar) but DISABLE content drag
     // ========================================================================
-    document.addEventListener('dragstart', function(e) {
+    document.addEventListener('dragstart', function (e) {
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
             // Only block if dragging actual content (not scrollbar)
@@ -1124,7 +1129,7 @@ function initializePdfProtection() {
     // ========================================================================
     // 6. MONITOR TAB SWITCHES
     // ========================================================================
-    document.addEventListener('visibilitychange', function() {
+    document.addEventListener('visibilitychange', function () {
         if (document.hidden) {
             const pdfViewer = document.getElementById('pdfViewer');
             if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
@@ -1137,7 +1142,7 @@ function initializePdfProtection() {
     // ========================================================================
     // 7. MONITOR WINDOW BLUR
     // ========================================================================
-    window.addEventListener('blur', function() {
+    window.addEventListener('blur', function () {
         const pdfViewer = document.getElementById('pdfViewer');
         if (pdfViewer && !pdfViewer.classList.contains('hidden')) {
             console.warn('⚠️ Window lost focus during test!');
@@ -1156,14 +1161,14 @@ function initializePdfProtection() {
 // ============================================================================
 function activateScreenshotBlocker() {
     let blocker = document.getElementById('screenshotBlocker');
-    
+
     if (!blocker) {
         blocker = document.createElement('div');
         blocker.id = 'screenshotBlocker';
         blocker.className = 'screenshot-blocker';
         document.body.appendChild(blocker);
     }
-    
+
     blocker.classList.add('active');
     blocker.style.background = 'rgba(0, 0, 0, 0.98)';
     blocker.style.animation = 'flashWarning 0.5s';
@@ -1174,7 +1179,7 @@ function activateScreenshotBlocker() {
             <div style="font-size: 18px; opacity: 0.8;">This action has been logged</div>
         </div>
     `;
-    
+
     setTimeout(() => {
         blocker.classList.remove('active');
         blocker.style.background = '';
@@ -1194,16 +1199,16 @@ function showProtectionAlert(message) {
             <div>${message}</div>
         </div>
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(400px)';
         toast.style.transition = 'all 0.3s ease-in';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
-    
+
     console.warn('🔒 PROTECTION:', message);
 }
 
@@ -1212,7 +1217,7 @@ function showProtectionAlert(message) {
 // ============================================================================
 function setWatermark(studentName, studentEmail) {
     let watermark = document.getElementById('pdfWatermark');
-    
+
     if (!watermark) {
         const pdfContent = document.querySelector('.pdf-content');
         if (pdfContent) {
@@ -1222,7 +1227,7 @@ function setWatermark(studentName, studentEmail) {
             pdfContent.appendChild(watermark);
         }
     }
-    
+
     if (watermark) {
         watermark.setAttribute('data-watermark', `${studentName} • ${studentEmail}`);
         console.log('✅ Watermark set:', studentName);
@@ -1235,7 +1240,7 @@ function setWatermark(studentName, studentEmail) {
 async function logSuspiciousActivity(activity) {
     const timestamp = new Date().toLocaleString();
     console.log(`📊 [${timestamp}] Suspicious Activity:`, activity);
-    
+
     // Optional: Save to database
     if (typeof supabaseEnabled !== 'undefined' && supabaseEnabled && typeof currentUser !== 'undefined' && currentUser) {
         try {
@@ -1265,17 +1270,17 @@ function applyIframeProtection() {
     if (pdfFrame) {
         // Sandbox attribute for security
         pdfFrame.setAttribute('sandbox', 'allow-same-origin allow-scripts');
-        
+
         // IMPORTANT: Keep pointer events AUTO for scrolling
         pdfFrame.style.pointerEvents = 'auto';
-        
+
         // Add event listener for right-click
-        pdfFrame.addEventListener('contextmenu', function(e) {
+        pdfFrame.addEventListener('contextmenu', function (e) {
             e.preventDefault();
             showProtectionAlert('⚠️ Right-click disabled!');
             return false;
         });
-        
+
         console.log('✅ Iframe protection applied (scrolling enabled)');
     }
 }
@@ -1310,3 +1315,315 @@ console.log('🔒 PDF Protection Active - Scrolling: ✅ | Download: ❌ | Scree
 */
 
 console.log('📄 Balanced PDF Protection Module Loaded');
+
+
+
+// ============================================================================
+// STUDENT RESULTS & FEEDBACK SYSTEM
+// ============================================================================
+// Add this code to your main.js file
+// ============================================================================
+
+// Load and display submitted test results
+async function loadSubmittedTests() {
+    if (!supabaseEnabled || !currentUser || !currentSubject) {
+        return;
+    }
+
+    const container = document.getElementById('submittedTestsContainer');
+    if (!container) return;
+
+    try {
+        console.log('📊 Loading submitted tests and results...');
+
+        // Fetch submissions for current subject
+
+        const { data, error } = await supabase
+            .from('answer_submissions')
+            .select('*')
+            .eq('student_email', currentUser.email)
+            .eq('subject', currentSubject.name)
+            .order('submitted_at', { ascending: false });
+
+        if (error) {
+            console.error('Error loading results:', error);
+            return;
+        }
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div class="no-results">
+                    <p style="font-size: 18px;">📝 No test submissions yet</p>
+                    <p style="font-size: 14px; opacity: 0.8;">Submit your first test to see results here</p>
+                </div>
+            `;
+            return;
+        }
+
+        console.log(`✅ Found ${data.length} submissions`);
+
+        // Build results HTML
+        let resultsHTML = '';
+
+        data.forEach(submission => {
+            const hasMarks = submission.marks !== null && submission.marks !== undefined;
+            const percentage = hasMarks ? Math.round((submission.marks / (submission.max_marks || 100)) * 100) : null;
+
+            // Determine grade
+            let grade = '';
+            let gradeClass = '';
+            if (hasMarks) {
+                const percent = (submission.marks / (submission.max_marks || 100)) * 100;
+                if (percent >= 90) {
+                    grade = 'Excellent! 🌟';
+                    gradeClass = 'grade-excellent';
+                } else if (percent >= 75) {
+                    grade = 'Good! 👍';
+                    gradeClass = 'grade-good';
+                } else if (percent >= 60) {
+                    grade = 'Average';
+                    gradeClass = 'grade-average';
+                } else {
+                    grade = 'Needs Improvement';
+                    gradeClass = 'grade-improve';
+                }
+            }
+
+            // Format dates
+            const submittedDate = new Date(submission.submitted_at).toLocaleString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const checkedDate = submission.checked_at
+                ? new Date(submission.checked_at).toLocaleString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                })
+                : null;
+
+            // Build card HTML
+            resultsHTML += `
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title">
+                            📄 Test ${submission.test_number}
+                        </div>
+                        <div class="result-status ${hasMarks ? 'status-checked' : 'status-pending'}">
+                            ${hasMarks ? '✓ Checked' : '⏳ Pending'}
+                        </div>
+                    </div>
+                    
+                    ${hasMarks ? `
+                        <!-- Results Available -->
+                        <div class="result-marks">
+                            <div class="marks-display">
+                                ${submission.marks}/${submission.max_marks || 100}
+                            </div>
+                            <div class="marks-info">
+                                <div class="percentage">${percentage}%</div>
+                                <span class="grade-badge ${gradeClass}">${grade}</span>
+                            </div>
+                        </div>
+                        
+                        ${submission.feedback ? `
+                            <div class="feedback-section">
+                                <div class="feedback-title">
+                                    💬 Teacher's Feedback
+                                </div>
+                                <div class="feedback-text">
+                                    ${submission.feedback}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="result-meta">
+                            <div>📅 Submitted: ${submittedDate}</div>
+                            <div>✓ Checked: ${checkedDate || 'N/A'}</div>
+                            ${submission.checked_by ? `<div>👨‍🏫 By: ${submission.checked_by}</div>` : ''}
+                        </div>
+                    ` : `
+                        <!-- Pending Results -->
+                        <div class="pending-message">
+                            <div style="font-size: 24px;">⏳</div>
+                            <div>
+                                <strong>Evaluation Pending</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 13px;">
+                                    Your test is being evaluated. Results will be available soon.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="result-meta">
+                            <div>📅 Submitted: ${submittedDate}</div>
+                            <div>📎 File: ${submission.file_name}</div>
+                        </div>
+                    `}
+                </div>
+            `;
+        });
+
+        container.innerHTML = resultsHTML;
+
+        console.log('✅ Results displayed successfully');
+
+    } catch (error) {
+        console.error('❌ Error loading submitted tests:', error);
+        container.innerHTML = `
+            <div class="no-results">
+                <p style="color: #f44336;">❌ Failed to load results</p>
+                <p style="font-size: 14px;">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Call this function when opening subject page
+// Add to your openSubject() or selectSubject() function:
+/*
+async function openSubject(subject) {
+    // ... your existing code ...
+    
+    // Load submitted tests and results
+    await loadSubmittedTests();
+}
+*/
+
+// ============================================================================
+// STATISTICS & SUMMARY
+// ============================================================================
+
+async function loadStudentStatistics() {
+    if (!supabaseEnabled || !currentUser) return null;
+
+    try {
+        const { data, error } = await supabase
+            .from('answer_submissions')
+            .select('marks, max_marks, subject')
+            .eq('student_email', currentUser.email)
+            .not('marks', 'is', null);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) return null;
+
+        // Calculate statistics
+        const totalTests = data.length;
+        const totalMarks = data.reduce((sum, item) => sum + item.marks, 0);
+        const totalMaxMarks = data.reduce((sum, item) => sum + (item.max_marks || 100), 0);
+        const averagePercentage = (totalMarks / totalMaxMarks) * 100;
+
+        // Count by subject
+        const bySubject = {};
+        data.forEach(item => {
+            if (!bySubject[item.subject]) {
+                bySubject[item.subject] = {
+                    count: 0,
+                    total: 0,
+                    maxTotal: 0
+                };
+            }
+            bySubject[item.subject].count++;
+            bySubject[item.subject].total += item.marks;
+            bySubject[item.subject].maxTotal += (item.max_marks || 100);
+        });
+
+        return {
+            totalTests,
+            averagePercentage: averagePercentage.toFixed(2),
+            bySubject
+        };
+
+    } catch (error) {
+        console.error('Error loading statistics:', error);
+        return null;
+    }
+}
+
+// Display statistics (optional - add to dashboard)
+async function displayStudentStatistics() {
+    const stats = await loadStudentStatistics();
+
+    if (!stats) return;
+
+    console.log('═══════════════════════════════════════');
+    console.log('📊 STUDENT STATISTICS');
+    console.log('═══════════════════════════════════════');
+    console.log('Total Tests Completed:', stats.totalTests);
+    console.log('Average Score:', stats.averagePercentage + '%');
+    console.log('By Subject:', stats.bySubject);
+    console.log('═══════════════════════════════════════');
+}
+
+// ============================================================================
+// AUTO-REFRESH RESULTS (Optional)
+// ============================================================================
+
+let resultsRefreshInterval = null;
+
+function startResultsAutoRefresh(intervalMinutes = 5) {
+    // Clear existing interval
+    if (resultsRefreshInterval) {
+        clearInterval(resultsRefreshInterval);
+    }
+
+    // Auto-refresh every X minutes
+    resultsRefreshInterval = setInterval(() => {
+        console.log('🔄 Auto-refreshing results...');
+        loadSubmittedTests();
+    }, intervalMinutes * 60 * 1000);
+
+    console.log(`✅ Auto-refresh enabled (every ${intervalMinutes} minutes)`);
+}
+
+function stopResultsAutoRefresh() {
+    if (resultsRefreshInterval) {
+        clearInterval(resultsRefreshInterval);
+        resultsRefreshInterval = null;
+        console.log('🛑 Auto-refresh stopped');
+    }
+}
+
+// ============================================================================
+// INTEGRATION EXAMPLE
+// ============================================================================
+
+/*
+// Add to your selectSubject() or openSubject() function:
+
+async function selectSubject(subject) {
+    currentSubject = subject;
+    
+    // Hide subjects page
+    document.getElementById('subjectsPage').classList.add('hidden');
+    
+    // Show tests page
+    document.getElementById('testsPage').classList.remove('hidden');
+    
+    // Update page title
+    document.getElementById('subjectTitle').textContent = subject.name + ' ' + subject.subtitle;
+    
+    // Load test cards
+    loadTestCards();
+    
+    // ✅ Load submitted tests and results (NEW!)
+    await loadSubmittedTests();
+    
+    // ✅ Optional: Start auto-refresh (NEW!)
+    startResultsAutoRefresh(5); // Refresh every 5 minutes
+}
+
+// When going back to subjects
+function backToSubjects() {
+    // Stop auto-refresh when leaving subject page
+    stopResultsAutoRefresh();
+    
+    // ... your existing back navigation code ...
+}
+*/
+
+console.log('📊 Results & Feedback Module Loaded');
