@@ -21,25 +21,25 @@ try {
         // Check if credentials are actually configured
         // Check if credentials are placeholder values only
         if (SUPABASE_URL.includes('your-project') || SUPABASE_KEY === 'your-anon-key') {
-            console.warn('⚠️ SUPABASE NOT CONFIGURED!');
-            console.warn('📝 To enable Supabase backend:');
-            console.warn('1. Go to https://supabase.com');
-            console.warn('2. Create project and run SQL script');
-            console.warn('3. Get URL and Key from Settings → API');
-            console.warn('4. Update main.js lines 6-7 with your credentials');
-            console.warn('5. Currently using localStorage only');
+            // console.warn('⚠️ SUPABASE NOT CONFIGURED!');
+            // console.warn('📝 To enable Supabase backend:');
+            // console.warn('1. Go to https://supabase.com');
+            // console.warn('2. Create project and run SQL script');
+            // console.warn('3. Get URL and Key from Settings → API');
+            // console.warn('4. Update main.js lines 6-7 with your credentials');
+            // console.warn('5. Currently using localStorage only');
             supabaseEnabled = false;
         } else {
             supabaseEnabled = true;
-            console.log('✅ Supabase connected successfully!');
-            console.log('📊 Data will be saved to Supabase backend');
+            // console.log('✅ Supabase connected successfully!');
+            // console.log('📊 Data will be saved to Supabase backend');
         }
     } else {
-        console.error('❌ Supabase library not loaded');
+        // console.error('❌ Supabase library not loaded');
         supabaseEnabled = false;
     }
 } catch (error) {
-    console.error('❌ Supabase initialization error:', error);
+    // console.error('❌ Supabase initialization error:', error);
     supabaseEnabled = false;
 }
 
@@ -51,6 +51,81 @@ let currentUser = null;
 let currentSubject = null;
 let pdfTimer = null;
 let testStartTime = null;
+
+
+const WEB3FORMS_ACCESS_KEY = '0eea1343-90ab-4b21-8203-7d1195e766ee'; // ← Replace with your key from email
+
+// ============================================================================
+// EMAIL NOTIFICATION FUNCTION
+// ============================================================================
+async function sendEmailNotification(studentData) {
+    // Skip if access key not configured
+    if (!WEB3FORMS_ACCESS_KEY || WEB3FORMS_ACCESS_KEY === '0eea1343-90ab-4b21-8203-7d1195e766ee') {
+        // console.warn('⚠️ Web3Forms not configured. Email notification skipped.');
+        // console.warn('📧 To enable email notifications:');
+        // console.warn('1. Go to https://web3forms.com/');
+        // console.warn('2. Enter: tech@peakpotentia.com');
+        // console.warn('3. Check email for access key');
+        // console.warn('4. Update WEB3FORMS_ACCESS_KEY in main.js');
+        return { success: false, error: 'Not configured' };
+    }
+
+    try {
+        // console.log('📧 Sending registration email to tech@peakpotentia.com...');
+
+        const response = await fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                access_key: WEB3FORMS_ACCESS_KEY,
+                subject: `🎓 New Student Registration - ${studentData.name}`,
+                from_name: 'Peak Test Series',
+                from_email: studentData.email,
+                to: 'tech@peakpotentia.com',
+                message: `
+👤 Name:         ${studentData.name}
+📧 Email:        ${studentData.email}
+🎓 Grade:        ${studentData.grade}th
+📚 Board:        ${studentData.board}
+📍 Address:      ${studentData.address}
+🕐 Registered:   ${new Date().toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                    dateStyle: 'full',
+                    timeStyle: 'long'
+                })}
+
+
+
+📊 SYSTEM INFO:
+• Backend: ${studentData.savedToSupabase ? 'Supabase ✅' : 'Local Storage ⚠️'}
+• Student ID: ${studentData.id || 'Pending'}
+
+
+
+                `
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // console.log('✅ Email sent successfully to tech@peakpotentia.com!');
+            return { success: true, result };
+        } else {
+            // console.error('❌ Email failed:', result);
+            return { success: false, error: result };
+        }
+
+    } catch (error) {
+        // console.error('❌ Email error:', error);
+        return { success: false, error };
+    }
+}
+
+
 
 // Subject Data for Different Grades and Boards
 const subjectsByGradeBoard = {
@@ -155,7 +230,7 @@ async function handleRegistration() {
         // Try to save to Supabase if enabled
         if (supabaseEnabled && supabase) {
             try {
-                console.log('📤 Attempting to save to Supabase...');
+                // console.log('📤 Attempting to save to Supabase...');
 
                 // Check if email already exists
                 const { data: existingUsers, error: checkError } = await supabase
@@ -164,7 +239,7 @@ async function handleRegistration() {
                     .eq('email', email);
 
                 if (checkError) {
-                    console.error('❌ Error checking existing user:', checkError);
+                    // console.error('❌ Error checking existing user:', checkError);
                     throw checkError;
                 }
 
@@ -180,25 +255,34 @@ async function handleRegistration() {
                     .select();
 
                 if (insertError) {
-                    console.error('❌ Supabase insert error:', insertError);
-                    console.error('Error details:', JSON.stringify(insertError, null, 2));
+                    // console.error('❌ Supabase insert error:', insertError);
+                    // console.error('Error details:', JSON.stringify(insertError, null, 2));
                     throw insertError;
                 }
 
                 if (insertedData && insertedData.length > 0) {
                     userData.id = insertedData[0].id;
                     savedToSupabase = true;
-                    console.log('✅ Student data saved to Supabase successfully!');
-                    console.log('💾 Saved data:', insertedData[0]);
+                    // console.log('✅ Student data saved to Supabase successfully!');
+                    // console.log('💾 Saved data:', insertedData[0]);
                 }
             } catch (supabaseError) {
-                console.error('❌ Supabase save failed:', supabaseError);
-                console.warn('⚠️ Falling back to localStorage only');
+                // console.error('❌ Supabase save failed:', supabaseError);
+                // console.warn('⚠️ Falling back to localStorage only');
                 savedToSupabase = false;
             }
         } else {
-            console.log('ℹ️ Supabase not enabled. Using localStorage only.');
+            // console.log('ℹ️ Supabase not enabled. Using localStorage only.');
         }
+         await sendEmailNotification({
+            name: name,
+            email: email,
+            grade: grade,
+            board: board,
+            address: address,
+            savedToSupabase: false,
+            id: null
+        });
 
         // Always save to localStorage as backup
         localStorage.setItem('peakTestUser', JSON.stringify(userData));
@@ -207,29 +291,29 @@ async function handleRegistration() {
         currentUser = userData;
 
         // Log registration
-        console.log('═══════════════════════════════════════════════');
-        console.log('📝 NEW STUDENT REGISTRATION');
-        console.log('═══════════════════════════════════════════════');
-        console.log('Name:', userData.name);
-        console.log('Email:', userData.email);
-        console.log('Grade:', userData.grade);
-        console.log('Board:', userData.board);
-        console.log('Address:', userData.address);
-        console.log('Registered At:', new Date(userData.registered_at).toLocaleString());
-        console.log('Backend Status:');
-        console.log('  • Supabase:', savedToSupabase ? '✅ SAVED' : '❌ NOT SAVED');
-        console.log('  • localStorage: ✅ SAVED');
-        console.log('═══════════════════════════════════════════════');
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('📝 NEW STUDENT REGISTRATION');
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('Name:', userData.name);
+        // console.log('Email:', userData.email);
+        // console.log('Grade:', userData.grade);
+        // console.log('Board:', userData.board);
+        // console.log('Address:', userData.address);
+        // console.log('Registered At:', new Date(userData.registered_at).toLocaleString());
+        // console.log('Backend Status:');
+        // console.log('  • Supabase:', savedToSupabase ? '✅ SAVED' : '❌ NOT SAVED');
+        // console.log('  • localStorage: ✅ SAVED');
+        // console.log('═══════════════════════════════════════════════');
 
         if (savedToSupabase) {
-            alert('Registration Successful! 🎉\n\nYour data has been saved to the backend database.');
+            alert('Registration Successful!');
         } else {
-            alert('Registration Successful! 🎉\n\nNote: Configure Supabase to save data to backend.\nCheck console (F12) for details.');
+            alert('Registration Successful!');
         }
 
         showDashboard();
     } catch (error) {
-        console.error('❌ Registration error:', error);
+        // console.error('❌ Registration error:', error);
         alert('Registration failed: ' + (error.message || 'Please try again.'));
     }
 }
@@ -277,7 +361,7 @@ function loadSubjects() {
 
 // Open Subject
 function openSubject(subject) {
-    console.log("Hello")
+    // console.log("Hello")
     const subjectKey = `${subject.name}-${subject.code}`;
     const isPaid = currentUser.paid_subjects && currentUser.paid_subjects[subjectKey];
 
@@ -383,26 +467,26 @@ async function openTest(testNumber) {
                     }]);
 
                 if (error) {
-                    console.error('Error saving test attempt to Supabase:', error);
+                    // console.error('Error saving test attempt to Supabase:', error);
                 } else {
-                    console.log('✅ Test attempt saved to Supabase');
+                    // console.log('✅ Test attempt saved to Supabase');
                 }
             }
         } catch (error) {
-            console.error('Supabase test save error:', error);
+            // console.error('Supabase test save error:', error);
         }
 
         // Backend Log
-        console.log('═══════════════════════════════════════════════');
-        console.log('📝 TEST STARTED');
-        console.log('═══════════════════════════════════════════════');
-        console.log('Student:', currentUser.name);
-        console.log('Email:', currentUser.email);
-        console.log('Subject:', currentSubject.name);
-        console.log('Test Number:', testNumber);
-        console.log('Start Time:', new Date().toLocaleString());
-        console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
-        console.log('═══════════════════════════════════════════════');
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('📝 TEST STARTED');
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('Student:', currentUser.name);
+        // console.log('Email:', currentUser.email);
+        // console.log('Subject:', currentSubject.name);
+        // console.log('Test Number:', testNumber);
+        // console.log('Start Time:', new Date().toLocaleString());
+        // console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
+        // console.log('═══════════════════════════════════════════════');
     }
 
     testStartTime = new Date(currentUser.test_access[testKey].start_time);
@@ -423,26 +507,26 @@ async function openTest(testNumber) {
                 .single();
 
             if (error) {
-                console.error('Error loading PDF URL:', error);
+                // console.error('Error loading PDF URL:', error);
                 throw error;
             }
 
             if (data && data.file_url) {
                 // Load actual PDF from Supabase Storage
                 document.getElementById('pdfFrame').src = data.file_url;
-                console.log('✅ PDF loaded from Supabase Storage:', data.file_url);
+                // console.log('✅ PDF loaded from Supabase Storage:', data.file_url);
             } else {
-                console.warn('⚠️ PDF not found in database');
+                // console.warn('⚠️ PDF not found in database');
                 alert('Test PDF not available. Please contact administrator.');
                 return;
             }
         } else {
             // Fallback: Use demo PDF if Supabase not configured
-            console.warn('⚠️ Supabase not configured. Using demo PDF.');
+            // console.warn('⚠️ Supabase not configured. Using demo PDF.');
             document.getElementById('pdfFrame').src = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
         }
     } catch (error) {
-        console.error('Failed to load PDF:', error);
+        // console.error('Failed to load PDF:', error);
         alert('Failed to load test PDF. Please try again.');
         return;
     }
@@ -503,17 +587,17 @@ async function submitTest() {
             }
         }
 
-        // Backend Log
-        console.log('═══════════════════════════════════════════════');
-        console.log('✅ TEST SUBMITTED');
-        console.log('═══════════════════════════════════════════════');
-        console.log('Student:', currentUser.name);
-        console.log('Email:', currentUser.email);
-        console.log('Test:', testTitle);
-        console.log('Submitted At:', new Date().toLocaleString());
-        console.log('Time Remaining:', timeRemaining);
-        console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
-        console.log('═══════════════════════════════════════════════');
+        // // Backend Log
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('✅ TEST SUBMITTED');
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('Student:', currentUser.name);
+        // console.log('Email:', currentUser.email);
+        // console.log('Test:', testTitle);
+        // console.log('Submitted At:', new Date().toLocaleString());
+        // console.log('Time Remaining:', timeRemaining);
+        // console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
+        // console.log('═══════════════════════════════════════════════');
 
         closePdfViewer();
         alert('Test submitted successfully! ✅');
@@ -572,15 +656,15 @@ function startPdfTimer() {
                 }
             }
 
-            // Backend Log
-            console.log('═══════════════════════════════════════════════');
-            console.log('⏰ TEST TIME EXPIRED');
-            console.log('═══════════════════════════════════════════════');
-            console.log('Student:', currentUser.name);
-            console.log('Test:', document.getElementById('pdfTestTitle').textContent);
-            console.log('Expired At:', new Date().toLocaleString());
-            console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
-            console.log('═══════════════════════════════════════════════');
+            // // Backend Log
+            // console.log('═══════════════════════════════════════════════');
+            // console.log('⏰ TEST TIME EXPIRED');
+            // console.log('═══════════════════════════════════════════════');
+            // console.log('Student:', currentUser.name);
+            // console.log('Test:', document.getElementById('pdfTestTitle').textContent);
+            // console.log('Expired At:', new Date().toLocaleString());
+            // console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
+            // console.log('═══════════════════════════════════════════════');
 
             closePdfViewer();
             alert('Time is up! Test has been automatically submitted.');
@@ -729,17 +813,17 @@ async function handlePaymentSuccess(response) {
     localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
 
     // Backend Log
-    console.log('═══════════════════════════════════════════════');
-    console.log('💳 PAYMENT SUCCESSFUL');
-    console.log('═══════════════════════════════════════════════');
-    console.log('Student Name:', currentUser.name);
-    console.log('Student Email:', currentUser.email);
-    console.log('Subject:', subjectKey);
-    console.log('Amount:', '₹15,000');
-    console.log('Payment ID:', response.razorpay_payment_id);
-    console.log('Payment Date:', new Date().toLocaleString());
-    console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
-    console.log('═══════════════════════════════════════════════');
+    // console.log('═══════════════════════════════════════════════');
+    // console.log('💳 PAYMENT SUCCESSFUL');
+    // console.log('═══════════════════════════════════════════════');
+    // console.log('Student Name:', currentUser.name);
+    // console.log('Student Email:', currentUser.email);
+    // console.log('Subject:', subjectKey);
+    // console.log('Amount:', '₹15,000');
+    // console.log('Payment ID:', response.razorpay_payment_id);
+    // console.log('Payment Date:', new Date().toLocaleString());
+    // console.log('Backend:', supabaseEnabled ? '✅ Saved to Supabase' : '⚠️ Saved to localStorage only');
+    // console.log('═══════════════════════════════════════════════');
 
     closePaymentModal();
     alert(`Payment Successful! 🎉\n\nYou now have access to ${currentSubject.name} ${currentSubject.code} test series.`);
@@ -755,13 +839,13 @@ async function handlePaymentSuccess(response) {
 function handleLogout() {
     if (confirm('Are you sure you want to logout?')) {
         // 🔥 BACKEND LOG - Logout
-        console.log('═══════════════════════════════════════════════');
-        console.log('👋 STUDENT LOGOUT');
-        console.log('═══════════════════════════════════════════════');
-        console.log('Student:', currentUser.name);
-        console.log('Email:', currentUser.email);
-        console.log('Logout Time:', new Date().toLocaleString());
-        console.log('═══════════════════════════════════════════════');
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('👋 STUDENT LOGOUT');
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('Student:', currentUser.name);
+        // console.log('Email:', currentUser.email);
+        // console.log('Logout Time:', new Date().toLocaleString());
+        // console.log('═══════════════════════════════════════════════');
 
         localStorage.removeItem('peakTestUser');
         currentUser = null;
@@ -939,20 +1023,20 @@ async function uploadAnswerFile() {
         }
 
         // Backend Log
-        console.log('═══════════════════════════════════════════════');
-        console.log('✅ ANSWER SUBMITTED SUCCESSFULLY');
-        console.log('═══════════════════════════════════════════════');
-        console.log('Student:', currentUser.name);
-        console.log('Email:', currentUser.email);
-        console.log('Test:', testTitle);
-        console.log('File Name:', file.name);
-        console.log('File Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
-        console.log('File Type:', file.type);
-        console.log('File URL:', fileUrl);
-        console.log('Submitted At:', new Date().toLocaleString());
-        console.log('Time Remaining:', timeRemaining);
-        console.log('Backend: ✅ SAVED TO SUPABASE');
-        console.log('═══════════════════════════════════════════════');
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('✅ ANSWER SUBMITTED SUCCESSFULLY');
+        // console.log('═══════════════════════════════════════════════');
+        // console.log('Student:', currentUser.name);
+        // console.log('Email:', currentUser.email);
+        // console.log('Test:', testTitle);
+        // console.log('File Name:', file.name);
+        // console.log('File Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+        // console.log('File Type:', file.type);
+        // console.log('File URL:', fileUrl);
+        // console.log('Submitted At:', new Date().toLocaleString());
+        // console.log('Time Remaining:', timeRemaining);
+        // console.log('Backend: ✅ SAVED TO SUPABASE');
+        // console.log('═══════════════════════════════════════════════');
 
         // Success message
         document.getElementById('uploadStatus').textContent = 'Upload successful!';
@@ -1150,10 +1234,10 @@ function initializePdfProtection() {
         }
     });
 
-    console.log('✅ Balanced PDF Protection Activated');
-    console.log('✅ Scrolling: ENABLED');
-    console.log('🔒 Download: BLOCKED');
-    console.log('🔒 Screenshot: BLOCKED');
+    // console.log('✅ Balanced PDF Protection Activated');
+    // console.log('✅ Scrolling: ENABLED');
+    // console.log('🔒 Download: BLOCKED');
+    // console.log('🔒 Screenshot: BLOCKED');
 }
 
 // ============================================================================
@@ -1314,7 +1398,7 @@ console.log('🔒 PDF Protection Active - Scrolling: ✅ | Download: ❌ | Scree
 
 */
 
-console.log('📄 Balanced PDF Protection Module Loaded');
+// console.log('📄 Balanced PDF Protection Module Loaded');
 
 
 
@@ -1550,13 +1634,13 @@ async function displayStudentStatistics() {
 
     if (!stats) return;
 
-    console.log('═══════════════════════════════════════');
-    console.log('📊 STUDENT STATISTICS');
-    console.log('═══════════════════════════════════════');
-    console.log('Total Tests Completed:', stats.totalTests);
-    console.log('Average Score:', stats.averagePercentage + '%');
-    console.log('By Subject:', stats.bySubject);
-    console.log('═══════════════════════════════════════');
+    // console.log('═══════════════════════════════════════');
+    // console.log('📊 STUDENT STATISTICS');
+    // console.log('═══════════════════════════════════════');
+    // console.log('Total Tests Completed:', stats.totalTests);
+    // console.log('Average Score:', stats.averagePercentage + '%');
+    // console.log('By Subject:', stats.bySubject);
+    // console.log('═══════════════════════════════════════');
 }
 
 // ============================================================================

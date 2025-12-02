@@ -1,196 +1,521 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terms & Conditions - Peak Dashboard</title>
+    <title>Terms & Conditions - Peak Test Series</title>
+    <link rel="stylesheet" href="./style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Terms Page Specific Styles */
+        .terms-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #003f5c 0%, #58508d 50%, #bc5090 100%);
+            padding: 40px 20px;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-        }
-
-        .container {
+        .terms-content {
             max-width: 900px;
             margin: 0 auto;
             background: white;
+            border-radius: 20px;
             padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
-        h1 {
-            color: #667eea;
+        .terms-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #58508d;
+        }
+
+        .terms-header h1 {
+            color: #003f5c;
+            font-size: 36px;
             margin-bottom: 10px;
-            font-size: 2.5em;
         }
 
-        .last-updated {
+        .terms-header .last-updated {
             color: #666;
-            font-size: 0.9em;
+            font-size: 14px;
+        }
+
+        .back-home {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #58508d, #bc5090);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
             margin-bottom: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
         }
 
-        h2 {
-            color: #764ba2;
-            margin-top: 30px;
+        .back-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(88, 80, 141, 0.4);
+        }
+
+        .terms-section {
+            margin-bottom: 35px;
+        }
+
+        .terms-section h2 {
+            color: #003f5c;
+            font-size: 24px;
             margin-bottom: 15px;
-            font-size: 1.5em;
+            padding-left: 15px;
+            border-left: 4px solid #58508d;
         }
 
-        p {
+        .terms-section h3 {
+            color: #58508d;
+            font-size: 18px;
+            margin: 20px 0 10px 0;
+        }
+
+        .terms-section p {
+            color: #444;
+            line-height: 1.8;
             margin-bottom: 15px;
-            text-align: justify;
+            font-size: 15px;
         }
 
-        ul {
-            margin-left: 20px;
-            margin-bottom: 15px;
+        .terms-section ul,
+        .terms-section ol {
+            padding-left: 25px;
+            margin: 15px 0;
         }
 
-        li {
-            margin-bottom: 8px;
+        .terms-section ul li,
+        .terms-section ol li {
+            padding: 8px 0;
+            color: #444;
+            line-height: 1.6;
         }
 
-        .highlight {
-            background-color: #f0f0f0;
-            padding: 15px;
-            border-left: 4px solid #667eea;
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
             margin: 20px 0;
         }
 
-        .back-link {
-            display: inline-block;
-            margin-top: 30px;
-            color: #667eea;
-            text-decoration: none;
-            font-weight: bold;
+        .warning-box strong {
+            color: #856404;
         }
 
-        .back-link:hover {
+        .highlight-box {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #58508d;
+            margin: 20px 0;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, #003f5c, #58508d);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .contact-box h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .contact-box a {
+            color: #ffa600;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .contact-box a:hover {
             text-decoration: underline;
         }
 
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .container {
-                padding: 20px;
+            .terms-content {
+                padding: 25px 20px;
             }
 
-            h1 {
-                font-size: 2em;
+            .terms-header h1 {
+                font-size: 28px;
+            }
+
+            .terms-section h2 {
+                font-size: 20px;
+            }
+
+            .terms-section h3 {
+                font-size: 16px;
+            }
+
+            .terms-section p,
+            .terms-section ul li,
+            .terms-section ol li {
+                font-size: 14px;
             }
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Terms & Conditions</h1>
-        <p class="last-updated">Last Updated: November 19, 2025</p>
-
-        <p>Welcome to Peak Dashboard. By accessing or using our services, you agree to be bound by these Terms and Conditions. Please read them carefully before using our platform.</p>
-
-        <h2>1. Acceptance of Terms</h2>
-        <p>By accessing and using Peak Dashboard ("Service", "Platform", "we", "us", or "our"), you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to these terms, please do not use our Service.</p>
-
-        <h2>2. Use of Service</h2>
-        <p>Peak Dashboard provides data analytics and dashboard visualization services. You agree to use the Service only for lawful purposes and in accordance with these Terms.</p>
-        
-        <div class="highlight">
-            <strong>You agree NOT to:</strong>
-            <ul>
-                <li>Use the Service in any way that violates applicable laws or regulations</li>
-                <li>Attempt to gain unauthorized access to any portion of the Service</li>
-                <li>Interfere with or disrupt the Service or servers</li>
-                <li>Use automated systems to access the Service without our permission</li>
-                <li>Reproduce, duplicate, or copy any part of the Service without authorization</li>
-            </ul>
+    <div class="dashboard-header">
+        <div class="logo-section">
+            <div class="logo">PT</div>
+            <div class="brand-name">Peak Test Series</div>
         </div>
-
-        <h2>3. User Accounts</h2>
-        <p>To access certain features of Peak Dashboard, you may be required to create an account. You are responsible for:</p>
-        <ul>
-            <li>Maintaining the confidentiality of your account credentials</li>
-            <li>All activities that occur under your account</li>
-            <li>Notifying us immediately of any unauthorized access</li>
-            <li>Providing accurate and complete information during registration</li>
-        </ul>
-
-        <h2>4. Subscription and Payments</h2>
-        <p>Peak Dashboard offers various subscription plans. By subscribing to our Service:</p>
-        <ul>
-            <li>You agree to pay all fees associated with your chosen plan</li>
-            <li>Subscription fees are billed in advance on a recurring basis</li>
-            <li>You authorize us to charge your payment method for renewal</li>
-            <li>Prices are subject to change with 30 days notice</li>
-            <li>Failed payments may result in service suspension or termination</li>
-        </ul>
-
-        <h2>5. Data and Content</h2>
-        <p>You retain all rights to the data you upload to Peak Dashboard. By using our Service, you grant us a license to:</p>
-        <ul>
-            <li>Store and process your data to provide the Service</li>
-            <li>Create backups of your data for security purposes</li>
-            <li>Use aggregated, anonymized data for service improvement</li>
-        </ul>
-        <p>You are responsible for ensuring you have the necessary rights to any data you upload to our platform.</p>
-
-        <h2>6. Intellectual Property</h2>
-        <p>The Service and its original content, features, and functionality are owned by Peak Dashboard and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.</p>
-
-        <h2>7. Service Availability</h2>
-        <p>While we strive to provide uninterrupted service, we do not guarantee that:</p>
-        <ul>
-            <li>The Service will be available at all times</li>
-            <li>The Service will be error-free or secure</li>
-            <li>Results obtained from the Service will be accurate or reliable</li>
-        </ul>
-        <p>We reserve the right to modify, suspend, or discontinue any part of the Service with or without notice.</p>
-
-        <h2>8. Limitation of Liability</h2>
-        <p>To the maximum extent permitted by law, Peak Dashboard shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use the Service.</p>
-
-        <h2>9. Termination</h2>
-        <p>We may terminate or suspend your account and access to the Service immediately, without prior notice, for any reason, including:</p>
-        <ul>
-            <li>Breach of these Terms and Conditions</li>
-            <li>Fraudulent or illegal activity</li>
-            <li>Non-payment of fees</li>
-            <li>At our sole discretion</li>
-        </ul>
-        <p>Upon termination, your right to use the Service will immediately cease.</p>
-
-        <h2>10. Changes to Terms</h2>
-        <p>We reserve the right to modify these Terms at any time. We will notify users of any material changes via email or through the Service. Your continued use of the Service after such modifications constitutes acceptance of the updated Terms.</p>
-
-        <h2>11. Governing Law</h2>
-        <p>These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions.</p>
-
-        <h2>12. Dispute Resolution</h2>
-        <p>Any disputes arising from these Terms or your use of the Service shall be resolved through binding arbitration in accordance with the rules of the Indian Arbitration and Conciliation Act.</p>
-
-        <h2>13. Contact Information</h2>
-        <p>If you have any questions about these Terms and Conditions, please contact us at:</p>
-        <div class="highlight">
-            <p><strong>Email:</strong> support@peakdashboard.com</p>
-            <p><strong>Website:</strong> https://pallavi-0880.github.io/Peak-Dashboard/</p>
+        <div class="user-info-section">
+            <div class="user-details">
+                <div class="user-name" id="userName"></div>
+                <div class="user-grade-board" id="userGradeBoard"></div>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">Logout</button>
         </div>
+    </div>
+    <div class="terms-container">
+        <div class="terms-content">
+            <!-- Back Button -->
+            <a href="./index.html" class="back-home">← Back to Home</a>
 
-        <h2>14. Severability</h2>
-        <p>If any provision of these Terms is found to be unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary so that these Terms will otherwise remain in full force and effect.</p>
+            <!-- Header -->
+            <div class="terms-header">
+                <h1>📜 Terms & Conditions</h1>
+                <p style="color: #58508d; font-size: 18px; font-weight: 600;">Peak Test Series</p>
+                <p class="last-updated">Last Updated: December 2, 2025</p>
+            </div>
 
-        <h2>15. Entire Agreement</h2>
-        <p>These Terms constitute the entire agreement between you and Peak Dashboard regarding the use of the Service, superseding any prior agreements.</p>
+            <!-- Introduction -->
+            <div class="terms-section">
+                <h2>1. Acceptance of Terms</h2>
+                <p>
+                    Welcome to Peak Test Series. By accessing or using our platform, you agree to be bound by these
+                    Terms and Conditions. Please read them carefully before using our services.
+                </p>
+                <p>
+                    If you do not agree with any part of these Terms, you may not access or use our services. Your
+                    continued use of the platform constitutes acceptance of any modifications to these Terms.
+                </p>
+            </div>
 
-        <a href="index.html" class="back-link">← Back to Home</a>
+            <!-- Definitions -->
+            <div class="terms-section">
+                <h2>2. Definitions</h2>
+                <ul>
+                    <li><strong>"Platform"</strong> refers to the Peak Test Series website and all associated services
+                    </li>
+                    <li><strong>"Student"</strong> refers to anyone accessing our
+                        platform</li>
+                    <li><strong>"Peak Test Series"</strong> refers to the service
+                        provider</li>
+                    <li><strong>"Content"</strong> includes test papers, study materials, and all platform materials
+                    </li>
+                    <li><strong>"Account"</strong> refers to your registered user profile</li>
+                </ul>
+            </div>
+
+            <!-- Eligibility -->
+            <div class="terms-section">
+                <h2>3. Eligibility</h2>
+                <p>To use Peak Test Series, you must:</p>
+                <ul>
+                    <li>Be at least 15 years old or have parental/guardian consent</li>
+                    <li>Be enrolled in Grade 10 or Grade 12 (ISC/CBSE/ICSE)</li>
+                    <li>Provide accurate and complete registration information</li>
+                    <li>Maintain the security of your account credentials</li>
+                    <li>Comply with all applicable laws and regulations</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>⚠️ Important:</strong> If you are under 18, your parent or legal guardian must review and
+                    agree to these Terms on your behalf.
+                </div>
+            </div>
+
+            <!-- Account Registration -->
+            <div class="terms-section">
+                <h2>4. Account Registration and Security</h2>
+
+                <h3>4.1 Account Creation</h3>
+                <p>When creating an account, you must:</p>
+                <ul>
+                    <li>Provide accurate personal information</li>
+                    <li>Use a valid email address</li>
+                    <li>Create a secure password (minimum 6 characters)</li>
+                    <li>Not impersonate others or create fake accounts</li>
+                </ul>
+
+                <h3>4.2 Account Security</h3>
+                <ul>
+                    <li>You are responsible for maintaining the confidentiality of your password</li>
+                    <li>You are responsible for all activities under your account</li>
+                    <li>Notify us immediately of any unauthorized access</li>
+                    <li>We are not liable for losses due to unauthorized account use</li>
+                </ul>
+
+                <h3>4.3 Account Termination</h3>
+                <p>We reserve the right to suspend or terminate accounts that:</p>
+                <ul>
+                    <li>Violate these Terms</li>
+                    <li>Engage in fraudulent activities</li>
+                    <li>Share account credentials with others</li>
+                    <li>Attempt to circumvent security measures</li>
+                </ul>
+            </div>
+
+            <!-- Services and Subscriptions -->
+            <div class="terms-section">
+                <h2>5. Services and Subscriptions</h2>
+
+                <h3>5.1 Service Description</h3>
+                <p>Peak Test Series provides:</p>
+                <ul>
+                    <li>Online test series for Grade 10 and Grade 12 students</li>
+                    <li>Subject-wise test papers (5 tests per subject)</li>
+                    <li>Time-bound test environment (3 hours per test)</li>
+                    <li>PDF access to test questions</li>
+                    <li>Answer submission and evaluation system</li>
+                    <li>Performance feedback and results</li>
+                </ul>
+
+                <h3>5.2 Pricing and Payment</h3>
+                <ul>
+                    <li>Each subject costs ₹15,000 (separate payment required)</li>
+                    <li>Payments are processed through Razorpay</li>
+                    <li>All prices are in Indian Rupees (INR)</li>
+                    <li>Prices are subject to change with prior notice</li>
+                    <li>Applicable taxes will be added to the final amount</li>
+                </ul>
+
+                <h3>5.3 Refund Policy</h3>
+                <div class="highlight-box">
+                    <strong>📌 Important Refund Terms:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>Refunds are available within 7 days of purchase if no tests have been accessed</li>
+                        <li>Once a test is accessed or downloaded, refunds are not possible</li>
+                        <li>Processing fee of 5% will be deducted from refunds</li>
+                        <li>Refunds take 5-7 business days to process</li>
+                        <li>Contact tech@peakpotentia.com for refund requests</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Content Usage -->
+            <div class="terms-section">
+                <h2>6. Content Usage and Intellectual Property</h2>
+
+                <h3>6.1 Ownership</h3>
+                <p>All content on Peak Test Series, including but not limited to:</p>
+                <ul>
+                    <li>Test questions and answer keys</li>
+                    <li>Study materials and resources</li>
+                    <li>Images, logos, and graphics</li>
+                    <li>Software and platform code</li>
+                </ul>
+                <p>...are owned by Peak Test Series and protected by copyright laws.</p>
+
+                <h3>6.2 Permitted Use</h3>
+                <p>You may:</p>
+                <ul>
+                    <li>Access and use content for personal educational purposes only</li>
+                    <li>Download test papers for offline solving during test time</li>
+                    <li>Submit your answers through our platform</li>
+                </ul>
+
+                <h3>6.3 Prohibited Activities</h3>
+                <div class="warning-box">
+                    <strong>⛔ You are strictly prohibited from:</strong>
+                    <ul style="margin-top: 10px;">
+                        <li>Copying, reproducing, or distributing test content</li>
+                        <li>Sharing your account with others</li>
+                        <li>Removing watermarks from PDF files</li>
+                        <li>Taking screenshots or recording test content</li>
+                        <li>Selling or commercializing our content</li>
+                        <li>Using content for coaching institutes or commercial purposes</li>
+                        <li>Reverse engineering or decompiling our platform</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Test Rules -->
+            <div class="terms-section">
+                <h2>7. Test Rules and Guidelines</h2>
+
+                <h3>7.1 Test Access</h3>
+                <ul>
+                    <li>Each test is available for 3 hours from the time you open it</li>
+                    <li>Timer starts automatically when you access the test</li>
+                    <li>Tests cannot be paused or extended (except technical issues)</li>
+                    <li>Test papers are watermarked with your name and email</li>
+                </ul>
+
+                <h3>7.2 Answer Submission</h3>
+                <ul>
+                    <li>Submit answers before the 3-hour time limit expires</li>
+                    <li>Accepted formats: PDF, Word, JPG, PNG</li>
+                    <li>Maximum file size: 50 MB</li>
+                    <li>Late submissions are not accepted</li>
+                </ul>
+
+                <h3>7.3 Evaluation and Results</h3>
+                <ul>
+                    <li>Tests are evaluated by qualified instructors</li>
+                    <li>Results are typically available within 5-7 business days</li>
+                    <li>You will receive marks, percentage, grade, and detailed feedback</li>
+                    <li>Re-evaluation requests must be made within 7 days of result publication</li>
+                </ul>
+            </div>
+
+            <!-- Academic Integrity -->
+            <div class="terms-section">
+                <h2>8. Academic Integrity</h2>
+                <p>We expect all students to maintain the highest standards of academic integrity. You agree to:</p>
+                <ul>
+                    <li>Complete tests independently without external help</li>
+                    <li>Not use unfair means or cheat during tests</li>
+                    <li>Not collaborate with others during test time</li>
+                    <li>Not use AI tools or online search for answers during tests</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>⚠️ Violation Consequences:</strong> Any form of cheating or academic dishonesty will result
+                    in immediate account suspension without refund.
+                </div>
+            </div>
+
+            <!-- Disclaimers -->
+            <div class="terms-section">
+                <h2>9. Disclaimers and Limitations</h2>
+
+                <h3>9.1 Service Availability</h3>
+                <ul>
+                    <li>We strive for 99.9% uptime but cannot guarantee uninterrupted service</li>
+                    <li>Scheduled maintenance will be announced in advance</li>
+                    <li>We are not liable for service interruptions beyond our control</li>
+                </ul>
+
+                <h3>9.2 Educational Results</h3>
+                <ul>
+                    <li>We provide practice tests but cannot guarantee academic success</li>
+                    <li>Results depend on individual effort and preparation</li>
+                    <li>Our platform is supplementary to formal education</li>
+                </ul>
+
+                <h3>9.3 Limitation of Liability</h3>
+                <p>
+                    Peak Test Series is not liable for any indirect, incidental, special, or consequential damages
+                    arising from your use of the platform. Our total liability shall not exceed the amount you paid for
+                    the service.
+                </p>
+            </div>
+
+            <!-- User Conduct -->
+            <div class="terms-section">
+                <h2>10. User Conduct</h2>
+                <p>You agree not to:</p>
+                <ul>
+                    <li>Violate any laws or regulations</li>
+                    <li>Infringe on others' intellectual property rights</li>
+                    <li>Harass, abuse, or harm other users or staff</li>
+                    <li>Upload malicious files or viruses</li>
+                    <li>Attempt to hack or breach our security</li>
+                    <li>Engage in any fraudulent activities</li>
+                    <li>Spam or send unsolicited communications</li>
+                </ul>
+            </div>
+
+            <!-- Privacy -->
+            <div class="terms-section">
+                <h2>11. Privacy and Data Protection</h2>
+                <p>
+                    Your use of Peak Test Series is also governed by our <a href="./privacy-policy.html"
+                        style="color: #58508d; font-weight: 600;">Privacy Policy</a>. We collect, use, and protect your
+                    personal information as described in that policy. By using our services, you consent to such
+                    processing.
+                </p>
+            </div>
+
+            <!-- Modifications -->
+            <div class="terms-section">
+                <h2>12. Modifications to Terms</h2>
+                <p>
+                    We reserve the right to modify these Terms at any time. When changes are made:
+                </p>
+                <ul>
+                    <li>Updated Terms will be posted on our website</li>
+                    <li>The "Last Updated" date will be revised</li>
+                    <li>Significant changes will be notified via email</li>
+                    <li>Continued use after changes constitutes acceptance</li>
+                </ul>
+            </div>
+
+            <!-- Governing Law -->
+            <div class="terms-section">
+                <h2>13. Governing Law and Jurisdiction</h2>
+                <p>
+                    These Terms shall be governed by and construed in accordance with the laws of India. Any disputes
+                    arising from these Terms or your use of the platform shall be subject to the exclusive jurisdiction
+                    of the courts in Delhi, India.
+                </p>
+            </div>
+
+            <!-- Dispute Resolution -->
+            <div class="terms-section">
+                <h2>14. Dispute Resolution</h2>
+                <p>In the event of any dispute:</p>
+                <ol>
+                    <li>Contact us first at tech@peakpotentia.com to seek resolution</li>
+                    <li>If unresolved, we agree to mediation before pursuing legal action</li>
+                    <li>Legal proceedings, if necessary, will be in Delhi courts</li>
+                </ol>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="contact-box">
+                <h3>📧 Questions About These Terms?</h3>
+                <p style="margin-bottom: 15px;">
+                    If you have any questions or concerns about these Terms and Conditions, please contact us:
+                </p>
+                <p><strong>Email:</strong> <a href="mailto:tech@peakpotentia.com">tech@peakpotentia.com</a></p>
+                <p><strong>Phone:</strong> <a href="tel:+919818184460">+91 98181 84460</a></p>
+                <p><strong>Address:</strong> <a href="">3rd Floor, 108 Arjun Marg - Gurugram, India </a></p>
+                <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+                    We typically respond within 2-3 business days.
+                </p>
+            </div>
+
+            <!-- Acceptance -->
+            <div class="terms-section" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                <h2>15. Acknowledgment</h2>
+                <p>
+                    By registering for and using Peak Test Series, you acknowledge that you have read, understood, and
+                    agree to be bound by these Terms and Conditions. If you do not agree, please do not use our
+                    services.
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                <p style="color: #666; font-size: 14px;">© 2025 Peak Test Series. All rights reserved.</p>
+                <p style="color: #666; font-size: 14px;">Empowering Students to Reach Their Peak Potential</p>
+                <p style="margin-top: 15px;">
+                    <a href="./privacy-policy.html"
+                        style="color: #58508d; text-decoration: none; margin: 0 10px;">Privacy Policy</a> |
+                    <a href="./index.html" style="color: #58508d; text-decoration: none; margin: 0 10px;">Home</a>
+                </p>
+            </div>
+
+
+        </div>
     </div>
 </body>
+
 </html>

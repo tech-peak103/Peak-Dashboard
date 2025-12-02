@@ -1,347 +1,437 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - Peak Dashboard</title>
+    <title>Privacy Policy - Peak Test Series</title>
+    <link rel="stylesheet" href="./style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Privacy Policy Specific Styles */
+        .privacy-container {
+           
+            min-height: 100vh;
+            background: linear-gradient(135deg, #003f5c 0%, #58508d 50%, #bc5090 100%);
+            padding: 40px 20px;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-        }
-
-        .container {
+        .privacy-content {
+             /* width: 100%; */
             max-width: 900px;
             margin: 0 auto;
             background: white;
+            border-radius: 20px;
             padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
-        h1 {
-            color: #667eea;
+        .privacy-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #58508d;
+        }
+
+        .privacy-header h1 {
+            color: #003f5c;
+            font-size: 36px;
             margin-bottom: 10px;
-            font-size: 2.5em;
         }
 
-        .last-updated {
+        .privacy-header .last-updated {
             color: #666;
-            font-size: 0.9em;
-            margin-bottom: 30px;
+            font-size: 14px;
         }
 
-        h2 {
-            color: #764ba2;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            font-size: 1.5em;
-        }
-
-        h3 {
-            color: #555;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            font-size: 1.2em;
-        }
-
-        p {
-            margin-bottom: 15px;
-            text-align: justify;
-        }
-
-        ul {
-            margin-left: 20px;
-            margin-bottom: 15px;
-        }
-
-        li {
-            margin-bottom: 8px;
-        }
-
-        .highlight {
-            background-color: #f0f0f0;
-            padding: 15px;
-            border-left: 4px solid #667eea;
-            margin: 20px 0;
-        }
-
-        .info-box {
-            background-color: #e8f4f8;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-
-        .back-link {
+        .back-home {
             display: inline-block;
-            margin-top: 30px;
-            color: #667eea;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #58508d, #bc5090);
+            color: white;
             text-decoration: none;
-            font-weight: bold;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
         }
 
-        .back-link:hover {
+        .back-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(88, 80, 141, 0.4);
+        }
+
+        .privacy-section {
+            margin-bottom: 35px;
+        }
+
+        .privacy-section h2 {
+            color: #003f5c;
+            font-size: 24px;
+            margin-bottom: 15px;
+            padding-left: 15px;
+            border-left: 4px solid #58508d;
+        }
+
+        .privacy-section h3 {
+            color: #58508d;
+            font-size: 18px;
+            margin: 20px 0 10px 0;
+        }
+
+        .privacy-section p {
+            color: #444;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        .privacy-section ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 15px 0;
+        }
+
+        .privacy-section ul li {
+            padding: 10px 0 10px 30px;
+            color: #444;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .privacy-section ul li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #58508d;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .highlight-box {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #58508d;
+            margin: 20px 0;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, #003f5c, #58508d);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .contact-box h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .contact-box a {
+            color: #ffa600;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .contact-box a:hover {
             text-decoration: underline;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #667eea;
-            color: white;
-        }
-
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .container {
-                padding: 20px;
+            .privacy-content {
+                padding: 25px 20px;
             }
 
-            h1 {
-                font-size: 2em;
+            .privacy-header h1 {
+                font-size: 28px;
             }
 
-            table {
-                font-size: 0.9em;
+            .privacy-section h2 {
+                font-size: 20px;
+            }
+
+            .privacy-section h3 {
+                font-size: 16px;
+            }
+
+            .privacy-section p,
+            .privacy-section ul li {
+                font-size: 14px;
             }
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Privacy Policy</h1>
-        <p class="last-updated">Last Updated: November 19, 2025</p>
-
-        <p>At Peak Dashboard, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our Service. Please read this policy carefully.</p>
-
-        <h2>1. Information We Collect</h2>
-        
-        <h3>1.1 Personal Information</h3>
-        <p>We collect personal information that you provide directly to us, including:</p>
-        <ul>
-            <li><strong>Account Information:</strong> Name, email address, phone number, company name</li>
-            <li><strong>Payment Information:</strong> Credit card details, billing address (processed securely through third-party payment processors)</li>
-            <li><strong>Profile Information:</strong> User preferences, dashboard settings, profile picture</li>
-            <li><strong>Communication Data:</strong> Messages, feedback, and support requests</li>
-        </ul>
-
-        <h3>1.2 Data You Upload</h3>
-        <p>When you use Peak Dashboard, you may upload or input data for analysis and visualization. This may include:</p>
-        <ul>
-            <li>Business data and metrics</li>
-            <li>Spreadsheets and databases</li>
-            <li>Custom reports and visualizations</li>
-            <li>API connections and integrations</li>
-        </ul>
-
-        <h3>1.3 Automatically Collected Information</h3>
-        <p>We automatically collect certain information when you use our Service:</p>
-        <ul>
-            <li><strong>Usage Data:</strong> Pages viewed, features used, time spent on the platform</li>
-            <li><strong>Device Information:</strong> IP address, browser type, operating system, device identifiers</li>
-            <li><strong>Log Data:</strong> Access times, error logs, performance data</li>
-            <li><strong>Cookies and Tracking:</strong> Session cookies, analytics cookies, preference cookies</li>
-        </ul>
-
-        <h2>2. How We Use Your Information</h2>
-        <p>We use the collected information for various purposes:</p>
-        
-        <table>
-            <tr>
-                <th>Purpose</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td>Service Delivery</td>
-                <td>To provide, maintain, and improve Peak Dashboard functionality</td>
-            </tr>
-            <tr>
-                <td>Account Management</td>
-                <td>To create and manage your account, process payments, and authenticate users</td>
-            </tr>
-            <tr>
-                <td>Communication</td>
-                <td>To send updates, security alerts, support messages, and marketing communications</td>
-            </tr>
-            <tr>
-                <td>Analytics</td>
-                <td>To analyze usage patterns and improve our Service</td>
-            </tr>
-            <tr>
-                <td>Security</td>
-                <td>To detect, prevent, and address fraud, security issues, and technical problems</td>
-            </tr>
-            <tr>
-                <td>Legal Compliance</td>
-                <td>To comply with legal obligations and enforce our Terms and Conditions</td>
-            </tr>
-        </table>
-
-        <h2>3. Data Storage and Security</h2>
-        
-        <h3>3.1 Data Storage</h3>
-        <p>Your data is stored on secure servers located in India and other jurisdictions. We use industry-standard cloud infrastructure providers with robust security measures.</p>
-
-        <h3>3.2 Security Measures</h3>
-        <div class="highlight">
-            <p>We implement multiple security measures to protect your information:</p>
-            <ul>
-                <li>256-bit SSL/TLS encryption for data in transit</li>
-                <li>AES-256 encryption for data at rest</li>
-                <li>Regular security audits and vulnerability assessments</li>
-                <li>Multi-factor authentication options</li>
-                <li>Access controls and role-based permissions</li>
-                <li>Regular backups and disaster recovery procedures</li>
-                <li>Employee security training and confidentiality agreements</li>
-            </ul>
+    <div class="dashboard-header">
+            <div class="logo-section">
+                <div class="logo">PT</div>
+                <div class="brand-name">Peak Test Series</div>
+            </div>
+            <div class="user-info-section">
+                <div class="user-details">
+                    <div class="user-name" id="userName"></div>
+                    <div class="user-grade-board" id="userGradeBoard"></div>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            </div>
         </div>
+    <div class="privacy-container">
+        <div class="privacy-content">
+            <!-- Back Button -->
+            <a href="./index.html" class="back-home">← Back to Home</a>
 
-        <h3>3.3 Data Retention</h3>
-        <p>We retain your personal information for as long as your account is active or as needed to provide services. After account deletion, we may retain certain information for:</p>
-        <ul>
-            <li>Legal compliance and audit purposes (up to 7 years)</li>
-            <li>Fraud prevention and security</li>
-            <li>Backup and disaster recovery (30-90 days)</li>
-        </ul>
+            <!-- Header -->
+            <div class="privacy-header">
+                <h1>🔒 Privacy Policy</h1>
+                <p style="color: #58508d; font-size: 18px; font-weight: 600;">Peak Test Series</p>
+                <p class="last-updated">Last Updated: December 2, 2025</p>
+            </div>
 
-        <h2>4. How We Share Your Information</h2>
-        <p>We do not sell your personal information. We may share your information in the following circumstances:</p>
+            <!-- Introduction -->
+            <div class="privacy-section">
+                <h2>1. Introduction</h2>
+                <p>
+                    Welcome to Peak Test Series. We are committed to protecting your personal
+                    information and your right to privacy. This Privacy Policy explains how we collect, use, disclose,
+                    and safeguard your information when you use our online test preparation platform.
+                </p>
+                <p>
+                    By accessing or using Peak Test Series, you agree to the terms outlined in this Privacy Policy. If
+                    you do not agree with our policies and practices, please do not use our services.
+                </p>
+            </div>
 
-        <h3>4.1 Service Providers</h3>
-        <p>We share information with third-party service providers who assist us in:</p>
-        <ul>
-            <li>Cloud hosting and data storage</li>
-            <li>Payment processing</li>
-            <li>Email delivery and communications</li>
-            <li>Analytics and performance monitoring</li>
-            <li>Customer support tools</li>
-        </ul>
+            <!-- Information We Collect -->
+            <div class="privacy-section">
+                <h2>2. Information We Collect</h2>
 
-        <h3>4.2 Business Transfers</h3>
-        <p>In the event of a merger, acquisition, or sale of assets, your information may be transferred to the acquiring entity.</p>
+                <h3>2.1 Personal Information</h3>
+                <p>When you register for an account, we collect:</p>
+                <ul>
+                    <li>Full Name</li>
+                    <li>Email Address</li>
+                    <li>Grade/Class Level</li>
+                    <li>Educational Board (ISC/CBSE/ICSE)</li>
+                    <li>Residential Address</li>
+                    <li>Password (encrypted)</li>
+                </ul>
 
-        <h3>4.3 Legal Requirements</h3>
-        <p>We may disclose your information if required by law or in response to:</p>
-        <ul>
-            <li>Valid legal processes (subpoenas, court orders)</li>
-            <li>Government or regulatory requests</li>
-            <li>Protection of our rights, property, or safety</li>
-            <li>Prevention of fraud or illegal activities</li>
-        </ul>
+                <h3>2.2 Academic Information</h3>
+                <ul>
+                    <li>Test scores and performance data</li>
+                    <li>Submitted answer sheets</li>
+                    <li>Progress reports and analytics</li>
+                    <li>Subject preferences and selections</li>
+                </ul>
 
-        <h2>5. Cookies and Tracking Technologies</h2>
-        <p>Peak Dashboard uses cookies and similar technologies to enhance your experience:</p>
+                <h3>2.3 Payment Information</h3>
+                <p>
+                    Payment transactions are processed through Razorpay, a secure third-party payment gateway. We do not
+                    store your complete credit card or banking information on our servers.
+                </p>
 
-        <div class="info-box">
-            <h3>Types of Cookies We Use:</h3>
-            <ul>
-                <li><strong>Essential Cookies:</strong> Required for basic functionality (login, security)</li>
-                <li><strong>Performance Cookies:</strong> Help us understand how users interact with the Service</li>
-                <li><strong>Functional Cookies:</strong> Remember your preferences and settings</li>
-                <li><strong>Marketing Cookies:</strong> Track your activity for targeted advertising (with your consent)</li>
-            </ul>
-            <p>You can control cookies through your browser settings. Note that disabling certain cookies may affect functionality.</p>
+                <h3>2.4 Technical Information</h3>
+                <ul>
+                    <li>IP address and browser type</li>
+                    <li>Device information</li>
+                    <li>Usage data and activity logs</li>
+                    <li>Cookies and similar technologies</li>
+                </ul>
+            </div>
+
+            <!-- How We Use Your Information -->
+            <div class="privacy-section">
+                <h2>3. How We Use Your Information</h2>
+                <p>We use the collected information for the following purposes:</p>
+                <ul>
+                    <li>To create and manage your account</li>
+                    <li>To provide access to test series and study materials</li>
+                    <li>To process payments and subscriptions</li>
+                    <li>To evaluate your test performance and provide feedback</li>
+                    <li>To send important updates, notifications, and announcements</li>
+                    <li>To improve our services and user experience</li>
+                    <li>To prevent fraud and ensure platform security</li>
+                    <li>To comply with legal obligations</li>
+                </ul>
+            </div>
+
+            <!-- Data Security -->
+            <div class="privacy-section">
+                <h2>4. Data Security</h2>
+                <p>
+                    We implement industry-standard security measures to protect your personal information:
+                </p>
+                <ul>
+                    <li>SSL/TLS encryption for data transmission</li>
+                    <li>Secure database storage with Supabase</li>
+                    <li>Password encryption using strong hashing algorithms</li>
+                    <li>Regular security audits and updates</li>
+                    <li>Restricted access to personal data</li>
+                    <li>PDF watermarking to prevent unauthorized distribution</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <strong>⚠️ Important:</strong> While we strive to protect your information, no method of transmission
+                    over the internet is 100% secure. We cannot guarantee absolute security of your data.
+                </div>
+            </div>
+
+            <!-- Data Sharing and Disclosure -->
+            <div class="privacy-section">
+                <h2>5. Data Sharing and Disclosure</h2>
+                <p>We do not sell, trade, or rent your personal information to third parties. We may share your
+                    information only in the following circumstances:</p>
+
+                <h3>5.1 Service Providers</h3>
+                <ul>
+                    <li>Payment processors (Razorpay) for transaction processing</li>
+                    <li>Cloud storage providers (Supabase) for data hosting</li>
+                    <li>Email service providers for sending notifications</li>
+                </ul>
+
+                <h3>5.2 Legal Requirements</h3>
+                <p>We may disclose your information if required by law, court order, or government regulation.</p>
+
+                <h3>5.3 Business Transfers</h3>
+                <p>In the event of a merger, acquisition, or sale of assets, your information may be transferred to the
+                    acquiring entity.</p>
+            </div>
+
+            <!-- Your Rights -->
+            <div class="privacy-section">
+                <h2>6. Your Rights and Choices</h2>
+                <p>You have the following rights regarding your personal information:</p>
+                <ul>
+                    <li><strong>Access:</strong> Request a copy of your personal data</li>
+                    <li><strong>Correction:</strong> Update or correct inaccurate information</li>
+                    <li><strong>Deletion:</strong> Request deletion of your account and data</li>
+                    <li><strong>Opt-Out:</strong> Unsubscribe from promotional emails</li>
+                    <li><strong>Data Portability:</strong> Receive your data in a structured format</li>
+                </ul>
+
+                <p>To exercise these rights, contact us at <a href="mailto:tech@peakpotentia.com"
+                        style="color: #58508d; font-weight: 600;">tech@peakpotentia.com</a></p>
+            </div>
+
+            <!-- Cookies Policy -->
+            <div class="privacy-section">
+                <h2>7. Cookies and Tracking Technologies</h2>
+                <p>
+                    We use cookies and similar technologies to enhance your experience on our platform. Cookies help us:
+                </p>
+                <ul>
+                    <li>Remember your login session</li>
+                    <li>Store your preferences</li>
+                    <li>Analyze platform usage and performance</li>
+                    <li>Provide personalized content</li>
+                </ul>
+                <p>You can control cookies through your browser settings. However, disabling cookies may limit some
+                    features of our platform.</p>
+            </div>
+
+            <!-- Children's Privacy -->
+            <div class="privacy-section">
+                <h2>8. Children's Privacy</h2>
+                <p>
+                    Our services are designed for students in grades 10-12 (typically ages 15-18). We comply with
+                    applicable laws regarding the collection and use of information from minors. Parents and guardians
+                    have the right to review and request deletion of their child's information.
+                </p>
+                <div class="highlight-box">
+                    <strong>📚 For Students Under 18:</strong> We encourage parents/guardians to monitor their child's
+                    online activities and help them understand how to protect their privacy.
+                </div>
+            </div>
+
+            <!-- Data Retention -->
+            <div class="privacy-section">
+                <h2>9. Data Retention</h2>
+                <p>
+                    We retain your personal information for as long as necessary to provide our services and comply with
+                    legal obligations:
+                </p>
+                <ul>
+                    <li>Active accounts: Data retained while account is active</li>
+                    <li>Inactive accounts: Data may be deleted after 2 years of inactivity</li>
+                    <li>Test records: Retained for academic and improvement purposes</li>
+                    <li>Payment records: Retained as required by law (typically 7 years)</li>
+                </ul>
+            </div>
+
+            <!-- Third-Party Links -->
+            <div class="privacy-section">
+                <h2>10. Third-Party Links</h2>
+                <p>
+                    Our platform may contain links to third-party websites or services (e.g., social media, payment
+                    gateways). We are not responsible for the privacy practices of these external sites. We encourage
+                    you to review their privacy policies before sharing any information.
+                </p>
+            </div>
+
+            <!-- International Users -->
+            <div class="privacy-section">
+                <h2>11. International Data Transfers</h2>
+                <p>
+                    Your information may be transferred to and stored on servers located outside your country of
+                    residence. By using our services, you consent to the transfer of your information to India and other
+                    countries where our service providers operate.
+                </p>
+            </div>
+
+            <!-- Changes to Privacy Policy -->
+            <div class="privacy-section">
+                <h2>12. Changes to This Privacy Policy</h2>
+                <p>
+                    We may update this Privacy Policy from time to time to reflect changes in our practices or legal
+                    requirements. We will notify you of significant changes by:
+                </p>
+                <ul>
+                    <li>Posting the updated policy on our website</li>
+                    <li>Sending an email notification to registered users</li>
+                    <li>Displaying a notice on our platform</li>
+                </ul>
+                <p>
+                    The "Last Updated" date at the top of this policy indicates when it was last revised. Your continued
+                    use of our services after changes constitutes acceptance of the updated policy.
+                </p>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="contact-box">
+                <h3>📧 Contact Us</h3>
+                <p style="margin-bottom: 15px;">
+                    If you have any questions, concerns, or requests regarding this Privacy Policy or our data
+                    practices, please contact us:
+                </p>
+                <p><strong>Email:</strong> <a href="mailto:tech@peakpotentia.com">tech@peakpotentia.com</a></p>
+                <p><strong>Phone:</strong> <a href="tel:+919818184460">+91 98181 84460</a></p>
+                <p><strong>Address:</strong><a href=""> 3rd Floor, 108 Arjun Marg - Gurugram, India </a> </p>
+                <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+                    We typically respond to inquiries within 2-3 business days.
+                </p>
+            </div>
+
+            <!-- Consent -->
+            <div class="privacy-section" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                <h2>13. Your Consent</h2>
+                <p>
+                    By using Peak Test Series, you acknowledge that you have read, understood, and agree to be bound by
+                    this Privacy Policy. If you do not agree with any part of this policy, please discontinue use of our
+                    services immediately.
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                <p style="color: #666; font-size: 14px;">© 2025 Peak Test Series. All rights reserved.</p>
+                <p style="color: #666; font-size: 14px;">Empowering Students to Reach Their Peak Potential</p>
+            </div>
         </div>
-
-        <h2>6. Your Privacy Rights</h2>
-        <p>Depending on your location, you may have the following rights:</p>
-
-        <h3>6.1 Access and Portability</h3>
-        <ul>
-            <li>Request a copy of your personal data</li>
-            <li>Export your data in a machine-readable format</li>
-        </ul>
-
-        <h3>6.2 Correction and Deletion</h3>
-        <ul>
-            <li>Update or correct inaccurate information</li>
-            <li>Request deletion of your personal data</li>
-        </ul>
-
-        <h3>6.3 Consent and Objection</h3>
-        <ul>
-            <li>Withdraw consent for data processing</li>
-            <li>Object to processing of your data</li>
-            <li>Opt-out of marketing communications</li>
-        </ul>
-
-        <h3>6.4 Restriction</h3>
-        <ul>
-            <li>Request restriction of data processing</li>
-            <li>Limit how we use your information</li>
-        </ul>
-
-        <div class="highlight">
-            <p><strong>To exercise your rights, contact us at:</strong> privacy@peakdashboard.com</p>
-            <p>We will respond to your request within 30 days.</p>
-        </div>
-
-        <h2>7. International Data Transfers</h2>
-        <p>Your information may be transferred to and processed in countries other than your country of residence. We ensure appropriate safeguards are in place through:</p>
-        <ul>
-            <li>Standard contractual clauses</li>
-            <li>Data processing agreements</li>
-            <li>Compliance with GDPR and other privacy frameworks</li>
-        </ul>
-
-        <h2>8. Children's Privacy</h2>
-        <p>Peak Dashboard is not intended for users under the age of 18. We do not knowingly collect personal information from children. If we become aware that we have collected data from a child, we will take steps to delete such information promptly.</p>
-
-        <h2>9. Third-Party Links</h2>
-        <p>Our Service may contain links to third-party websites or services. We are not responsible for the privacy practices of these external sites. We encourage you to review their privacy policies before providing any personal information.</p>
-
-        <h2>10. Changes to This Privacy Policy</h2>
-        <p>We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will notify you of any material changes by:</p>
-        <ul>
-            <li>Posting the updated policy on our website</li>
-            <li>Sending an email notification to registered users</li>
-            <li>Displaying a prominent notice within the Service</li>
-        </ul>
-        <p>Your continued use of the Service after such changes constitutes acceptance of the updated policy.</p>
-
-        <h2>11. Contact Us</h2>
-        <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:</p>
-
-        <div class="highlight">
-            <p><strong>Data Protection Officer</strong></p>
-            <p><strong>Email:</strong> privacy@peakdashboard.com</p>
-            <p><strong>Support Email:</strong> support@peakdashboard.com</p>
-            <p><strong>Website:</strong> https://pallavi-0880.github.io/Peak-Dashboard/</p>
-            <p><strong>Address:</strong> Peak Dashboard, Gurugram, Haryana, India</p>
-        </div>
-
-        <h2>12. Compliance</h2>
-        <p>Peak Dashboard is committed to compliance with applicable data protection laws, including:</p>
-        <ul>
-            <li>General Data Protection Regulation (GDPR)</li>
-            <li>Information Technology Act, 2000 (India)</li>
-            <li>California Consumer Privacy Act (CCPA)</li>
-            <li>Other applicable regional privacy laws</li>
-        </ul>
-
-        <a href="index.html" class="back-link">← Back to Home</a>
     </div>
 </body>
+
 </html>
