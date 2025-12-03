@@ -46,85 +46,14 @@ try {
 // Razorpay Configuration
 const RAZORPAY_KEY = 'rzp_test_YOUR_KEY'; // Replace with your Razorpay Key
 
+const VERIFICATION_INTERVAL = 30000;
+let verificationTimer = null;
+
 // Global State
 let currentUser = null;
 let currentSubject = null;
 let pdfTimer = null;
 let testStartTime = null;
-
-
-const WEB3FORMS_ACCESS_KEY = '0eea1343-90ab-4b21-8203-7d1195e766ee'; // ← Replace with your key from email
-
-// ============================================================================
-// EMAIL NOTIFICATION FUNCTION
-// ============================================================================
-async function sendEmailNotification(studentData) {
-    // Skip if access key not configured
-    if (!WEB3FORMS_ACCESS_KEY || WEB3FORMS_ACCESS_KEY === '0eea1343-90ab-4b21-8203-7d1195e766ee') {
-        // console.warn('⚠️ Web3Forms not configured. Email notification skipped.');
-        // console.warn('📧 To enable email notifications:');
-        // console.warn('1. Go to https://web3forms.com/');
-        // console.warn('2. Enter: tech@peakpotentia.com');
-        // console.warn('3. Check email for access key');
-        // console.warn('4. Update WEB3FORMS_ACCESS_KEY in main.js');
-        return { success: false, error: 'Not configured' };
-    }
-
-    try {
-        // console.log('📧 Sending registration email to tech@peakpotentia.com...');
-
-        const response = await fetch('https://api.web3forms.com/submit', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                access_key: WEB3FORMS_ACCESS_KEY,
-                subject: `🎓 New Student Registration - ${studentData.name}`,
-                from_name: 'Peak Test Series',
-                from_email: studentData.email,
-                to: 'tech@peakpotentia.com',
-                message: `
-👤 Name:         ${studentData.name}
-📧 Email:        ${studentData.email}
-🎓 Grade:        ${studentData.grade}th
-📚 Board:        ${studentData.board}
-📍 Address:      ${studentData.address}
-🕐 Registered:   ${new Date().toLocaleString('en-IN', {
-                    timeZone: 'Asia/Kolkata',
-                    dateStyle: 'full',
-                    timeStyle: 'long'
-                })}
-
-
-
-📊 SYSTEM INFO:
-• Backend: ${studentData.savedToSupabase ? 'Supabase ✅' : 'Local Storage ⚠️'}
-• Student ID: ${studentData.id || 'Pending'}
-
-
-
-                `
-            })
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            // console.log('✅ Email sent successfully to tech@peakpotentia.com!');
-            return { success: true, result };
-        } else {
-            // console.error('❌ Email failed:', result);
-            return { success: false, error: result };
-        }
-
-    } catch (error) {
-        // console.error('❌ Email error:', error);
-        return { success: false, error };
-    }
-}
-
 
 
 // Subject Data for Different Grades and Boards
@@ -175,11 +104,129 @@ const subjectsByGradeBoard = {
     ]
 };
 
+async function verifyStudentExists() {
+    if (!currentUser || !currentUser.email || !supabaseEnabled || !supabase) {
+        return;
+    }
+
+    try {
+        console.log('🔍 Verifying student account...');
+
+        const { data, error } = await supabase
+            .from('students')
+            .select('id, email, name')
+            .eq('email', currentUser.email)
+            .single();
+
+        if (error) {
+            if (error.code === 'PGRST116' || error.message.includes('No rows')) {
+                console.warn('⚠️ Student account not found in database!');
+                handleStudentRemoved();
+                return;
+            }
+            console.error('❌ Verification error:', error);
+            return;
+        }
+
+        if (data) {
+            console.log('✅ Student account verified');
+        } else {
+            console.warn('⚠️ Student account has been removed!');
+            handleStudentRemoved();
+        }
+
+    } catch (error) {
+        console.error('❌ Verification check failed:', error);
+    }
+}
+
+// Handle student removal
+function handleStudentRemoved() {
+    if (verificationTimer) {
+        clearInterval(verificationTimer);
+        verificationTimer = null;
+    }
+
+    currentUser = null;
+    localStorage.removeItem('peakTestUser');
+
+    if (pdfTimer) {
+        clearInterval(pdfTimer);
+        pdfTimer = null;
+    }
+
+    alert('⚠️ Your account has been deactivated.\n\nPlease contact support for more information.\n\nEmail: tech@peakpotentia.com\nPhone: +91 98181 84460');
+
+    window.location.reload();
+
+    console.log('🚪 Student logged out - account removed from backend');
+}
+
+// Start verification timer
+function startVerificationTimer() {
+    if (!supabaseEnabled || !supabase || !currentUser) {
+        console.log('ℹ️ Verification not started - Supabase not enabled');
+        return;
+    }
+
+    console.log('🔐 Starting student verification timer (every 30 seconds)...');
+
+    if (verificationTimer) {
+        clearInterval(verificationTimer);
+    }
+
+    verifyStudentExists();
+
+    verificationTimer = setInterval(() => {
+        verifyStudentExists();
+    }, VERIFICATION_INTERVAL);
+
+    console.log('✅ Verification timer started');
+}
+
+// Stop verification timer
+function stopVerificationTimer() {
+    if (verificationTimer) {
+        clearInterval(verificationTimer);
+        verificationTimer = null;
+        console.log('🛑 Verification timer stopped');
+    }
+}
+
+
+
+
 // Check if user is already logged in
 window.addEventListener('DOMContentLoaded', async () => {
     const userData = localStorage.getItem('peakTestUser');
     if (userData) {
         currentUser = JSON.parse(userData);
+
+        if (supabaseEnabled && supabase) {
+            console.log('🔍 Verifying student account on page load...');
+
+            try {
+                const { data, error } = await supabase
+                    .from('students')
+                    .select('id, email')
+                    .eq('email', currentUser.email)
+                    .single();
+
+                if (error || !data) {
+                    console.warn('⚠️ Student not found in database - logging out');
+                    currentUser = null;
+                    localStorage.removeItem('peakTestUser');
+                    alert('⚠️ Your account is not active.\n\nPlease contact support.\n\ntech@peakpotentia.com');
+                    return;
+                }
+
+                console.log('✅ Student verified - showing dashboard');
+            } catch (error) {
+                console.error('❌ Verification failed:', error);
+            }
+        }
+
+
         showDashboard();
     }
 });
@@ -274,15 +321,7 @@ async function handleRegistration() {
         } else {
             // console.log('ℹ️ Supabase not enabled. Using localStorage only.');
         }
-         await sendEmailNotification({
-            name: name,
-            email: email,
-            grade: grade,
-            board: board,
-            address: address,
-            savedToSupabase: false,
-            id: null
-        });
+       
 
         // Always save to localStorage as backup
         localStorage.setItem('peakTestUser', JSON.stringify(userData));
@@ -1451,20 +1490,20 @@ async function loadSubmittedTests() {
 
         data.forEach(submission => {
             const hasMarks = submission.marks !== null && submission.marks !== undefined;
-            const percentage = hasMarks ? Math.round((submission.marks / (submission.max_marks || 100)) * 100) : null;
+            const percentage = hasMarks ? Math.round((submission.marks / (submission.max_marks || 80)) * 100) : null;
 
             // Determine grade
             let grade = '';
             let gradeClass = '';
             if (hasMarks) {
-                const percent = (submission.marks / (submission.max_marks || 100)) * 100;
-                if (percent >= 90) {
+                const percent = (submission.marks / (submission.max_marks || 80)) * 100;
+                if (percent >= 70) {
                     grade = 'Excellent! 🌟';
                     gradeClass = 'grade-excellent';
-                } else if (percent >= 75) {
+                } else if (percent >= 65) {
                     grade = 'Good! 👍';
                     gradeClass = 'grade-good';
-                } else if (percent >= 60) {
+                } else if (percent >= 50) {
                     grade = 'Average';
                     gradeClass = 'grade-average';
                 } else {
@@ -1506,7 +1545,7 @@ async function loadSubmittedTests() {
                         <!-- Results Available -->
                         <div class="result-marks">
                             <div class="marks-display">
-                                ${submission.marks}/${submission.max_marks || 100}
+                                ${submission.marks}/${submission.max_marks || 80}
                             </div>
                             <div class="marks-info">
                                 <div class="percentage">${percentage}%</div>

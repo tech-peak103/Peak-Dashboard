@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund Policy - Peak Test Series</title>
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        /* Refund Policy Specific Styles */
+        .refund-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #003f5c 0%, #58508d 50%, #bc5090 100%);
+            padding: 40px 20px;
+        }
+
+        .refund-content {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .refund-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #58508d;
+        }
+
+        .refund-header h1 {
+            color: #003f5c;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .refund-header .last-updated {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .back-home {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #58508d, #bc5090);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(88, 80, 141, 0.4);
+        }
+
+        .refund-section {
+            margin-bottom: 35px;
+        }
+
+        .refund-section h2 {
+            color: #003f5c;
+            font-size: 24px;
+            margin-bottom: 15px;
+            padding-left: 15px;
+            border-left: 4px solid #58508d;
+        }
+
+        .refund-section h3 {
+            color: #58508d;
+            font-size: 18px;
+            margin: 20px 0 10px 0;
+        }
+
+        .refund-section p {
+            color: #444;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+
+        .refund-section ul,
+        .refund-section ol {
+            padding-left: 25px;
+            margin: 15px 0;
+        }
+
+        .refund-section ul li,
+        .refund-section ol li {
+            padding: 8px 0;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .highlight-box {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #58508d;
+            margin: 20px 0;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .success-box strong {
+            color: #155724;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .warning-box strong {
+            color: #856404;
+        }
+
+        .danger-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .danger-box strong {
+            color: #721c24;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-table th {
+            background: linear-gradient(135deg, #58508d, #bc5090);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .info-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .info-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .info-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .process-steps {
+            counter-reset: step-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .process-steps li {
+            counter-increment: step-counter;
+            position: relative;
+            padding: 20px 20px 20px 70px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #58508d;
+        }
+
+        /* .process-steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #58508d, #bc5090);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        } */
+
+        .contact-box {
+            background: linear-gradient(135deg, #003f5c, #58508d);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .contact-box h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .contact-box a {
+            color: #ffa600;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .contact-box a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .refund-content {
+                padding: 25px 20px;
+            }
+
+            .refund-header h1 {
+                font-size: 28px;
+            }
+
+            .refund-section h2 {
+                font-size: 20px;
+            }
+
+            .refund-section h3 {
+                font-size: 16px;
+            }
+
+            .refund-section p,
+            .refund-section ul li,
+            .refund-section ol li {
+                font-size: 14px;
+            }
+
+            .info-table {
+                font-size: 14px;
+            }
+
+            .process-steps li {
+                padding-left: 60px;
+            }
+
+            .process-steps li::before {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+     <div class="dashboard-header">
+            <div class="logo-section">
+                <div class="logo">PT</div>
+                <div class="brand-name">Peak Test Series</div>
+            </div>
+            <div class="user-info-section">
+                <div class="user-details">
+                    <div class="user-name" id="userName"></div>
+                    <div class="user-grade-board" id="userGradeBoard"></div>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+    <div class="refund-container">
+        <div class="refund-content">
+            <!-- Back Button -->
+            <a href="./index.html" class="back-home">← Back to Home</a>
+
+            <!-- Header -->
+            <div class="refund-header">
+                <h1>💰 Refund Policy</h1>
+                <p style="color: #58508d; font-size: 18px; font-weight: 600;">Peak Test Series</p>
+                <p class="last-updated">Last Updated: December 2, 2025</p>
+            </div>
+
+            <!-- Introduction -->
+            <div class="refund-section">
+                <h2>1. Overview</h2>
+                <p>
+                    At Peak Test Series, we are committed to providing high-quality educational content and services.
+                    This Refund Policy outlines the terms and conditions under which refunds will be processed for
+                    purchases made on our platform.
+                </p>
+                <div class="highlight-box">
+                    <strong>⏰ Important:</strong> Please read this policy carefully before making a purchase. By
+                    completing a transaction, you acknowledge that you have read and agree to this Refund Policy.
+                </div>
+            </div>
+
+            <!-- Refund Eligibility -->
+            <div class="refund-section">
+                <h2>2. Refund Eligibility</h2>
+
+                <h3>2.1 Full Refund (100%)</h3>
+                <div class="success-box">
+                    <strong>✅ You are eligible for a FULL refund if:</strong>
+                    <ul style="margin-top: 10px; margin-bottom: 0;">
+                        <li>Request is made within <strong>7 days</strong> of purchase</li>
+                        <li>You have <strong>NOT accessed or downloaded</strong> any test papers</li>
+                        <li>You have <strong>NOT opened</strong> any PDF test files</li>
+                        <li>No tests have been <strong>started or attempted</strong></li>
+                    </ul>
+                </div>
+
+                <h3>2.2 Partial Refund (Case by Case)</h3>
+                <div class="warning-box">
+                    <strong>⚠️ Partial refunds may be considered if:</strong>
+                    <ul style="margin-top: 10px; margin-bottom: 0;">
+                        <li>Technical issues prevented access to content (verified by our team)</li>
+                        <li>Content quality issues (must provide specific evidence)</li>
+                        <li>Medical emergencies (requires supporting documentation)</li>
+                        <li>Subject purchased is evaluated on case-by-case basis</li>
+                    </ul>
+                </div>
+
+                <h3>2.3 No Refund</h3>
+                <div class="danger-box">
+                    <strong>❌ NO refunds will be provided if:</strong>
+                    <ul style="margin-top: 10px; margin-bottom: 0;">
+                        <li>More than <strong>7 days</strong> have passed since purchase</li>
+                        <li>You have accessed, downloaded, or viewed any test papers</li>
+                        <li>Any test has been started or timer activated</li>
+                        <li>Answers have been submitted for evaluation</li>
+                        <li>Content has been shared or distributed</li>
+                        <li>Changed mind after accessing content</li>
+                        <li>Academic dissatisfaction with test scores</li>
+                        <li>Failure to understand the refund policy before purchase</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Pricing and Refund Breakdown -->
+            <div class="refund-section">
+                <h2>3. Pricing and Refund Breakdown</h2>
+
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Price per Subject</strong></td>
+                            <td>₹15,000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tests per Subject</strong></td>
+                            <td>5 Tests</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Test Duration</strong></td>
+                            <td>3 Hours per test</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Refund Window</strong></td>
+                            <td>7 Days from purchase</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Processing Fee</strong></td>
+                            <td>5% (₹750) deducted from refund</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Refund Amount</strong></td>
+                            <td>₹14,250 (if eligible)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Processing Time</strong></td>
+                            <td>5-7 Business Days</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight-box">
+                    <strong>💡 Note:</strong> A processing fee of 5% (₹750) is deducted from all refunds to cover
+                    payment gateway charges and administrative costs. The refunded amount will be ₹14,250 for a subject
+                    priced at ₹15,000.
+                </div>
+            </div>
+
+            <!-- Refund Process -->
+            <div class="refund-section">
+                <h2>4. How to Request a Refund</h2>
+                <p>Follow these steps to request a refund:</p>
+
+                <ol class="process-steps">
+                    <li>
+                        <strong>Email Us</strong><br>
+                        Send an email to <a href="mailto:tech@peakpotentia.com" style="color: #58508d; font-weight: 600;">tech@peakpotentia.com</a> with the subject line:
+                        "Refund Request - [Your Name]"
+                    </li>
+                    <li>
+                        <strong>Provide Details</strong><br>
+                        Include the following information:
+                        <ul style="margin-top: 10px;">
+                            <li>Full Name (as registered)</li>
+                            <li>Email Address (used for registration)</li>
+                            <li>Subject(s) purchased</li>
+                            <li>Transaction ID / Payment Receipt</li>
+                            <li>Date of Purchase</li>
+                            <li>Reason for refund request</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Verification</strong><br>
+                        Our team will verify:
+                        <ul style="margin-top: 10px;">
+                            <li>Purchase date is within 7 days</li>
+                            <li>No tests have been accessed</li>
+                            <li>No downloads have occurred</li>
+                            <li>Account activity logs</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Approval/Rejection</strong><br>
+                        You will receive a response within 2-3 business days informing you whether your refund request
+                        has been approved or rejected, with reasons provided.
+                    </li>
+                    <li>
+                        <strong>Refund Processing</strong><br>
+                        If approved, the refund will be processed within 5-7 business days to the original payment
+                        method used for purchase.
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Refund Timeline -->
+            <div class="refund-section">
+                <h2>5. Refund Timeline</h2>
+
+                <table class="info-table">
+                    <thead>
+                        <tr>
+                            <th>Stage</th>
+                            <th>Timeline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Refund Request Submission</td>
+                            <td>Within 7 days of purchase</td>
+                        </tr>
+                        <tr>
+                            <td>Initial Response</td>
+                            <td>2-3 Business Days</td>
+                        </tr>
+                        <tr>
+                            <td>Verification Process</td>
+                            <td>1-2 Business Days</td>
+                        </tr>
+                        <tr>
+                            <td>Refund Approval/Rejection</td>
+                            <td>3-5 Business Days from request</td>
+                        </tr>
+                        <tr>
+                            <td>Refund Processing</td>
+                            <td>5-7 Business Days after approval</td>
+                        </tr>
+                        <tr>
+                            <td>Bank Credit (varies by bank)</td>
+                            <td>Additional 3-5 Business Days</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Time</strong></td>
+                            <td><strong>10-15 Business Days (approx.)</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="warning-box">
+                    <strong>⏳ Please Note:</strong> The timeline provided is an estimate. Actual processing time may
+                    vary depending on your bank and payment method. Weekends and public holidays are not counted as
+                    business days.
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="refund-section">
+                <h2>6. Refund Methods</h2>
+                <p>Refunds will be processed using the same payment method used for the original purchase:</p>
+
+                <h3>6.1 Credit/Debit Card</h3>
+                <ul>
+                    <li>Refund credited to the same card used for payment</li>
+                    <li>Appears as a credit on your next statement</li>
+                    <li>Bank processing time: 3-5 business days</li>
+                </ul>
+
+                <h3>6.2 UPI</h3>
+                <ul>
+                    <li>Refund to the same UPI ID used for payment</li>
+                    <li>Usually processed within 3-5 business days</li>
+                    <li>Instant refund in some cases</li>
+                </ul>
+
+                <h3>6.3 Net Banking</h3>
+                <ul>
+                    <li>Refund to the bank account linked to net banking</li>
+                    <li>Processing time: 5-7 business days</li>
+                </ul>
+
+                <h3>6.4 Wallet (Paytm, PhonePe, etc.)</h3>
+                <ul>
+                    <li>Refund to the same wallet account</li>
+                    <li>Usually instant to 3 business days</li>
+                </ul>
+
+                <div class="highlight-box">
+                    <strong>💳 Note:</strong> We cannot process refunds to a different payment method than the one used
+                    for purchase due to security and fraud prevention measures.
+                </div>
+            </div>
+
+            <!-- Special Circumstances -->
+            <div class="refund-section">
+                <h2>7. Special Circumstances</h2>
+
+                <h3>7.1 Technical Issues</h3>
+                <p>
+                    If you experience technical problems accessing purchased content (e.g., PDFs not loading, tests not
+                    starting), contact us immediately at <a href="mailto:tech@peakpotentia.com"
+                        style="color: #58508d; font-weight: 600;">tech@peakpotentia.com</a>. We will:
+                </p>
+                <ul>
+                    <li>Investigate and resolve the technical issue</li>
+                    <li>Extend access time if necessary</li>
+                    <li>Consider refund if issue cannot be resolved</li>
+                </ul>
+
+                <h3>7.2 Medical Emergencies</h3>
+                <p>
+                    In case of genuine medical emergencies preventing you from using purchased content:
+                </p>
+                <ul>
+                    <li>Provide medical certificates or hospital documentation</li>
+                    <li>Partial refund or credit for future use may be considered</li>
+                    <li>Each case reviewed individually</li>
+                </ul>
+
+                <h3>7.3 Academic Calendar Changes</h3>
+                <p>
+                    If your school/exam board makes unexpected changes to the syllabus or schedule:
+                </p>
+                <ul>
+                    <li>Contact us with official documentation</li>
+                    <li>We may offer content updates instead of refund</li>
+                    <li>Partial refund considered on case basis</li>
+                </ul>
+            </div>
+
+            <!-- Non-Refundable Items -->
+            <div class="refund-section">
+                <h2>8. Non-Refundable Items and Services</h2>
+                <div class="danger-box">
+                    <strong>❌ The following are NON-REFUNDABLE:</strong>
+                    <ul style="margin-top: 10px; margin-bottom: 0;">
+                        <li>Evaluation and feedback on submitted answers</li>
+                        <li>Digital content that has been accessed or downloaded</li>
+                        <li>Test papers where timer has been started</li>
+                        <li>Purchases made during promotional/discount periods (unless otherwise stated)</li>
+                        <li>Additional services purchased separately</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Cancellation Policy -->
+            <div class="refund-section">
+                <h2>9. Cancellation Policy</h2>
+                <p>
+                    You may cancel your purchase and request a refund within 7 days, subject to the eligibility
+                    criteria mentioned above. After 7 days, all sales are final.
+                </p>
+
+                <h3>9.1 How to Cancel</h3>
+                <ul>
+                    <li>Send cancellation request to tech@peakpotentia.com</li>
+                    <li>Include your registration details and reason</li>
+                    <li>Do not access any content after requesting cancellation</li>
+                    <li>Wait for confirmation before considering it canceled</li>
+                </ul>
+            </div>
+
+            <!-- Dispute Resolution -->
+            <div class="refund-section">
+                <h2>10. Dispute Resolution</h2>
+                <p>If you disagree with a refund decision:</p>
+                <ol>
+                    <li>Reply to the rejection email with additional information or clarifications</li>
+                    <li>Our review team will reconsider your case within 3-5 business days</li>
+                    <li>Final decision will be communicated via email</li>
+                    <li>If still unsatisfied, you may escalate to senior management</li>
+                </ol>
+
+                <div class="highlight-box">
+                    <strong>📧 Escalation Email:</strong> For escalations, email to tech@peakpotentia.com with subject
+                    "ESCALATION - Refund Dispute - [Your Name]"
+                </div>
+            </div>
+
+            <!-- Changes to Policy -->
+            <div class="refund-section">
+                <h2>11. Changes to This Policy</h2>
+                <p>
+                    We reserve the right to modify this Refund Policy at any time. Changes will be effective
+                    immediately upon posting on our website. The "Last Updated" date at the top indicates when the
+                    policy was last revised.
+                </p>
+                <p>
+                    Your continued use of Peak Test Series after changes to this policy constitutes acceptance of the
+                    updated terms.
+                </p>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="contact-box">
+                <h3>💬 Have Questions About Refunds?</h3>
+                <p style="margin-bottom: 15px;">
+                    For refund requests, inquiries, or clarifications, please contact us:
+                </p>
+                <p><strong>Email:</strong> <a href="mailto:tech@peakpotentia.com">tech@peakpotentia.com</a></p>
+                <p><strong>Phone:</strong> <a href="tel:+919818184460">+91 98181 84460</a></p>
+                <p><strong>Subject Line:</strong> "Refund Request - [Your Name]"</p>
+                <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+                    Response Time: 2-3 Business Days
+                </p>
+            </div>
+
+            <!-- Summary Box -->
+            <div class="refund-section" style="margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                <h2>📋 Quick Summary</h2>
+                <div class="success-box">
+                    <strong>✅ Refund Eligible IF:</strong>
+                    <ul style="margin-top: 10px; margin-bottom: 10px;">
+                        <li>Within 7 days of purchase</li>
+                        <li>No content accessed</li>
+                        <li>No tests started</li>
+                        <li>Processing fee: 5% (₹750)</li>
+                        <li>Refund: ₹14,250 (for ₹15,000 purchase)</li>
+                    </ul>
+                </div>
+
+                <div class="danger-box">
+                    <strong>❌ NO Refund IF:</strong>
+                    <ul style="margin-top: 10px; margin-bottom: 0;">
+                        <li>After 7 days</li>
+                        <li>Content accessed/downloaded</li>
+                        <li>Tests started or submitted</li>
+                        <li>Changed mind after use</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 2px solid #e0e0e0;">
+                <p style="color: #666; font-size: 14px;">© 2025 Peak Test Series. All rights reserved.</p>
+                <p style="color: #666; font-size: 14px;">Empowering Students to Reach Their Peak Potential</p>
+                <p style="margin-top: 15px;">
+                    <a href="./privacy.html"
+                        style="color: #58508d; text-decoration: none; margin: 0 10px;">Privacy Policy</a> |
+                    <a href="./term.html"
+                        style="color: #58508d; text-decoration: none; margin: 0 10px;">Terms & Conditions</a> |
+                    <a href="./index.html" style="color: #58508d; text-decoration: none; margin: 0 10px;">Home</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
