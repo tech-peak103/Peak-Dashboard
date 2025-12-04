@@ -26,7 +26,7 @@
                 <input type="email" id="studentEmail" placeholder="Enter your email" required>
             </div>
             <div class="form-group">
-                <label>Grade *</label>
+                <label>Grade *</label onchange="updateSubjectsCheckboxes()">
                 <select id="studentGrade" required>
                     <option value="">Select Grade</option>
                     <option value="10">10th</option>
@@ -35,7 +35,7 @@
             </div>
             <div class="form-group">
                 <label>Board *</label>
-                <select id="studentBoard" required>
+                <select id="studentBoard" required onchange="updateSubjectsCheckboxes()">
                     <option value="">Select Board</option>
                     <option value="ISC">ISC</option>
                     <option value="CBSE">CBSE</option>
@@ -47,10 +47,69 @@
                 <input type="text" id="studentAddress" placeholder="Enter your address" required>
             </div>
             <div class="form-group">
+                <label>Phone Number *</label>
+                <input type="tel" id="studentPhone" placeholder="Enter your 10-digit phone number" pattern="[0-9]{10}"
+                    maxlength="10" required>
+            </div>
+            <div class="form-group">
+                <label>Interested Subjects *</label>
+                <div id="subjectsCheckboxContainer"
+                    style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px;">
+                    <p style="grid-column: 1/-1; color: #666; font-size: 14px; margin: 0;">Please select grade and board
+                        first</p>
+                </div>
+            </div>
+            <div class="form-group">
                 <label>Create Password *</label>
                 <input type="password" id="studentPassword" placeholder="Minimum 6 characters" required>
             </div>
             <button class="submit-btn" onclick="handleRegistration()">Submit Registration</button>
+        </div>
+    </div>
+
+
+    <!-- Thank You Page -->
+    <div class="thank-you-container hidden" id="thankYouContainer">
+        <div class="thank-you-card">
+            <div class="thank-you-icon">🎉</div>
+            <h1>Thank You!</h1>
+            <h2>Registration Successful</h2>
+            <p class="thank-you-message">
+                Thank you for registering with <strong>Peak Test Series</strong>!<br>
+                Your registration has been received successfully.
+            </p>
+            <div class="next-steps">
+                <h3>📞 Next Steps</h3>
+                <p>For access to your test series dashboard and further information, please contact us:</p>
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <span class="contact-icon">📱</span>
+                        <div>
+                            <div class="contact-label">Call Us</div>
+                            <a href="tel:+919818184460" class="contact-value">+91 98181 84460</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-icon">✉️</span>
+                        <div>
+                            <div class="contact-label">Email Us</div>
+                            <a href="mailto:tech@peakpotentia.com" class="contact-value">tech@peakpotentia.com</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <p><strong>⏰ Our team will contact you shortly to:</strong></p>
+                    <ul>
+                        <li>Verify your registration details</li>
+                        <li>Provide payment information</li>
+                        <li>Activate your dashboard access</li>
+                        <li>Answer any questions you may have</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="registration-details" id="registrationDetails">
+                <!-- Will be populated with user details -->
+            </div>
         </div>
     </div>
 

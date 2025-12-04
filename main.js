@@ -49,6 +49,48 @@ const RAZORPAY_KEY = 'rzp_test_YOUR_KEY'; // Replace with your Razorpay Key
 const VERIFICATION_INTERVAL = 30000;
 let verificationTimer = null;
 
+
+// Subject data for checkboxes
+const subjectsByGradeBoardCheckbox = {
+    '10-ISC': ['Accounts', 'Physics', 'Mathematics', 'Chemistry', 'Biology', 'English'],
+    '10-CBSE': ['Mathematics', 'Science', 'Social Science', 'English', 'Hindi'],
+    '10-ICSE': ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'],
+    '12-ISC': ['Psychology', 'Physics', 'Chemistry', 'Mathematics', 'Biology', 'Accounts'],
+    '12-CBSE': ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English'],
+    '12-ICSE': ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English']
+};
+
+// Function to update subjects checkboxes
+function updateSubjectsCheckboxes() {
+    const grade = document.getElementById('studentGrade').value;
+    const board = document.getElementById('studentBoard').value;
+    const container = document.getElementById('subjectsCheckboxContainer');
+    
+    if (!grade || !board) {
+        container.innerHTML = '<p style="grid-column: 1/-1; color: #666; font-size: 14px; margin: 0;">Please select grade and board first</p>';
+        return;
+    }
+    
+    const key = grade + '-' + board;
+    const subjects = subjectsByGradeBoardCheckbox[key] || [];
+    
+    if (subjects.length === 0) {
+        container.innerHTML = '<p style="grid-column: 1/-1; color: #666; font-size: 14px; margin: 0;">No subjects available</p>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    subjects.forEach(subject => {
+        const div = document.createElement('div');
+        div.className = 'subject-checkbox-item';
+        div.innerHTML = `
+            <input type="checkbox" id="subject_${subject}" name="subjects" value="${subject}">
+            <label for="subject_${subject}">${subject}</label>
+        `;
+        container.appendChild(div);
+    });
+}
+
 // Global State
 let currentUser = null;
 let currentSubject = null;
@@ -206,9 +248,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             console.log('🔍 Verifying student account on page load...');
 
             try {
+                // ✅ FIXED: Fetch dashboard_access
                 const { data, error } = await supabase
                     .from('students')
-                    .select('id, email')
+                    .select('id, email, dashboard_access, paid_subjects, test_access')
                     .eq('email', currentUser.email)
                     .single();
 
@@ -220,12 +263,19 @@ window.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
 
-                console.log('✅ Student verified - showing dashboard');
+                // ✅ UPDATE currentUser with fresh data from database
+                currentUser.dashboard_access = data.dashboard_access;
+                currentUser.paid_subjects = data.paid_subjects || {};
+                currentUser.test_access = data.test_access || {};
+                
+                // ✅ UPDATE localStorage
+                localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
+
+                console.log('✅ Student verified - Dashboard access:', data.dashboard_access);
             } catch (error) {
                 console.error('❌ Verification failed:', error);
             }
         }
-
 
         showDashboard();
     }
@@ -235,14 +285,41 @@ window.addEventListener('DOMContentLoaded', async () => {
 async function handleRegistration() {
     const name = document.getElementById('studentName').value.trim();
     const email = document.getElementById('studentEmail').value.trim();
+    const phone = document.getElementById('studentPhone').value.trim();
     const grade = document.getElementById('studentGrade').value;
     const board = document.getElementById('studentBoard').value;
     const address = document.getElementById('studentAddress').value.trim();
+    
+    // Get selected subjects
+    const selectedSubjects = [];
+    const subjectCheckboxes = document.querySelectorAll('input[name="subjects"]:checked');
+    subjectCheckboxes.forEach(cb => selectedSubjects.push(cb.value));
+    
     const password = document.getElementById('studentPassword').value;
 
     // Validation
-    if (!name || !email || !grade || !board || !address || !password) {
-        alert('Please fill all fields!');
+    if (!name || !email || !phone || !grade || !board || !address || !password) {
+        showError('Please fill all required fields!', {
+            'Required': 'Name, Email, Phone, Grade, Board, Address, Subjects, Password'
+        });
+        return;
+    }
+    
+    // Phone validation
+    if (phone.length !== 10 || !/^[0-9]{10}$/.test(phone)) {
+        showError('Invalid phone number!', {
+            'Phone': phone,
+            'Required': '10 digits',
+            'Example': '9818184460'
+        });
+        return;
+    }
+    
+    // Subjects validation
+    if (selectedSubjects.length === 0) {
+        showError('Please select at least one subject!', {
+            'Action': 'Select subjects you are interested in'
+        });
         return;
     }
 
@@ -262,11 +339,14 @@ async function handleRegistration() {
     const userData = {
         name: name,
         email: email,
+        phone: phone,
         grade: grade,
         board: board,
         address: address,
+        interested_subjects: selectedSubjects,
         password: password,
         registered_at: new Date().toISOString(),
+        dashboard_access: false,  // Will be enabled from backend
         paid_subjects: {},
         test_access: {}
     };
@@ -357,9 +437,82 @@ async function handleRegistration() {
     }
 }
 
+
+// Show Thank You Page
+function showThankYouPage() {
+    document.getElementById('registrationContainer').classList.add('hidden');
+    document.getElementById('thankYouContainer').classList.remove('hidden');
+    
+    // Populate registration details
+    const detailsHTML = `
+        <h3>📋 Your Registration Details</h3>
+        <div class="detail-row">
+            <span class="detail-label">Name:</span>
+            <span class="detail-value">${currentUser.name}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">${currentUser.email}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Phone:</span>
+            <span class="detail-value">${currentUser.phone}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Grade:</span>
+            <span class="detail-value">${currentUser.grade}th</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Board:</span>
+            <span class="detail-value">${currentUser.board}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Interested Subjects:</span>
+            <div class="subjects-list">
+                ${currentUser.interested_subjects.map(s => `<span class="subject-badge">${s}</span>`).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('registrationDetails').innerHTML = detailsHTML;
+}
+
+
+// Show Dashboard Locked Message
+function showDashboardLocked() {
+    const lockedHTML = `
+        <div class="dashboard-locked">
+            <div class="locked-message">
+                <div class="locked-icon">🔒</div>
+                <h2>Dashboard Access Pending</h2>
+                <p>Thank you for registering with Peak Test Series!</p>
+                <p>Your dashboard access is currently being activated by our team.</p>
+                <div class="locked-contact">
+                    <h3 style="color: #003f5c; margin-bottom: 15px;">📞 Contact Us for Immediate Access</h3>
+                    <p style="margin: 8px 0;"><strong>Phone:</strong> <a href="tel:+919818184460" style="color: #58508d; text-decoration: none; font-weight: 700;">+91 98181 84460</a></p>
+                    <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:info@peakpotentia.com" style="color: #58508d; text-decoration: none; font-weight: 700;">info@peakpotentia.com</a></p>
+                </div>
+                <button class="submit-btn" onclick="handleLogout()" style="margin-top: 25px;">← Back to Login</button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('registrationContainer').classList.add('hidden');
+    document.getElementById('thankYouContainer').classList.add('hidden');
+    document.getElementById('dashboardContainer').innerHTML = lockedHTML;
+    document.getElementById('dashboardContainer').classList.remove('hidden');
+}
+
 // Show Dashboard
 function showDashboard() {
+    // Check if dashboard access is enabled
+    if (!currentUser.dashboard_access) {
+        showDashboardLocked();
+        return;
+    }
+    
     document.getElementById('registrationContainer').classList.add('hidden');
+    document.getElementById('thankYouContainer').classList.add('hidden');
     document.getElementById('dashboardContainer').classList.remove('hidden');
 
     // Update header with user info
