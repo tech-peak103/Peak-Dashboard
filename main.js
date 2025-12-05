@@ -65,20 +65,20 @@ function updateSubjectsCheckboxes() {
     const grade = document.getElementById('studentGrade').value;
     const board = document.getElementById('studentBoard').value;
     const container = document.getElementById('subjectsCheckboxContainer');
-    
+
     if (!grade || !board) {
         container.innerHTML = '<p style="grid-column: 1/-1; color: #666; font-size: 14px; margin: 0;">Please select grade and board first</p>';
         return;
     }
-    
+
     const key = grade + '-' + board;
     const subjects = subjectsByGradeBoardCheckbox[key] || [];
-    
+
     if (subjects.length === 0) {
         container.innerHTML = '<p style="grid-column: 1/-1; color: #666; font-size: 14px; margin: 0;">No subjects available</p>';
         return;
     }
-    
+
     container.innerHTML = '';
     subjects.forEach(subject => {
         const div = document.createElement('div');
@@ -267,7 +267,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 currentUser.dashboard_access = data.dashboard_access;
                 currentUser.paid_subjects = data.paid_subjects || {};
                 currentUser.test_access = data.test_access || {};
-                
+
                 // ✅ UPDATE localStorage
                 localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
 
@@ -289,12 +289,12 @@ async function handleRegistration() {
     const grade = document.getElementById('studentGrade').value;
     const board = document.getElementById('studentBoard').value;
     const address = document.getElementById('studentAddress').value.trim();
-    
+
     // Get selected subjects
     const selectedSubjects = [];
     const subjectCheckboxes = document.querySelectorAll('input[name="subjects"]:checked');
     subjectCheckboxes.forEach(cb => selectedSubjects.push(cb.value));
-    
+
     const password = document.getElementById('studentPassword').value;
 
     // Validation
@@ -304,7 +304,7 @@ async function handleRegistration() {
         });
         return;
     }
-    
+
     // Phone validation
     if (phone.length !== 10 || !/^[0-9]{10}$/.test(phone)) {
         showError('Invalid phone number!', {
@@ -314,7 +314,7 @@ async function handleRegistration() {
         });
         return;
     }
-    
+
     // Subjects validation
     if (selectedSubjects.length === 0) {
         showError('Please select at least one subject!', {
@@ -401,7 +401,7 @@ async function handleRegistration() {
         } else {
             // console.log('ℹ️ Supabase not enabled. Using localStorage only.');
         }
-       
+
 
         // Always save to localStorage as backup
         localStorage.setItem('peakTestUser', JSON.stringify(userData));
@@ -442,7 +442,9 @@ async function handleRegistration() {
 function showThankYouPage() {
     document.getElementById('registrationContainer').classList.add('hidden');
     document.getElementById('thankYouContainer').classList.remove('hidden');
-    
+    document.getElementById('dashboardFooter').classList.add('hidden');
+
+
     // Populate registration details
     const detailsHTML = `
         <h3>📋 Your Registration Details</h3>
@@ -473,7 +475,7 @@ function showThankYouPage() {
             </div>
         </div>
     `;
-    
+
     document.getElementById('registrationDetails').innerHTML = detailsHTML;
 }
 
@@ -496,11 +498,13 @@ function showDashboardLocked() {
             </div>
         </div>
     `;
-    
+
     document.getElementById('registrationContainer').classList.add('hidden');
     document.getElementById('thankYouContainer').classList.add('hidden');
     document.getElementById('dashboardContainer').innerHTML = lockedHTML;
     document.getElementById('dashboardContainer').classList.remove('hidden');
+    document.getElementById('dashboardFooter').classList.add('hidden');
+
 }
 
 // Show Dashboard
@@ -510,10 +514,11 @@ function showDashboard() {
         showDashboardLocked();
         return;
     }
-    
+
     document.getElementById('registrationContainer').classList.add('hidden');
     document.getElementById('thankYouContainer').classList.add('hidden');
     document.getElementById('dashboardContainer').classList.remove('hidden');
+    document.getElementById('dashboardFooter').classList.remove('hidden');
 
     // Update header with user info
     document.getElementById('userName').textContent = currentUser.name;
@@ -523,16 +528,48 @@ function showDashboard() {
     loadSubjects();
 }
 
-// Load Subjects Based on Grade and Board
+// Load Subjects Based on Interested Subjects (Selected during registration)
 function loadSubjects() {
     const key = `${currentUser.grade}-${currentUser.board}`;
-    const subjects = subjectsByGradeBoard[key] || [];
+    const allSubjects = subjectsByGradeBoard[key] || [];
+
+    // Get interested subjects (selected during registration)
+    const interestedSubjects = currentUser.interested_subjects || [];
 
     const subjectsGrid = document.getElementById('subjectsGrid');
     subjectsGrid.innerHTML = '';
 
+    // If no interested subjects, show message
+    if (interestedSubjects.length === 0) {
+        subjectsGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">
+                <h3 style="font-size: 24px; margin-bottom: 10px;">No Subjects Selected</h3>
+                <p style="font-size: 16px; opacity: 0.8;">You haven't selected any subjects during registration.</p>
+                <p style="font-size: 14px; margin-top: 20px;">Contact admin to update your subjects.</p>
+            </div>
+        `;
+        return;
+    }
 
-    subjects.forEach(subject => {
+    // Filter to show only interested subjects
+    const filteredSubjects = allSubjects.filter(subject =>
+        interestedSubjects.includes(subject.name)
+    );
+
+    // If no matching subjects found
+    if (filteredSubjects.length === 0) {
+        subjectsGrid.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white;">
+                <h3 style="font-size: 24px; margin-bottom: 10px;">No Matching Subjects</h3>
+                <p style="font-size: 16px; opacity: 0.8;">Your selected subjects: ${interestedSubjects.join(', ')}</p>
+                <p style="font-size: 14px; margin-top: 20px;">Contact admin if this is incorrect.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Show only interested subjects
+    filteredSubjects.forEach(subject => {
         const subjectKey = `${subject.name}-${subject.code}`;
         const isPaid = currentUser.paid_subjects && currentUser.paid_subjects[subjectKey];
 
@@ -549,6 +586,8 @@ function loadSubjects() {
         card.onclick = () => openSubject(subject);
         subjectsGrid.appendChild(card);
     });
+
+    console.log(`✅ Showing ${filteredSubjects.length} subjects from ${interestedSubjects.length} interested subjects`);
 }
 
 // Open Subject
@@ -588,8 +627,41 @@ async function loadTests() {
 
         if (testAccess) {
             const startTime = new Date(testAccess.start_time);
-            const endTime = new Date(startTime.getTime() + 3 * 60 * 60 * 1000); // 3 hours
+            const endTime = new Date(startTime.getTime() + (3 * 60 * 60 * 1000) + (15 * 60 * 1000)); // 3 hours 15 minutes
             const now = new Date();
+
+            // Hide completed or expired tests
+            if (testAccess.status === 'completed') {
+                continue; // Skip this test, don't show it
+            }
+
+            // Check if time expired
+            if (now >= endTime && testAccess.status === 'active') {
+                // Mark as expired
+                testAccess.status = 'expired';
+                currentUser.test_access[testKey].status = 'expired';
+                localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
+
+                // Update in Supabase
+                if (supabaseEnabled && currentUser.email) {
+                    try {
+                        await supabase
+                            .from('test_attempts')
+                            .update({ status: 'expired' })
+                            .eq('student_email', currentUser.email)
+                            .eq('test_key', testKey);
+                        
+                        // Also update students table
+                        await supabase
+                            .from('students')
+                            .update({ test_access: currentUser.test_access })
+                            .eq('email', currentUser.email);
+                    } catch (error) {
+                        console.error('Error updating expired test:', error);
+                    }
+                }
+                continue; // Skip expired test, don't show it
+            }
 
             if (now < endTime && testAccess.status === 'active') {
                 const remainingMs = endTime - now;
@@ -602,7 +674,8 @@ async function loadTests() {
             } else if (testAccess.status === 'completed') {
                 statusHTML = '<span class="test-status locked">Completed</span>';
                 clickable = false;
-            } else {
+                
+            }else {
                 statusHTML = '<span class="test-status locked">Expired</span>';
                 clickable = false;
             }
@@ -647,6 +720,7 @@ async function openTest(testNumber) {
         try {
             // Save to Supabase if enabled
             if (supabaseEnabled && currentUser.email) {
+                // Insert into test_attempts
                 const { error } = await supabase
                     .from('test_attempts')
                     .insert([{
@@ -659,13 +733,28 @@ async function openTest(testNumber) {
                     }]);
 
                 if (error) {
-                    // console.error('Error saving test attempt to Supabase:', error);
+                    console.error('Error saving test attempt:', error);
                 } else {
-                    // console.log('✅ Test attempt saved to Supabase');
+                    console.log('✅ Test attempt saved to Supabase');
+                }
+                
+                // ✅ FIX 1: Update students table test_access
+                console.log('📝 Updating students.test_access on test start...');
+                const { error: updateError } = await supabase
+                    .from('students')
+                    .update({
+                        test_access: currentUser.test_access
+                    })
+                    .eq('email', currentUser.email);
+
+                if (updateError) {
+                    console.error('❌ Failed to update students.test_access:', updateError);
+                } else {
+                    console.log('✅ Students.test_access updated on test start!');
                 }
             }
         } catch (error) {
-            // console.error('Supabase test save error:', error);
+            console.error('Supabase test save error:', error);
         }
 
         // Backend Log
@@ -773,6 +862,22 @@ async function submitTest() {
                     } else {
                         console.log('✅ Test submission saved to Supabase');
                     }
+                    
+                    // ✅ FIX 2: Update students table test_access on submit
+                    console.log('📝 Updating students.test_access on submit...');
+                    const { error: studentError } = await supabase
+                        .from('students')
+                        .update({
+                            test_access: currentUser.test_access
+                        })
+                        .eq('email', currentUser.email);
+
+                    if (studentError) {
+                        console.error('❌ Failed to update students.test_access:', studentError);
+                        alert('⚠️ Warning: Test submitted but may reappear after refresh. Please contact support.');
+                    } else {
+                        console.log('✅✅✅ Students.test_access updated! Test will stay hidden forever.');
+                    }
                 }
             } catch (error) {
                 console.error('Supabase test update error:', error);
@@ -798,7 +903,7 @@ async function submitTest() {
 
 // Start PDF Timer
 function startPdfTimer() {
-    const endTime = new Date(testStartTime.getTime() + 3 * 60 * 60 * 1000); // 3 hours from start
+    const endTime = new Date(testStartTime.getTime() + (3 * 60 * 60 * 1000) + (15 * 60 * 1000)); // 3 hours 15 minutes from start
 
     pdfTimer = setInterval(async () => {
         const now = new Date();
@@ -806,6 +911,11 @@ function startPdfTimer() {
 
         if (remainingMs <= 0) {
             clearInterval(pdfTimer);
+
+            // Close PDF viewer
+            closePdfViewer();
+
+            alert('⏰ Time Up!\n\nTest time has expired. Your test has been automatically submitted.');
 
             // Mark test as expired
             let testKey = null;
@@ -1029,20 +1139,19 @@ async function handlePaymentSuccess(response) {
 
 // Logout
 function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
-        // 🔥 BACKEND LOG - Logout
-        // console.log('═══════════════════════════════════════════════');
-        // console.log('👋 STUDENT LOGOUT');
-        // console.log('═══════════════════════════════════════════════');
-        // console.log('Student:', currentUser.name);
-        // console.log('Email:', currentUser.email);
-        // console.log('Logout Time:', new Date().toLocaleString());
-        // console.log('═══════════════════════════════════════════════');
+    currentUser = null;
+    localStorage.removeItem('peakTestUser');
 
-        localStorage.removeItem('peakTestUser');
-        currentUser = null;
-        location.reload();
-    }
+    // Hide dashboard
+    document.getElementById('dashboardContainer').classList.add('hidden');
+
+    // ✅ ADD THIS LINE - Hide footer
+    document.getElementById('dashboardFooter').classList.add('hidden');
+
+    // Show registration
+    document.getElementById('registrationContainer').classList.remove('hidden');
+
+    console.log('👋 Logged out');
 }
 // ============================================================================
 // FILE UPLOAD FUNCTIONS FOR ANSWER SUBMISSION

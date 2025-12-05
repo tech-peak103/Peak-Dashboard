@@ -1260,6 +1260,14 @@ body {
     }
 }
 
+.dashboard-footer {
+    display: block;
+}
+
+.dashboard-footer.hidden {
+    display: none !important;
+}
+
 /* ============================================================================ */
 /* HIDE ON REGISTRATION */
 /* ============================================================================ */
