@@ -13,7 +13,7 @@ try {
     if (typeof window.supabase !== 'undefined') {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         supabaseEnabled = true;
-        console.log('✅ Supabase connected');
+        // console.log('✅ Supabase connected');
     }
 } catch (error) {
     console.error('❌ Supabase error:', error);
@@ -25,22 +25,341 @@ const PRICE_PER_SUBJECT = 15000;
 
 let currentUser = null;
 let currentSubject = null;
-
+const boardsByGrade = {
+    '10': [
+        // { value: 'IGCSE', label: 'IGCSE' },
+        { value: 'ICSE', label: 'ICSE' }
+    ],
+    '12': [
+        { value: 'ISC', label: 'ISC' },
+        { value: 'CBSE', label: 'CBSE' },
+        // { value: 'IB', label: 'IB' }
+    ]
+};
 const subjectsByGradeBoardCheckbox = {
-    '10-ISC': ['History', 'Pyschology', 'Accounts', 'Chemistry', 'Physics', 'English language'],
-    '10-CBSE': ['Mathematics', 'Science', 'Social Science', 'English', 'Hindi'],
-    '10-ICSE': ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English'],
-    '12-ISC': ['Psychology', 'Physics', 'Chemistry', 'Mathematics', 'Biology', 'Accounts'],
-    '12-CBSE': ['Physics', 'Chemistry', 'Mathematics', 'Biology', 'English'],
-    
+    '10-ICSE': ['History', 'English Literature', 'English Language', 'Economics', 'Geography'],
+    // '10-IGCSE': ['Physics', 'Business Study', 'Hindi', 'Biology'],
+    '12-ISC': ['English Literature', 'English', 'History', 'Accounts', 'Physics', 'Math', 'Chemistry', 'Commerce', 'Economics', 'Political Science', 'Psychology'],
+    '12-CBSE': ['Physics', 'Chemistry', 'Mathematics', 'Accounts', 'Economics', 'Social Science', 'Business Studies Commerce'],
+    // '12-IB': ['Biology', 'Business Management']
 };
 
-// ============================================================================
-// PAGE INIT
-// ============================================================================
+const testDatesByGradeBoard = {
+    '10-ICSE': {
+        'History': ['29 Dec 2025', '05 Jan 2026', '12 Jan 2026', '19 Jan 2026', '26 Jan 2026'],
+        'English Literature': ['22 Dec 2025', '26 Dec 2025', '15 Jan 2026', '20 Jan 2026', '25 Jan 2026'],
+        'English Language': ['24 Dec 2025', '28 Dec 2025', '23 Jan 2026', '27 Jan 2026', '01 Feb 2026'],
+        'Economics': ['31 Dec 2025', '07 Jan 2026', '14 Jan 2026', '21 Jan 2026', '28 Jan 2026'],
+        'Geography': ['08 Jan 2026', '15 Jan 2026', '22 Jan 2026', '29 Jan 2026', '05 Feb 2026']
+    },
+    // '10-IGCSE': {
+    //     'Physics': ['29 Dec 2025', '05 Jan 2026', '12 Jan 2026', '19 Jan 2026', '26 Jan 2026'],
+    //     'Business Study': ['30 Dec 2025', '06 Jan 2026', '13 Jan 2026', '20 Jan 2026', '27 Jan 2026'],
+    //     'Hindi': ['31 Dec 2025', '07 Jan 2026', '14 Jan 2026', '21 Jan 2026', '28 Jan 2026'],
+    //     'Biology': ['02 Jan 2026', '16 Jan 2026', '23 Jan 2026', '29 Jan 2026', '05 Feb 2026']
+    // },
+    '12-ISC': {
+        'English Literature': ['22 Dec 2025', '26 Dec 2026', '15 Jan 2026', '20 Jan 2026', '25 Jan 2026'],
+        'English': ['01 Jan 2026', '08 Jan 2026', '15 Jan 2026', '22 Jan 2026', '29 Jan 2026'],
+        'History': ['29 Dec 2025', '05 Jan 2026', '12 Jan 2026', '19 Jan 2026', '26 Jan 2026'],
+        'Accounts': ['30 Dec 2025', '06 Jan 2026', '13 Jan 2026', '20 Jan 2026', '27 Jan 2026'],
+        'Physics': ['30 Dec 2025', '13 Jan 2026', '27 Jan 2026', '10 Feb 2026', '24 Feb 2026'],
+        'Math': ['07 Jan 2026', '21 Jan 2026', '28 Jan 2026', '11 Feb 2026', '18 Feb 2026'],
+        'Chemistry': ['08 Jan 2026', '15 Jan 2026', '29 Jan 2026', '05 Feb 2026', '12 Feb 2026'],
+        'Commerce': ['08 Jan 2026', '15 Jan 2026', '29 Jan 2026', '05 Feb 2026', '12 Feb 2026'],
+        'Economics': ['02 Jan 2026', '16 Jan 2026', '06 Mar 2026', ' 13 Mar 2026', '20 Mar 2026'],
+        'Political Science': ['07 Jan 2026', '21 Jan 2026', '28 Jan 2026', ' 11 Feb 2026', '18 Feb 2026'],
+        'Psychology': ['29 Dec 2025', '05 Jan 2026', '12 Jan 2026', ' 19 Jan 2026', '26 Jan 2026',]
+    },
+    '12-CBSE': {
+        'Physics': ['29 Dec 2025', '12 Jan 2026', '26 Jan 2026', '5 Feb 2026', '9 Feb 2026'],
+        'Chemistry': ['30 Dec 2025', '06 Jan 2026', '13 Jan 2026', '20 Jan 2026', '27 Jan 2026'],
+        'Mathematics': ['19 Jan 2026', '26 Jan 2026', '10 Feb 2026', '25 Feb 2026', '1 Mar 2026'],
+        'Accounts': ['30 Dec 2025', '06 Jan 2026', '13 Jan 2026', '20 Jan 2026', '27 Jan 2026'],
+        'Economics': ['29 Jan 2026', '19 Feb 2026', '26 Feb 2026', '04 Mar 2026', '12 Mar 2026'],
+        'Social Science': ['30 Dec 2025', '06 Jan 2026', '13 Jan 2026', '20 Jan 2026', '27 Jan 2026'],
+        'Business Studies Commerce': ['08 Jan 2026', '15 Jan 2026', '29 Jan 2026', '05 Feb 2026', '12 Feb 2026']
+    },
+    // '12-IB': {
+    //     'Biology': ['22 Jan 2025', '05 Feb 2025', '19 Feb 2025', '05 Mar 2025', '19 Mar 2025'],
+    //     'Business Management': ['23 Jan 2025', '06 Feb 2025', '20 Feb 2025', '06 Mar 2025', '20 Mar 2025']
+    // }
+};
+
+
+function updateSubjectsCheckboxes() {
+    const grade = document.getElementById('studentGrade')?.value || '';
+    const board = document.getElementById('studentBoard')?.value || '';
+    const container = document.getElementById('subjectsCheckboxContainer');
+
+    // If container doesn't exist, return
+    if (!container) {
+        console.error('❌ subjectsCheckboxContainer not found');
+        return;
+    }
+
+    // If grade or board not selected, show message
+    if (!grade || !board) {
+        container.innerHTML = '<p style="color:#666;font-size:14px;">Please select grade and board first</p>';
+        return;
+    }
+
+    // Get subjects for this grade-board combination
+    const key = `${grade}-${board}`;
+    const subjects = subjectsByGradeBoardCheckbox[key] || [];
+
+    console.log('📚 Key:', key, '| Subjects found:', subjects.length);
+
+    // If no subjects available, show message
+    if (subjects.length === 0) {
+        container.innerHTML = '<p style="color:#666;font-size:14px;">No subjects available for this combination</p>';
+        return;
+    }
+
+    // Setup container styling
+    container.style.display = "flex";
+    container.style.flexDirection = "column";
+    container.style.gap = "15px";
+    container.innerHTML = '';
+
+    const noticeBox = document.createElement('div');
+    noticeBox.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        border-left: 5px solid #ffd700;
+    `;
+    noticeBox.innerHTML = `
+        <div style="display: flex; align-items: start; gap: 12px;">
+            <span style="font-size: 24px; flex-shrink: 0;">⚠️</span>
+            <div>
+                <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">Important Notice - Test Dates</h4>
+                <p style="margin: 0; font-size: 14px; line-height: 1.6; opacity: 0.95;">
+                    Please review the subject-wise test dates carefully, as the tests will be scheduled strictly on the specified dates and will remain accessible only until then. Kindly note that these dates are fixed and cannot be changed.
+                </p>
+            </div>
+        </div>
+    `;
+    container.appendChild(noticeBox);
+
+    // Create checkbox for each subject
+    subjects.forEach(subject => {
+        const safe = subject.replace(/[^a-zA-Z0-9]/g, '_');
+
+        // Main wrapper
+        const wrapper = document.createElement('div');
+        wrapper.className = "subject-with-dates";
+
+        // Header Row (checkbox + label + expand icon)
+        const header = document.createElement('div');
+        header.className = "subject-header";
+
+        const checkbox = document.createElement('input');
+        checkbox.type = "checkbox";
+        checkbox.id = `subject_${safe}`;
+        checkbox.value = subject;
+        checkbox.name = 'subjects';
+
+        // Add event listener to recalculate total when checkbox changes
+        checkbox.addEventListener('change', function () {
+            calculateTotal();
+            autoSaveFormData();
+        });
+
+        const label = document.createElement('label');
+        label.htmlFor = `subject_${safe}`;
+        label.textContent = subject;
+
+        const expandIcon = document.createElement('span');
+        expandIcon.className = "expand-icon";
+        expandIcon.innerHTML = "🔽";
+        expandIcon.onclick = () => toggleTestDates(safe);
+
+        header.appendChild(checkbox);
+        header.appendChild(label);
+        header.appendChild(expandIcon);
+
+        // Dates container (hidden by default)
+        const datesContainer = document.createElement('div');
+        datesContainer.id = `dates_${safe}`;
+        datesContainer.className = "test-dates-container";
+
+        const datesList = document.createElement('div');
+        datesList.className = "test-dates-list";
+
+        const subjectDates = testDatesByGradeBoard[key]?.[subject] || [];
+
+        if (subjectDates.length > 0) {
+            subjectDates.forEach((date, index) => {
+                const item = document.createElement('div');
+                item.className = "test-date-item";
+                item.innerHTML = `
+                    <span class="test-number">${index + 1}</span>
+                    <span class="test-date-text">${date}</span>
+                    <span class="date-icon">📅</span>
+                `;
+                datesList.appendChild(item);
+            });
+        } else {
+            datesList.innerHTML = `<p style="color:#888;font-size:13px;">Coming Soon</p>`;
+        }
+
+        datesContainer.appendChild(datesList);
+        wrapper.appendChild(header);
+        wrapper.appendChild(datesContainer);
+        container.appendChild(wrapper);
+    });
+
+    console.log('✅ Subjects displayed successfully');
+}
+
+function updateBoardDropdown() {
+    const gradeSelect = document.getElementById('studentGrade');
+    const boardSelect = document.getElementById('studentBoard');
+
+    if (!gradeSelect || !boardSelect) {
+        console.error('❌ Grade or Board dropdown not found');
+        return;
+    }
+
+    const selectedGrade = gradeSelect.value;
+
+    // Reset board dropdown
+    boardSelect.value = '';
+    boardSelect.innerHTML = '<option value="">Select Board</option>';
+
+    // If no grade selected, disable board dropdown
+    if (!selectedGrade) {
+        boardSelect.innerHTML = '<option value="">First select a grade</option>';
+        boardSelect.disabled = true;
+        updateSubjectsCheckboxes(); // Clear subjects
+        return;
+    }
+
+    // Enable board dropdown and populate options
+    boardSelect.disabled = false;
+    const availableBoards = boardsByGrade[selectedGrade] || [];
+
+    availableBoards.forEach(board => {
+        const option = document.createElement('option');
+        option.value = board.value;
+        option.textContent = board.label;
+        boardSelect.appendChild(option);
+    });
+
+    console.log('✅ Board dropdown updated for grade:', selectedGrade);
+
+    // Clear subjects since board is not selected yet
+    updateSubjectsCheckboxes();
+
+    // Recalculate total
+    calculateTotal();
+}
+
+
+function toggleTestDates(subject) {
+    const safe = subject.replace(/[^a-zA-Z0-9]/g, "_");
+    const container = document.getElementById(`dates_${safe}`);
+
+    if (!container) {
+        console.error("❌ Dates container not found:", `dates_${safe}`);
+        return;
+    }
+
+    container.classList.toggle("show");
+
+    // Rotate arrow icon
+    const icon = container.parentElement.querySelector(".expand-icon");
+    if (icon) {
+        icon.classList.toggle("expanded");
+    }
+}
+
+function calculateTotal() {
+    const checkboxes = document.querySelectorAll('#subjectsCheckboxContainer input[type="checkbox"]:checked');
+    const count = checkboxes.length;
+    const total = count * PRICE_PER_SUBJECT;
+
+    const countElement = document.getElementById('selectedSubjectsCount');
+    const totalElement = document.getElementById('totalAmount');
+    const summaryContainer = document.getElementById('paymentSummaryContainer');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (countElement) countElement.textContent = count;
+    if (totalElement) totalElement.textContent = `₹${total.toLocaleString('en-IN')}`;
+
+    if (submitBtn) {
+        if (count > 0) {
+            submitBtn.innerHTML = `💳 Pay ₹${total.toLocaleString('en-IN')} & Complete Registration`;
+        } else {
+            submitBtn.innerHTML = '💳 Pay ₹0 & Complete Registration';
+        }
+    }
+
+    if (summaryContainer) {
+        summaryContainer.style.display = count > 0 ? 'block' : 'none';
+    }
+
+    autoSaveFormData();
+    return total;
+}
+
+async function autoSaveFormData() {
+    const name = document.getElementById('studentName')?.value?.trim() || '';
+    const email = document.getElementById('studentEmail')?.value?.trim() || '';
+    const grade = document.getElementById('studentGrade')?.value || '';
+    const board = document.getElementById('studentBoard')?.value || '';
+    const address = document.getElementById('studentAddress')?.value?.trim() || '';
+    const phone = document.getElementById('studentPhone')?.value?.trim() || '';
+    const password = document.getElementById('studentPassword')?.value || '';
+
+    const modeElement = document.querySelector('input[name="registrationMode"]:checked');
+    const mode = modeElement ? modeElement.value : 'online';
+
+    const selectedSubjects = [];
+    const checkboxes = document.querySelectorAll('#subjectsCheckboxContainer input[type="checkbox"]:checked');
+    checkboxes.forEach(cb => selectedSubjects.push(cb.value));
+
+    if (!email) return;
+
+    const formData = {
+        email: email,
+        name: name || null,
+        grade: grade || null,
+        board: board || null,
+        address: address || null,
+        phone: phone || null,
+        interested_subjects: selectedSubjects,
+        registration_mode: mode,
+        password_hash: password ? btoa(password) : null,
+        last_updated: new Date().toISOString()
+    };
+
+    if (supabaseEnabled && supabase) {
+        try {
+            await supabase
+                .from('incomplete_registrations')
+                .upsert(formData, { onConflict: 'email' });
+        } catch (error) {
+            console.error('❌ Auto-save error:', error);
+        }
+    }
+}
+
+
+
+function updateSubmitButton() {
+    calculateTotal();
+}
+
+
+
 document.addEventListener('DOMContentLoaded', async function () {
     console.log('🚀 Peak Test Series initialized');
-    
+
     const savedUser = localStorage.getItem('peakTestUser');
     if (savedUser) {
         try {
@@ -57,13 +376,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     } else {
         showRegistration();
     }
-    
+
     const modeOnline = document.getElementById('modeOnline');
     const modeOffline = document.getElementById('modeOffline');
-    
+
     if (modeOnline) modeOnline.addEventListener('change', updateSubmitButton);
     if (modeOffline) modeOffline.addEventListener('change', updateSubmitButton);
-    
+
     updateSubmitButton();
 });
 
@@ -72,26 +391,26 @@ document.addEventListener('DOMContentLoaded', async function () {
 // ============================================================================
 async function checkBackendAccess() {
     console.log('🔍 Checking backend access for:', currentUser.email);
-    
+
     if (supabaseEnabled && supabase && currentUser && currentUser.email) {
         try {
             const { data, error } = await supabase
                 .from('students')
                 .select('*')
                 .eq('email', currentUser.email)
-                .single();
-            
+                .maybeSingle();
+
             if (error) {
                 console.error('❌ Backend check failed:', error);
                 showRegistration();
                 return;
             }
-            
+
             if (data) {
                 console.log('📊 Backend data:', data);
                 currentUser = data;
                 localStorage.setItem('peakTestUser', JSON.stringify(data));
-                
+
                 if (data.dashboard_access === true) {
                     console.log('✅ Dashboard access granted - showing dashboard');
                     showDashboard();
@@ -118,127 +437,53 @@ async function checkBackendAccess() {
 // ============================================================================
 // AUTO-SAVE
 // ============================================================================
-async function autoSaveFormData() {
-    const name = document.getElementById('studentName')?.value?.trim() || '';
-    const email = document.getElementById('studentEmail')?.value?.trim() || '';
-    const grade = document.getElementById('studentGrade')?.value || '';
-    const board = document.getElementById('studentBoard')?.value || '';
-    const address = document.getElementById('studentAddress')?.value?.trim() || '';
-    const phone = document.getElementById('studentPhone')?.value?.trim() || '';
-    const password = document.getElementById('studentPassword')?.value || '';
-    
-    const modeElement = document.querySelector('input[name="registrationMode"]:checked');
-    const mode = modeElement ? modeElement.value : 'online';
-    
-    const selectedSubjects = [];
-    const checkboxes = document.querySelectorAll('#subjectsCheckboxContainer input[type="checkbox"]:checked');
-    checkboxes.forEach(cb => selectedSubjects.push(cb.value));
-    
-    if (!email) return;
-    
-    const formData = {
-        email: email,
-        name: name || null,
-        grade: grade || null,
-        board: board || null,
-        address: address || null,
-        phone: phone || null,
-        interested_subjects: selectedSubjects,
-        registration_mode: mode,
-        password_hash: password ? btoa(password) : null,
-        last_updated: new Date().toISOString()
-    };
-    
-    if (supabaseEnabled && supabase) {
-        try {
-            await supabase
-                .from('incomplete_registrations')
-                .upsert(formData, { onConflict: 'email' });
-        } catch (error) {
-            console.error('❌ Auto-save error:', error);
-        }
-    }
-}
 
-function calculateTotal() {
-    const checkboxes = document.querySelectorAll('#subjectsCheckboxContainer input[type="checkbox"]:checked');
-    const count = checkboxes.length;
-    const total = count * PRICE_PER_SUBJECT;
-    
-    const countElement = document.getElementById('selectedSubjectsCount');
-    const totalElement = document.getElementById('totalAmount');
-    const summaryContainer = document.getElementById('paymentSummaryContainer');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    if (countElement) countElement.textContent = count;
-    if (totalElement) totalElement.textContent = `₹${total.toLocaleString('en-IN')}`;
-    
-    if (submitBtn) {
-        if (count > 0) {
-            submitBtn.innerHTML = `💳 Pay ₹${total.toLocaleString('en-IN')} & Complete Registration`;
-        } else {
-            submitBtn.innerHTML = '💳 Pay ₹0 & Complete Registration';
-        }
-    }
-    
-    if (summaryContainer) {
-        summaryContainer.style.display = count > 0 ? 'block' : 'none';
-    }
-    
-    autoSaveFormData();
-    return total;
-}
+// function updateSubjectsCheckboxes() {
+//     const grade = document.getElementById('studentGrade')?.value || '';
+//     const board = document.getElementById('studentBoard')?.value || '';
+//     const container = document.getElementById('subjectsCheckboxContainer');
 
-function updateSubmitButton() {
-    calculateTotal();
-}
+//     if (!grade || !board || !container) {
+//         if (container) {
+//             container.innerHTML = '<p style="grid-column: 1/-1; color: #666; font-size: 14px; margin: 0;">Please select grade and board first</p>';
+//         }
+//         return;
+//     }
 
-function updateSubjectsCheckboxes() {
-    const grade = document.getElementById('studentGrade')?.value || '';
-    const board = document.getElementById('studentBoard')?.value || '';
-    const container = document.getElementById('subjectsCheckboxContainer');
+//     const key = grade + '-' + board;
+//     const subjects = subjectsByGradeBoardCheckbox[key] || [];
 
-    if (!grade || !board || !container) {
-        if (container) {
-            container.innerHTML = '<p style="grid-column: 1/-1; color: #666; font-size: 14px; margin: 0;">Please select grade and board first</p>';
-        }
-        return;
-    }
+//     if (subjects.length === 0) {
+//         container.innerHTML = '<p style="grid-column: 1/-1; color: #666; font-size: 14px; margin: 0;">No subjects available</p>';
+//         return;
+//     }
 
-    const key = grade + '-' + board;
-    const subjects = subjectsByGradeBoardCheckbox[key] || [];
+//     container.innerHTML = '';
+//     subjects.forEach(subject => {
+//         const div = document.createElement('div');
+//         div.className = 'subject-checkbox-item';
 
-    if (subjects.length === 0) {
-        container.innerHTML = '<p style="grid-column: 1/-1; color: #666; font-size: 14px; margin: 0;">No subjects available</p>';
-        return;
-    }
+//         const checkbox = document.createElement('input');
+//         checkbox.type = 'checkbox';
+//         checkbox.id = `subject_${subject}`;
+//         checkbox.name = 'subjects';
+//         checkbox.value = subject;
+//         checkbox.onchange = function () {
+//             calculateTotal();
+//             autoSaveFormData();
+//         };
 
-    container.innerHTML = '';
-    subjects.forEach(subject => {
-        const div = document.createElement('div');
-        div.className = 'subject-checkbox-item';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = `subject_${subject}`;
-        checkbox.name = 'subjects';
-        checkbox.value = subject;
-        checkbox.onchange = function() {
-            calculateTotal();
-            autoSaveFormData();
-        };
-        
-        const label = document.createElement('label');
-        label.htmlFor = `subject_${subject}`;
-        label.textContent = subject;
-        
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        container.appendChild(div);
-    });
-    
-    calculateTotal();
-}
+//         const label = document.createElement('label');
+//         label.htmlFor = `subject_${subject}`;
+//         label.textContent = subject;
+
+//         div.appendChild(checkbox);
+//         div.appendChild(label);
+//         container.appendChild(div);
+//     });
+
+//     calculateTotal();
+// }
 
 // ============================================================================
 // REGISTRATION WITH PAYMENT
@@ -321,15 +566,15 @@ async function processRegistrationPayment(studentData, amount) {
         theme: {
             color: '#667eea'
         },
-        handler: async function(response) {
+        handler: async function (response) {
             studentData.payment_id = response.razorpay_payment_id;
             studentData.payment_status = 'completed';
             studentData.payment_date = new Date().toISOString();
-            
+
             await saveStudentRegistration(studentData);
         },
         modal: {
-            ondismiss: function() {
+            ondismiss: function () {
                 alert('Payment cancelled. Registration incomplete.');
             }
         }
@@ -396,18 +641,18 @@ async function sendRegistrationEmail(studentData) {
 function showRegistrationThankYou(studentData) {
     currentUser = studentData;
     localStorage.setItem('peakTestUser', JSON.stringify(studentData));
-    
+
     const regContainer = document.getElementById('registrationContainer');
     if (regContainer) regContainer.classList.add('hidden');
-    
+
     const thankYouContainer = document.getElementById('thankYouContainer');
     const thankYouTitle = document.getElementById('thankYouTitle');
     const thankYouMessage = document.getElementById('thankYouMessage');
     const nextStepsText = document.getElementById('nextStepsText');
     const infoBoxText = document.getElementById('infoBoxText');
-    
+
     if (!thankYouContainer) return;
-    
+
     if (studentData.registration_mode === 'online') {
         if (thankYouTitle) thankYouTitle.textContent = 'Payment Successful! 🎉';
         if (thankYouMessage) {
@@ -416,17 +661,17 @@ function showRegistrationThankYou(studentData) {
                 Registration completed for <strong>${studentData.interested_subjects.length} subject(s)</strong>.
             `;
         }
-        if (nextStepsText) {
-            nextStepsText.textContent = 'Your dashboard will be activated within 24 hours by admin. For queries:';
-        }
-        if (infoBoxText) {
-            infoBoxText.innerHTML = `
-                📚 <strong>Dashboard Access:</strong> Will be enabled by admin within 24 hours<br>
-                💰 <strong>Amount Paid:</strong> ₹${studentData.payment_amount.toLocaleString('en-IN')}<br>
-                📝 <strong>Payment ID:</strong> ${studentData.payment_id}<br>
-                🔄 <strong>Tip:</strong> Refresh this page after 24 hours
-            `;
-        }
+        // if (nextStepsText) {
+        //     nextStepsText.textContent = 'Your dashboard will be activated within 24 hours by admin. For queries:';
+        // }
+        // if (infoBoxText) {
+        //     infoBoxText.innerHTML = `
+        //         📚 <strong>Dashboard Access:</strong> Will be enabled by admin within 24 hours<br>
+        //         💰 <strong>Amount Paid:</strong> ₹${studentData.payment_amount.toLocaleString('en-IN')}<br>
+        //         📝 <strong>Payment ID:</strong> ${studentData.payment_id}<br>
+        //         🔄 <strong>Tip:</strong> Refresh this page after 24 hours
+        //     `;
+        // }
     } else {
         if (thankYouTitle) thankYouTitle.textContent = 'Registration Complete! 📝';
         if (thankYouMessage) {
@@ -438,17 +683,105 @@ function showRegistrationThankYou(studentData) {
         if (nextStepsText) {
             nextStepsText.textContent = 'Our team will contact you shortly:';
         }
-        if (infoBoxText) {
-            infoBoxText.innerHTML = `
-                📞 <strong>Next Steps:</strong> Team will call within 24 hours<br>
-                💰 <strong>Amount Paid:</strong> ₹${studentData.payment_amount.toLocaleString('en-IN')}<br>
-                📝 <strong>Payment ID:</strong> ${studentData.payment_id}
-            `;
-        }
+        // if (infoBoxText) {
+        //     infoBoxText.innerHTML = `
+        //         📞 <strong>Next Steps:</strong> Team will call within 24 hours<br>
+        //         💰 <strong>Amount Paid:</strong> ₹${studentData.payment_amount.toLocaleString('en-IN')}<br>
+        //         📝 <strong>Payment ID:</strong> ${studentData.payment_id}
+        //     `;
+        // }
     }
-    
+    displaySelectedSubjectsWithDates(studentData);
     thankYouContainer.classList.remove('hidden');
 }
+
+function displaySelectedSubjectsWithDates(studentData) {
+    // Find or create container for subjects in thank you page
+    let subjectsContainer = document.getElementById('thankYouSubjectsContainer');
+    
+    // If container doesn't exist, create it and insert after infoBox
+    if (!subjectsContainer) {
+        const infoBox = document.querySelector('#thankYouContainer .info-box');
+        if (!infoBox) return; // Exit if info box not found
+        
+        subjectsContainer = document.createElement('div');
+        subjectsContainer.id = 'thankYouSubjectsContainer';
+        subjectsContainer.style.cssText = 'margin-top: 30px;';
+        
+        // Insert after the info box
+        infoBox.parentNode.insertBefore(subjectsContainer, infoBox.nextSibling);
+    }
+
+    const key = `${studentData.grade}-${studentData.board}`;
+    const selectedSubjects = studentData.interested_subjects || [];
+
+    if (selectedSubjects.length === 0) {
+        subjectsContainer.innerHTML = '';
+        return;
+    }
+
+    // Create title and notice
+    let html = `
+        <div style="margin-bottom: 25px;">
+            <h3 style="color: #667eea; font-size: 22px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                📚 Your Selected Subjects & Test Dates
+            </h3>
+            
+            <!-- Important Notice -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); border-left: 5px solid #ffd700;">
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <span style="font-size: 24px; flex-shrink: 0;">⚠️</span>
+                    <div>
+                        <h4 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">Important Notice - Test Dates</h4>
+                        <p style="margin: 0; font-size: 14px; line-height: 1.6; opacity: 0.95;">
+                            Please review the subject-wise test dates carefully, as the tests will be scheduled strictly on the specified dates and will remain accessible only until then. Kindly note that these dates are fixed and cannot be changed.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add each subject with its dates
+    selectedSubjects.forEach((subject, index) => {
+        const subjectDates = testDatesByGradeBoard[key]?.[subject] || [];
+        
+        html += `
+            <div style="background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                    <h4 style="color: #333; font-size: 18px; margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold;">${index + 1}</span>
+                        ${subject}
+                    </h4>
+                    <span style="background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;">
+                        ${subjectDates.length} Tests
+                    </span>
+                </div>
+                
+                ${subjectDates.length > 0 ? `
+                    <div style="display: grid; gap: 10px;">
+                        ${subjectDates.map((date, idx) => `
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                                <span style="background: #667eea; color: white; min-width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold;">${idx + 1}</span>
+                                <span style="color: #555; font-size: 15px; flex: 1;">${date}</span>
+                                <span style="font-size: 20px;">📅</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : `
+                    <p style="color: #888; font-size: 14px; margin: 0; padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                        Test dates coming soon
+                    </p>
+                `}
+            </div>
+        `;
+    });
+
+    subjectsContainer.innerHTML = html;
+}
+
+
+
 
 async function handleLogin() {
     const email = document.getElementById('loginEmail')?.value?.trim().toLowerCase();
@@ -475,7 +808,7 @@ async function handleLogin() {
 
             currentUser = data;
             localStorage.setItem('peakTestUser', JSON.stringify(data));
-            
+
             if (data.dashboard_access === true) {
                 showDashboard();
             } else {
@@ -519,10 +852,10 @@ function showDashboard() {
     if (currentUser) {
         const userName = document.getElementById('userName');
         const userGradeBoard = document.getElementById('userGradeBoard');
-        
+
         if (userName) userName.textContent = currentUser.name;
         if (userGradeBoard) userGradeBoard.textContent = `Grade ${currentUser.grade} - ${currentUser.board}`;
-        
+
         loadSubjects();
     }
 }
@@ -555,7 +888,7 @@ function loadSubjects() {
 async function selectSubject(subject) {
     currentSubject = subject;
     console.log('📚 Selected subject:', subject);
-    
+
     if (supabaseEnabled && supabase && currentUser && currentUser.email) {
         console.log('🔄 Fetching test access data...');
         try {
@@ -564,7 +897,7 @@ async function selectSubject(subject) {
                 .select('test_access')
                 .eq('email', currentUser.email)
                 .single();
-            
+
             if (!error && data) {
                 currentUser.test_access = data.test_access || {};
                 localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
@@ -574,11 +907,11 @@ async function selectSubject(subject) {
             console.error('❌ Error fetching test access:', error);
         }
     }
-    
+
     document.getElementById('subjectsPage')?.classList.add('hidden');
     document.getElementById('testsPage')?.classList.remove('hidden');
     document.getElementById('subjectTitle').textContent = `${subject} ISC-X`;
-    
+
     await loadTests();
     await loadSubmittedTests();
 }
@@ -631,7 +964,7 @@ async function loadTests() {
                             .update({ status: 'expired' })
                             .eq('student_email', currentUser.email)
                             .eq('test_key', testKey);
-                        
+
                         // Also update students table
                         await supabase
                             .from('students')
@@ -655,8 +988,8 @@ async function loadTests() {
             } else if (testAccess.status === 'completed') {
                 statusHTML = '<span class="test-status locked">Completed</span>';
                 clickable = false;
-                
-            }else {
+
+            } else {
                 statusHTML = '<span class="test-status locked">Expired</span>';
                 clickable = false;
             }
@@ -718,7 +1051,7 @@ async function openTest(testNumber) {
                 } else {
                     console.log('✅ Test attempt saved to Supabase');
                 }
-                
+
                 // ✅ FIX 1: Update students table test_access
                 console.log('📝 Updating students.test_access on test start...');
                 const { error: updateError } = await supabase
@@ -843,11 +1176,11 @@ async function submitTest() {
                     } else {
                         console.log('✅ Test submission saved to Supabase');
                     }
-                    
+
                     // ✅ FIX 2: Update students table test_access on submit
                     console.log('📝 Updating students.test_access on submit...');
                     console.log('📝 Current test_access before update:', JSON.stringify(currentUser.test_access, null, 2));
-                    
+
                     const { data: updateResult, error: studentError } = await supabase
                         .from('students')
                         .update({
@@ -1298,7 +1631,7 @@ async function uploadAnswerFile() {
                 })
                 .eq('student_email', currentUser.email)
                 .eq('subject', currentSubject
-)
+                )
                 .eq('test_number', getCurrentTestNumber())
                 .eq('status', 'active');
         } catch (updateError) {

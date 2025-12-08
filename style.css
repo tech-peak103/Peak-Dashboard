@@ -248,8 +248,8 @@ body {
     left: 0;
     right: 0;
     height: 180px;
-    background-image: 
-        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px);
+    background-image:
+        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.03) 10px, rgba(255, 255, 255, 0.03) 20px);
     z-index: 0;
     pointer-events: none;
 }
@@ -285,7 +285,7 @@ body {
 }
 
 /* Subject Card Content */
-.subject-card > * {
+.subject-card>* {
     position: relative;
     z-index: 2;
 }
@@ -309,7 +309,7 @@ body {
 }
 
 /* Tests available text */
-.subject-card > p:first-of-type {
+.subject-card>p:first-of-type {
     color: rgba(255, 255, 255, 0.95);
     font-size: 16px;
     margin: 0 30px 25px 30px;
@@ -318,7 +318,7 @@ body {
 }
 
 /* View Tests button at bottom */
-.subject-card > p:last-of-type {
+.subject-card>p:last-of-type {
     color: #1a1a1a;
     font-size: 17px;
     font-weight: 700;
@@ -332,7 +332,7 @@ body {
     border: 2px solid transparent;
 }
 
-.subject-card:hover > p:last-of-type {
+.subject-card:hover>p:last-of-type {
     background: #f8f9fa;
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -350,9 +350,12 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.1);
     }
@@ -726,6 +729,7 @@ body {
         opacity: 0;
         transform: scale(0.9);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -954,7 +958,7 @@ body {
     color: #333;
 }
 
-.subject-checkbox-item input[type="checkbox"]:checked + label {
+.subject-checkbox-item input[type="checkbox"]:checked+label {
     color: #58508d;
     font-weight: 600;
 }
@@ -994,6 +998,7 @@ body {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1007,8 +1012,15 @@ body {
 }
 
 @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }
 
 .thank-you-card h1 {
@@ -1052,7 +1064,7 @@ body {
     text-align: center;
 }
 
-.next-steps > p {
+.next-steps>p {
     color: #555;
     font-size: 16px;
     margin-bottom: 20px;
@@ -1286,13 +1298,16 @@ body {
 /* ============================================================================ */
 
 .dashboard-footer {
+    display: none;
     background: linear-gradient(135deg, #003f5c 0%, #58508d 100%);
     color: white;
     padding: 40px 20px 30px 20px;
     margin-top: 60px;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 }
-
+#dashboardContainer:not(.hidden) ~ .dashboard-footer {
+    display: block; /* Visible when dashboard is active */
+}
 .footer-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -1409,6 +1424,7 @@ body {
 /* ============================================================================ */
 
 @media (max-width: 768px) {
+
     /* Registration Form */
     .registration-form {
         padding: 30px 20px;
@@ -1419,7 +1435,7 @@ body {
     }
 
     /* Radio buttons for registration mode */
-    .form-group > div[style*="display: flex"] {
+    .form-group>div[style*="display: flex"] {
         flex-direction: column !important;
         gap: 10px !important;
     }
@@ -1505,12 +1521,12 @@ body {
         margin: 35px 25px 10px 25px;
     }
 
-    .subject-card > p:first-of-type {
+    .subject-card>p:first-of-type {
         margin: 0 25px 20px 25px;
         font-size: 15px;
     }
 
-    .subject-card > p:last-of-type {
+    .subject-card>p:last-of-type {
         margin: auto 20px 20px 20px;
         font-size: 16px;
         padding: 16px 20px;
@@ -1756,6 +1772,7 @@ body {
 
 /* Extra Small Devices (< 480px) */
 @media (max-width: 480px) {
+
     .registration-form h2,
     .login-form h2 {
         font-size: 20px;
@@ -1790,11 +1807,11 @@ body {
         font-size: 36px;
     }
 
-    .subject-card > p:first-of-type {
+    .subject-card>p:first-of-type {
         font-size: 14px;
     }
 
-    .subject-card > p:last-of-type {
+    .subject-card>p:last-of-type {
         font-size: 15px;
         padding: 14px 18px;
     }
@@ -1829,5 +1846,293 @@ body {
 
     .thank-you-icon {
         font-size: 60px;
+    }
+}
+
+
+.subject-with-dates {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.subject-with-dates:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+/* ============================================================================ */
+/* SUBJECT HEADER (CHECKBOX + LABEL + ARROW) */
+/* ============================================================================ */
+
+.subject-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+.subject-header input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #667eea;
+    flex-shrink: 0;
+}
+
+.subject-header label {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    margin: 0;
+}
+
+.expand-icon {
+    font-size: 18px;
+    color: #667eea;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    user-select: none;
+    padding: 5px;
+    min-width: 30px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.expand-icon.expanded {
+    transform: rotate(180deg);
+}
+
+/* ============================================================================ */
+/* TEST DATES CONTAINER (EXPANDABLE) */
+/* ============================================================================ */
+
+.test-dates-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    /* padding-left: 32px; */
+}
+
+.test-dates-container.show {
+    max-height: 600px;
+    /* margin-top: 12px; */
+}
+
+/* ============================================================================ */
+/* TEST DATES LIST */
+/* ============================================================================ */
+
+.test-dates-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.test-date-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    background: white;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    font-size: 14px;
+    color: #555;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.test-date-item:hover {
+    background: #f0f4ff;
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.15);
+}
+
+/* ============================================================================ */
+/* TEST NUMBER BADGE */
+/* ============================================================================ */
+
+.test-number {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+}
+
+/* ============================================================================ */
+/* TEST DATE TEXT */
+/* ============================================================================ */
+
+.test-date-text {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+}
+
+/* ============================================================================ */
+/* CALENDAR ICON */
+/* ============================================================================ */
+
+.date-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+/* ============================================================================ */
+/* MOBILE RESPONSIVE */
+/* ============================================================================ */
+
+@media (max-width: 768px) {
+    .subject-with-dates {
+        padding: 12px;
+    }
+
+    .subject-header {
+        gap: 10px;
+    }
+
+    .subject-header label {
+        font-size: 14px;
+    }
+
+    .subject-header input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+    }
+
+    .expand-icon {
+        font-size: 16px;
+        min-width: 28px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .expand-icon.expanded {
+        transform: rotate(180deg);
+    }
+
+    .test-dates-container {
+        padding-left: 28px;
+    }
+
+    .test-dates-container.show {
+        margin-top: 12px;
+    }
+
+    .test-date-item {
+        padding: 10px 12px;
+        font-size: 13px;
+        gap: 10px;
+    }
+
+    .test-number {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .test-date-text {
+        font-size: 13px;
+    }
+
+    .date-icon {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .subject-with-dates {
+        padding: 10px;
+    }
+
+    .subject-header label {
+        font-size: 13px;
+    }
+
+    .test-dates-container {
+        padding-left: 24px;
+    }
+
+    .test-date-item {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .test-number {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+    }
+}
+
+/* ============================================================================ */
+/* EMPTY STATE MESSAGE */
+/* ============================================================================ */
+
+.test-dates-list p {
+    color: #999;
+    font-size: 13px;
+    padding: 10px 0;
+    margin: 0;
+    font-style: italic;
+}
+
+/* ============================================================================ */
+/* ANIMATION IMPROVEMENTS */
+/* ============================================================================ */
+
+.subject-with-dates,
+.test-date-item,
+.expand-icon {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.test-dates-container {
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================================ */
+/* ACCESSIBILITY */
+/* ============================================================================ */
+
+.expand-icon:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.subject-header input[type="checkbox"]:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* ============================================================================ */
+/* PRINT STYLES (OPTIONAL) */
+/* ============================================================================ */
+
+@media print {
+    .test-dates-container {
+        max-height: none !important;
+        display: block !important;
+    }
+
+    .expand-icon {
+        display: none;
     }
 }
