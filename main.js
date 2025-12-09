@@ -20,7 +20,7 @@ try {
     supabaseEnabled = false;
 }
 
-const RAZORPAY_KEY_ID = 'rzp_test_Rp0p54SGmiWXzq';
+const RAZORPAY_KEY_ID = 'rzp_live_RpP8olgNI2tM7u';
 const PRICE_PER_SUBJECT = 15000;
 
 let currentUser = null;
