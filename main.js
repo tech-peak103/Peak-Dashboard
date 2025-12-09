@@ -108,7 +108,7 @@ function updateSubjectsCheckboxes() {
     const key = `${grade}-${board}`;
     const subjects = subjectsByGradeBoardCheckbox[key] || [];
 
-    console.log('📚 Key:', key, '| Subjects found:', subjects.length);
+    // console.log('📚 Key:', key, '| Subjects found:', subjects.length);
 
     // If no subjects available, show message
     if (subjects.length === 0) {
@@ -213,7 +213,7 @@ function updateSubjectsCheckboxes() {
         container.appendChild(wrapper);
     });
 
-    console.log('✅ Subjects displayed successfully');
+    // console.log('✅ Subjects displayed successfully');
 }
 
 function updateBoardDropdown() {
@@ -250,7 +250,7 @@ function updateBoardDropdown() {
         boardSelect.appendChild(option);
     });
 
-    console.log('✅ Board dropdown updated for grade:', selectedGrade);
+    // console.log('✅ Board dropdown updated for grade:', selectedGrade);
 
     // Clear subjects since board is not selected yet
     updateSubjectsCheckboxes();
@@ -358,7 +358,7 @@ function updateSubmitButton() {
 
 
 document.addEventListener('DOMContentLoaded', async function () {
-    console.log('🚀 Peak Test Series initialized');
+    // console.log('🚀 Peak Test Series initialized');
 
     const savedUser = localStorage.getItem('peakTestUser');
     if (savedUser) {
