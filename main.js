@@ -306,50 +306,89 @@ function calculateTotal() {
     autoSaveFormData();
     return total;
 }
+let autoSaveTimeout = null; // ✅ Already declared - good!
 
 async function autoSaveFormData() {
-    const name = document.getElementById('studentName')?.value?.trim() || '';
-    const email = document.getElementById('studentEmail')?.value?.trim() || '';
-    const grade = document.getElementById('studentGrade')?.value || '';
-    const board = document.getElementById('studentBoard')?.value || '';
-    const address = document.getElementById('studentAddress')?.value?.trim() || '';
-    const phone = document.getElementById('studentPhone')?.value?.trim() || '';
-    const password = document.getElementById('studentPassword')?.value || '';
-
-    const modeElement = document.querySelector('input[name="registrationMode"]:checked');
-    const mode = modeElement ? modeElement.value : 'online';
-
-    const selectedSubjects = [];
-    const checkboxes = document.querySelectorAll('#subjectsCheckboxContainer input[type="checkbox"]:checked');
-    checkboxes.forEach(cb => selectedSubjects.push(cb.value));
-
-    if (!email) return;
-
-    const formData = {
-        email: email,
-        name: name || null,
-        grade: grade || null,
-        board: board || null,
-        address: address || null,
-        phone: phone || null,
-        interested_subjects: selectedSubjects,
-        registration_mode: mode,
-        password_hash: password ? btoa(password) : null,
-        last_updated: new Date().toISOString()
-    };
-
-    if (supabaseEnabled && supabase) {
-        try {
-            await supabase
-                .from('incomplete_registrations')
-                .upsert(formData, { onConflict: 'email' });
-        } catch (error) {
-            console.error('❌ Auto-save error:', error);
-        }
+    // ✅ STEP 1: Clear previous timeout (debouncing)
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
     }
+
+    // ✅ STEP 2: Wait 1 second after user stops typing
+    autoSaveTimeout = setTimeout(async () => {
+        const name = document.getElementById('studentName')?.value?.trim() || '';
+        const email = document.getElementById('studentEmail')?.value?.trim().toLowerCase() || ''; // ✅ Added toLowerCase()
+        const grade = document.getElementById('studentGrade')?.value || '';
+        const board = document.getElementById('studentBoard')?.value || '';
+        const address = document.getElementById('studentAddress')?.value?.trim() || '';
+        const phone = document.getElementById('studentPhone')?.value?.trim() || '';
+        const password = document.getElementById('studentPassword')?.value || '';
+
+        const modeElement = document.querySelector('input[name="registrationMode"]:checked');
+        const mode = modeElement ? modeElement.value : 'online';
+
+        const selectedSubjects = [];
+        const checkboxes = document.querySelectorAll('#subjectsCheckboxContainer input[type="checkbox"]:checked');
+        checkboxes.forEach(cb => selectedSubjects.push(cb.value));
+
+        // ✅ STEP 3: Enhanced validation - only save if email is valid
+        if (!email || email.length < 5 || !email.includes('@')) {
+            // console.log('⏳ Waiting for valid email...');
+            return;
+        }
+
+        const formData = {
+            email: email, // Now lowercase
+            name: name || null,
+            grade: grade || null,
+            board: board || null,
+            address: address || null,
+            phone: phone || null,
+            interested_subjects: selectedSubjects,
+            registration_mode: mode,
+            password_hash: password ? btoa(password) : null,
+            last_updated: new Date().toISOString()
+        };
+
+        if (supabaseEnabled && supabase) {
+            try {
+                // ✅ STEP 4: Check if record exists first
+                const { data: existing, error: checkError } = await supabase
+                    .from('incomplete_registrations')
+                    .select('email')
+                    .eq('email', email)
+                    .maybeSingle();
+
+                if (existing) {
+                    // ✅ Update existing record
+                    const { error: updateError } = await supabase
+                        .from('incomplete_registrations')
+                        .update(formData)
+                        .eq('email', email);
+
+                    if (updateError) {
+                        console.error('❌ Update error:', updateError);
+                    } else {
+                        // console.log('✅ Auto-saved (updated)');
+                    }
+                } else {
+                    // ✅ Insert new record
+                    const { error: insertError } = await supabase
+                        .from('incomplete_registrations')
+                        .insert([formData]);
+
+                    if (insertError) {
+                        console.error('❌ Insert error:', insertError);
+                    } else {
+                        // console.log('✅ Auto-saved (new)');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Auto-save error:', error);
+            }
+        }
+    }, 1000); // ✅ 1 second delay
 }
-
-
 
 function updateSubmitButton() {
     calculateTotal();
@@ -698,16 +737,16 @@ function showRegistrationThankYou(studentData) {
 function displaySelectedSubjectsWithDates(studentData) {
     // Find or create container for subjects in thank you page
     let subjectsContainer = document.getElementById('thankYouSubjectsContainer');
-    
+
     // If container doesn't exist, create it and insert after infoBox
     if (!subjectsContainer) {
         const infoBox = document.querySelector('#thankYouContainer .info-box');
         if (!infoBox) return; // Exit if info box not found
-        
+
         subjectsContainer = document.createElement('div');
         subjectsContainer.id = 'thankYouSubjectsContainer';
         subjectsContainer.style.cssText = 'margin-top: 30px;';
-        
+
         // Insert after the info box
         infoBox.parentNode.insertBefore(subjectsContainer, infoBox.nextSibling);
     }
@@ -745,7 +784,7 @@ function displaySelectedSubjectsWithDates(studentData) {
     // Add each subject with its dates
     selectedSubjects.forEach((subject, index) => {
         const subjectDates = testDatesByGradeBoard[key]?.[subject] || [];
-        
+
         html += `
             <div style="background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
