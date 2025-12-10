@@ -236,9 +236,12 @@
             </div>
             <div class="pdf-timer" id="pdfTimer">03:00:00</div>
             <div style="display: flex; gap: 10px;">
-                <button class="close-pdf-btn" style="background: #4caf50;" onclick="showUploadDialog()">✓ Submit
-                    Test</button>
-                <button class="close-pdf-btn" onclick="closePdfViewer()">✕ Close</button>
+                <button class="close-pdf-btn" style="background: #4caf50;" onclick="showUploadDialog()">
+                    ✓ Submit Test
+                </button>
+                <button class="close-pdf-btn" onclick="closePdfViewer()">
+                    ✕ Close
+                </button>
             </div>
         </div>
         <div class="pdf-content">
@@ -249,48 +252,29 @@
     <div class="screenshot-blocker" id="screenshotBlocker"></div>
 
     <!-- Upload Answer Modal -->
-    <div class="modal" id="uploadModal" style="display: none;">
-        <div class="modal-content" style="max-width: 600px;">
+   <div class="upload-modal" id="uploadModal">
+        <div class="upload-content">
             <h3>📤 Submit Your Answer</h3>
-            <div style="padding: 20px 0;">
-                <p style="margin-bottom: 15px; color: #555;">
-                    Upload your completed test answer sheet
-                </p>
-
-                <div style="background: #f5f5f5; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                    <label for="answerFile" style="display: block; margin-bottom: 10px; font-weight: 600;">
-                        Select Answer File:
-                    </label>
-                    <input type="file" id="answerFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                        style="width: 100%; padding: 10px; border: 2px dashed #667eea; border-radius: 8px; background: white; cursor: pointer;" />
-                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
-                        ✅ Accepted formats: PDF, Word (.doc, .docx), Images (JPG, PNG)
-                    </p>
-                    <p style="font-size: 12px; color: #666;">
-                        ✅ Max file size: 50 MB
-                    </p>
+            <p style="color: #666; margin-bottom: 20px;">
+                Upload your answer sheet (PDF, Word, or Image files)
+            </p>
+            
+            <input type="file" id="answerFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            
+            <div class="upload-progress" id="uploadProgress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="uploadProgressBar">0%</div>
                 </div>
-
-                <div id="uploadProgress" style="display: none; margin-bottom: 15px;">
-                    <div style="background: #e0e0e0; border-radius: 10px; height: 30px; overflow: hidden;">
-                        <div id="uploadProgressBar"
-                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; width: 0%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px;">
-                            0%
-                        </div>
-                    </div>
-                    <p id="uploadStatus" style="text-align: center; margin-top: 10px; color: #555; font-size: 14px;">
-                        Uploading...
-                    </p>
-                </div>
-
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="pay-btn" onclick="uploadAnswerFile()" style="flex: 1;">
-                        📤 Upload & Submit
-                    </button>
-                    <button class="cancel-btn" onclick="closeUploadDialog()" style="flex: 1;">
-                        Cancel
-                    </button>
-                </div>
+                <div class="upload-status" id="uploadStatus">Uploading...</div>
+            </div>
+            
+            <div class="upload-buttons">
+                <button class="upload-btn secondary" onclick="closeUploadDialog()">
+                    Cancel
+                </button>
+                <button class="upload-btn primary" onclick="uploadAnswerFile()">
+                    Upload & Submit
+                </button>
             </div>
         </div>
     </div>

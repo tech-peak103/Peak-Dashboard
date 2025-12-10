@@ -398,6 +398,15 @@ function updateSubmitButton() {
 
 document.addEventListener('DOMContentLoaded', async function () {
     // console.log('🚀 Peak Test Series initialized');
+    const pdfViewer = document.getElementById('pdfViewer');
+    if (pdfViewer) {
+        pdfViewer.classList.add('hidden');
+        // Also clear any iframe src
+        const pdfFrame = document.getElementById('pdfFrame');
+        if (pdfFrame) {
+            pdfFrame.src = '';
+        }
+    }
 
     const savedUser = localStorage.getItem('peakTestUser');
     if (savedUser) {
@@ -583,6 +592,10 @@ async function handleRegistrationWithPayment() {
     };
 
     await processRegistrationPayment(studentData, totalAmount);
+
+    // studentData.payment_id = 'DIRECT_REG_' + Date.now();
+    // studentData.payment_date = new Date().toISOString();
+    await saveStudentRegistration(studentData);
 }
 
 async function processRegistrationPayment(studentData, amount) {
@@ -888,6 +901,16 @@ function showDashboard() {
     document.getElementById('subjectsPage')?.classList.remove('hidden');
     document.getElementById('testsPage')?.classList.add('hidden');
 
+    const pdfViewer = document.getElementById('pdfViewer');
+    if (pdfViewer) {
+        pdfViewer.classList.add('hidden');
+        // Clear iframe
+        const pdfFrame = document.getElementById('pdfFrame');
+        if (pdfFrame) {
+            pdfFrame.src = '';
+        }
+    }
+
     if (currentUser) {
         const userName = document.getElementById('userName');
         const userGradeBoard = document.getElementById('userGradeBoard');
@@ -928,6 +951,15 @@ async function selectSubject(subject) {
     currentSubject = subject;
     console.log('📚 Selected subject:', subject);
 
+    const pdfViewer = document.getElementById('pdfViewer');
+    if (pdfViewer) {
+        pdfViewer.classList.add('hidden');
+        const pdfFrame = document.getElementById('pdfFrame');
+        if (pdfFrame) {
+            pdfFrame.src = '';
+        }
+    }
+
     if (supabaseEnabled && supabase && currentUser && currentUser.email) {
         console.log('🔄 Fetching test access data...');
         try {
@@ -957,6 +989,15 @@ async function selectSubject(subject) {
 
 function backToSubjects() {
     currentSubject = null;
+    const pdfViewer = document.getElementById('pdfViewer');
+    if (pdfViewer) {
+        pdfViewer.classList.add('hidden');
+        const pdfFrame = document.getElementById('pdfFrame');
+        if (pdfFrame) {
+            pdfFrame.src = '';
+        }
+    }
+
     document.getElementById('testsPage')?.classList.add('hidden');
     document.getElementById('subjectsPage')?.classList.remove('hidden');
 }
@@ -1127,7 +1168,7 @@ async function openTest(testNumber) {
 
     // Show PDF viewer
     document.getElementById('pdfTestTitle').textContent = `${currentSubject} - Test ${testNumber}`;
-
+    document.getElementById('pdfFrame').src = '';
     try {
         if (supabaseEnabled) {
             // Get PDF URL from database
@@ -1163,6 +1204,18 @@ async function openTest(testNumber) {
         // console.error('Failed to load PDF:', error);
         alert('Failed to load test PDF. Please try again.');
         return;
+    }
+    document.body.classList.add('pdf-open');
+    const watermark = document.getElementById('pdfWatermark');
+    if (watermark) {
+        watermark.setAttribute('data-watermark', `${currentUser.name} - ${currentUser.email}`);
+        watermark.textContent = `${currentUser.name} - ${currentUser.email}`;
+    }
+
+    // Show screenshot blocker
+    const blocker = document.getElementById('screenshotBlocker');
+    if (blocker) {
+        blocker.style.display = 'block';
     }
 
     document.getElementById('pdfViewer').classList.remove('hidden');
@@ -1350,6 +1403,13 @@ function closePdfViewer() {
         clearInterval(pdfTimer);
         pdfTimer = null;
     }
+    document.body.classList.remove('pdf-open');
+
+    const blocker = document.getElementById('screenshotBlocker');
+    if (blocker) {
+        blocker.style.display = 'none';
+    }
+
     document.getElementById('pdfViewer').classList.add('hidden');
     document.getElementById('pdfFrame').src = '';
     loadTests(); // Refresh test list
@@ -1469,7 +1529,23 @@ async function loadSubmittedTests() {
                                 </div>
                             </div>
                         ` : ''}
-                        
+                         ${submission.checked_file_url ? `
+                            <div class="checked-file-section">
+                                <div class="checked-file-header">
+                                    <span style="font-size: 18px;">📋</span>
+                                    <strong>Checked Answer Sheet</strong>
+                                </div>
+                                <div class="checked-file-actions">
+                                    <button class="view-checked-btn" onclick="viewCheckedFile('${submission.checked_file_url}', '${submission.test_number}')">
+                                        👁️ View Checked Copy
+                                    </button>
+                                    <button class="download-checked-btn" onclick="downloadCheckedFile('${submission.checked_file_url}', 'Test_${submission.test_number}_Checked_${currentUser.name}')">
+                                        📥 Download
+                                    </button>
+                                </div>
+                            </div>
+                        ` : ''}
+
                         <div class="result-meta">
                             <div>📅 Submitted: ${submittedDate}</div>
                             <div>✓ Checked: ${checkedDate || 'N/A'}</div>
@@ -1510,6 +1586,126 @@ async function loadSubmittedTests() {
         `;
     }
 }
+
+// ============================================================================
+// ✅ VIEW CHECKED FILE - Opens in modal viewer
+// ============================================================================
+function viewCheckedFile(fileUrl, testNumber) {
+    console.log('👁️ Opening checked file:', fileUrl);
+    
+    // Create modal viewer
+    const modal = document.createElement('div');
+    modal.id = 'checkedFileModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.95);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0;">📋 Checked Answer Sheet - Test ${testNumber}</h3>
+            <button onclick="closeCheckedFileModal()" style="background: #f44336; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600;">
+                ✕ Close
+            </button>
+        </div>
+        <div style="flex: 1; background: #2d2d2d; display: flex; justify-content: center; align-items: center;">
+            <iframe src="${fileUrl}" style="width: 100%; height: 100%; border: none; background: white;"></iframe>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.classList.add('pdf-open');
+}
+
+// ============================================================================
+// ✅ CLOSE CHECKED FILE MODAL
+// ============================================================================
+function closeCheckedFileModal() {
+    const modal = document.getElementById('checkedFileModal');
+    if (modal) {
+        modal.remove();
+    }
+    document.body.classList.remove('pdf-open');
+}
+
+// ============================================================================
+// ✅ DOWNLOAD CHECKED FILE
+// ============================================================================
+function downloadCheckedFile(fileUrl, fileName) {
+    console.log('📥 Downloading checked file:', fileUrl);
+    
+    // Create invisible download link
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = fileName || 'Checked_Answer_Sheet';
+    link.target = '_blank';
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show success message
+    showToast('✅ Download started! Check your downloads folder.', 'success');
+}
+
+// ============================================================================
+// ✅ TOAST NOTIFICATION
+// ============================================================================
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196F3'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        z-index: 10001;
+        font-size: 16px;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease;
+    `;
+    toast.textContent = message;
+    
+    // Add animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => {
+            toast.remove();
+            style.remove();
+        }, 300);
+    }, 3000);
+}
+
+
 
 function showUploadDialog() {
     document.getElementById('uploadModal').style.display = 'flex';
