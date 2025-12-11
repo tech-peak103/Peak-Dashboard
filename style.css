@@ -1549,7 +1549,7 @@ body {
     }
 
     .subject-card {
-        min-height: 320px;
+        min-height: 250px;
         border-radius: 20px;
     }
 
@@ -1577,7 +1577,7 @@ body {
     }
 
     .subject-card>p:last-of-type {
-        margin: auto 20px 20px 20px;
+        margin: auto 40px 40px 40px;
         font-size: 16px;
         padding: 16px 20px;
     }

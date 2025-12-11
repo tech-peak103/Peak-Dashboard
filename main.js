@@ -595,7 +595,7 @@ async function handleRegistrationWithPayment() {
 
     // studentData.payment_id = 'DIRECT_REG_' + Date.now();
     // studentData.payment_date = new Date().toISOString();
-    await saveStudentRegistration(studentData);
+    // await saveStudentRegistration(studentData);
 }
 
 async function processRegistrationPayment(studentData, amount) {
@@ -935,10 +935,8 @@ function loadSubjects() {
         card.innerHTML = `
             <div class="subject-icon">📚</div>
             <h3>${subject}</h3>
-            <p>5 Tests Available</p>
-            <button class="subject-btn" onclick="selectSubject('${subject}')">
-                View Tests
-            </button>
+            <p onclick="selectSubject('${subject}')">5 Tests Available</p>
+            
         `;
         grid.appendChild(card);
     });
