@@ -124,7 +124,7 @@ function updateSubjectsCheckboxes() {
 
     const noticeBox = document.createElement('div');
     noticeBox.style.cssText = `
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #02B2BC;
         color: white;
         padding: 15px 20px;
         border-radius: 10px;
@@ -775,12 +775,12 @@ function displaySelectedSubjectsWithDates(studentData) {
     // Create title and notice
     let html = `
         <div style="margin-bottom: 25px;">
-            <h3 style="color: #667eea; font-size: 22px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <h3 style="color: #f84e9d; font-size: 22px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
                 📚 Your Selected Subjects & Test Dates
             </h3>
             
             <!-- Important Notice -->
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); border-left: 5px solid #ffd700;">
+            <div style="background: ; color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); border-left: 5px solid #ffd700;">
                 <div style="display: flex; align-items: start; gap: 12px;">
                     <span style="font-size: 24px; flex-shrink: 0;">⚠️</span>
                     <div>
@@ -933,7 +933,7 @@ function loadSubjects() {
         const card = document.createElement('div');
         card.className = 'subject-card';
         card.innerHTML = `
-            <div class="subject-icon">📚</div>
+          
             <h3>${subject}</h3>
             <p onclick="selectSubject('${subject}')">5 Tests Available</p>
             

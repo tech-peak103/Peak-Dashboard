@@ -4,17 +4,23 @@
 /* ============================================================================ */
 
 :root {
-    /* Brand Colors */
-    --primary-blue: #4F46E5;      /* Deep educational blue */
-    --primary-purple: #7C3AED;    /* Premium purple – strong brand feel */
-    
-    /* Accent Colors */
-    --accent-cyan: #06B6D4;       /* Fresh highlight */
-    --accent-emerald: #10B981;    /* Success, active state */
-    --accent-amber: #F59E0B;      /* Warning / highlight */
-    
+    /* NEW Brand Colors */
+    --white: #ffffff;
+    --tropical-teal: #02b2bc;
+    --amber-flame: #ffb423;
+    --dragonfruit: #f84e9d;
+    --midnight-violet: #211529;
+
+    /* Brand Colors - UPDATED */
+    --primary-blue: var(--tropical-teal);
+    --primary-purple: var(--dragonfruit);
+
+    /* Accent Colors - UPDATED */
+    --accent-cyan: var(--tropical-teal);
+    --accent-emerald: #10B981;
+    --accent-amber: var(--amber-flame);
+
     /* Neutral Colors */
-    --white: #FFFFFF;
     --gray-50: #F9FAFB;
     --gray-100: #F3F4F6;
     --gray-200: #E5E7EB;
@@ -27,25 +33,24 @@
     --gray-900: #111827;
 
     /* Backgrounds */
-    --bg-light: var(--gray-50);
-    --bg-dark: var(--gray-900);
+    --bg-light: var(--white);
+    --bg-dark: var(--midnight-violet);
 
     /* Text Colors */
-    --text-primary: var(--gray-900);
+    --text-primary: var(--midnight-violet);
     --text-secondary: var(--gray-600);
 
-    /* Button Colors */
-    --btn-primary: var(--primary-blue);
-    --btn-primary-hover: #4338CA;
+    /* Button Colors - UPDATED */
+    --btn-primary: var(--tropical-teal);
+    --btn-primary-hover: #028a92;
 
-    --btn-secondary: var(--primary-purple);
-    --btn-secondary-hover: #6D28D9;
-    
+    --btn-secondary: var(--dragonfruit);
+    --btn-secondary-hover: #e6397d;
+
     --btn-success: var(--accent-emerald);
-    --btn-warning: var(--accent-amber);
-    --btn-info: var(--accent-cyan);
+    --btn-warning: var(--amber-flame);
+    --btn-info: var(--tropical-teal);
 }
-
 
 * {
     margin: 0;
@@ -56,7 +61,7 @@
 
 body {
     /* New Color Palette Gradient */
-    background: linear-gradient(135deg, #003f5c 0%, #58508d 50%, #bc5090 100%);
+    background-image: url('https://chromeias.com/wp-content/uploads/2021/05/Untitled-design-1-768x432.png');
     min-height: 100vh;
     overflow-x: hidden;
 }
@@ -77,8 +82,18 @@ body {
     padding: 20px;
 }
 
+.registration-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    /* border: 1px solid black; */
+    margin-bottom: 30px;
+}
+
 .registration-form {
     background: white;
+    opacity: 0.9;
     padding: 40px;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -100,13 +115,14 @@ body {
 }
 
 .registration-form h2 {
-    background: linear-gradient(135deg, #58508d, #bc5090);
+    /* background: linear-gradient(135deg, var(--dragonfruit), var(--sky-aqua));
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-text-fill-color: transparent; */
+    color: var(--tropical-teal);
     background-clip: text;
-    margin-bottom: 30px;
+
     text-align: center;
-    font-size: 28px;
+    font-size: 25px;
 }
 
 .form-group {
@@ -116,13 +132,15 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #333;
+    color: var(--midnight-violet);
     font-weight: 600;
 }
-#modeOnline{
+
+#modeOnline {
     width: 20%;
 }
-#modeOffline{
+
+#modeOffline {
     width: 20%;
 }
 
@@ -139,14 +157,14 @@ body {
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #58508d;
+    border-color: var(--dragonfruit);
     box-shadow: 0 0 0 3px rgba(88, 80, 141, 0.1);
 }
 
 .submit-btn {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #58508d 0%, #bc5090 100%);
+    background: var(--tropical-teal);
     color: white;
     border: none;
     border-radius: 8px;
@@ -186,15 +204,12 @@ body {
 .logo {
     width: 50px;
     height: 50px;
-    background: linear-gradient(135deg, #58508d, #bc5090);
-    color: white;
+    background-image: url('https://fr1ekw4xx.tribe.junction.express/uploads/2025/05-May/29-Thu/sm/header-icon_6838241632ce3.png');
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
     border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 700;
-    font-size: 20px;
-    box-shadow: 0 4px 12px rgba(88, 80, 141, 0.3);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
 }
 
 .brand-name {
@@ -218,7 +233,7 @@ body {
 
 .user-name {
     font-weight: 700;
-    color: #333;
+    color: var(--midnight-violet);
     font-size: 16px;
 }
 
@@ -230,7 +245,7 @@ body {
 
 .logout-btn {
     padding: 10px 24px;
-    background: linear-gradient(135deg, #ff6361, #ffa600);
+    background: var(--dragonfruit);
     color: white;
     border: none;
     border-radius: 8px;
@@ -251,28 +266,32 @@ body {
 .subjects-container {
     padding: 40px;
     max-width: 1400px;
+    height: 100%;
     margin: 0 auto;
+    background-image: url('https://img.freepik.com/premium-photo/creative-educational-sketch-white-backdrop-with-copybooks-education-knowledge-concept-3d-rendering_670147-66821.jpg?semt=ais_hybrid&w=740&q=80');
+    opacity: 0.9;
 }
 
 .subjects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 35px;
     margin-top: 30px;
 }
 
 .subject-card {
-    background: white;
+    /* background: #FFD685; */
     border-radius: 24px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
     cursor: pointer;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
-    min-height: 340px;
+    min-height: 240px;
     display: flex;
+    background: white;
     flex-direction: column;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* border: 3px solid rgba(37, 165, 224, 0.1); */
 }
 
 /* Subject Card Header with Gradient */
@@ -283,9 +302,10 @@ body {
     left: 0;
     right: 0;
     height: 180px;
-    background: linear-gradient(135deg, #003f5c 0%, #58508d 100%);
+    background-color: white;
     background-size: cover;
-    background-position: center;
+    opacity: 0.5;
+    background-position: left;
     z-index: 0;
     pointer-events: none;
 }
@@ -298,35 +318,40 @@ body {
     left: 0;
     right: 0;
     height: 180px;
-    background-image:
-        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.03) 10px, rgba(255, 255, 255, 0.03) 20px);
+    background-color: white;
+    /* background-image:
+        repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.03) 10px, rgba(255, 255, 255, 0.03) 20px); */
     z-index: 0;
     pointer-events: none;
 }
 
 /* Subject-specific gradients with better colors */
 .subject-card[data-subject="Accounts"]::before {
-    background: linear-gradient(135deg, #FF6B6B 0%, #FFB347 100%);
+    background: var(--dragonfruit);
+}
+
+.subject-card[data-subject="History"]::before {
+    background: var(--sky-aqua);
 }
 
 .subject-card[data-subject="Physics"]::before {
-    background: linear-gradient(135deg, #4E54C8 0%, #8F94FB 100%);
+    background: var(--dragonfruit);
 }
 
 .subject-card[data-subject="Chemistry"]::before {
-    background: linear-gradient(135deg, #11998E 0%, #38EF7D 100%);
+    background: var(--sky-aqua);
 }
 
 .subject-card[data-subject="Mathematics"]::before {
-    background: linear-gradient(135deg, #EE0979 0%, #FF6A00 100%);
+    background: var(--dragonfruit);
 }
 
 .subject-card[data-subject="Biology"]::before {
-    background: linear-gradient(135deg, #56AB2F 0%, #A8E063 100%);
+    background: var(--sky-aqua);
 }
 
 .subject-card[data-subject="Computer"]::before {
-    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+    background: var(--dragonfruit);
 }
 
 .subject-card:hover {
@@ -342,7 +367,7 @@ body {
 
 /* Book emoji or icon at top */
 .subject-card h3::before {
-    content: '📚';
+    content: '';
     display: block;
     font-size: 48px;
     margin-bottom: 15px;
@@ -350,8 +375,8 @@ body {
 }
 
 .subject-card h3 {
-    color: white;
-    font-size: 32px;
+    color: black;
+    font-size: 40px;
     margin: 40px 30px 10px 30px;
     font-weight: 700;
     text-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
@@ -379,13 +404,20 @@ body {
     text-align: center;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
     transition: all 0.3s ease;
-    border: 2px solid transparent;
+    /* border: 2px solid transparent; */
 }
 
 .subject-card:hover>p:last-of-type {
-    background: #f8f9fa;
+    background: #02B2BC;
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--midnight-violet);
+    text-align: left;
 }
 
 /* Lock icon styling */
@@ -421,9 +453,18 @@ body {
     margin: 0 auto;
 }
 
+.tests-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
 .back-btn {
     padding: 12px 28px;
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--dragonfruit);
     color: white;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 10px;
@@ -432,10 +473,12 @@ body {
     margin-bottom: 20px;
     transition: all 0.3s;
     backdrop-filter: blur(10px);
+    margin-top: 30px;
+    margin-left: 40px;
 }
 
 .back-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 20px rgba(248, 78, 157, 0.3);
     transform: translateX(-5px);
 }
 
@@ -450,11 +493,12 @@ body {
     background: white;
     padding: 30px;
     border-radius: 16px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: all 0.3s;
     position: relative;
     overflow: hidden;
+    border: 2px solid transparent;
 }
 
 .test-card::before {
@@ -464,16 +508,51 @@ body {
     left: 0;
     width: 5px;
     height: 100%;
-    background: linear-gradient(180deg, #58508d 0%, #bc5090 100%);
+    background: var(--tropical-teal);
 }
 
 .test-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    border-color: var(--tropical-teal);
+}
+
+.test-header {
+    /* UPDATED color */
+    background: var(--dragonfruit);
+    color: white;
+    padding: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.test-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(255, 255, 255, 0.05) 10px,
+            rgba(255, 255, 255, 0.05) 20px);
+    animation: movePattern 20s linear infinite;
+}
+
+@keyframes movePattern {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(50px, 50px);
+    }
 }
 
 .test-card h3 {
-    color: #003f5c;
+    color: #FFB423;
     font-size: 20px;
     margin-bottom: 15px;
     font-weight: 700;
@@ -490,7 +569,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #555;
+    color: #02B2BC;
     font-size: 14px;
 }
 
@@ -1025,7 +1104,7 @@ body {
 
 .thank-you-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #003f5c 0%, #58508d 50%, #bc5090 100%);
+    background-image: url('https://chromeias.com/wp-content/uploads/2021/05/Untitled-design-1-768x432.png');
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1349,15 +1428,18 @@ body {
 
 .dashboard-footer {
     display: none;
-    background: linear-gradient(135deg, #003f5c 0%, #58508d 100%);
-    color: white;
+    background: #03a0a8;
+    color: #f84e9d;
     padding: 40px 20px 30px 20px;
     margin-top: 60px;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 }
-#dashboardContainer:not(.hidden) ~ .dashboard-footer {
-    display: block; /* Visible when dashboard is active */
+
+#dashboardContainer:not(.hidden)~.dashboard-footer {
+    display: block;
+    /* Visible when dashboard is active */
 }
+
 .footer-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -1910,7 +1992,7 @@ body {
 }
 
 .subject-with-dates:hover {
-    border-color: #667eea;
+    border-color: #f84e9d;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 
@@ -1944,7 +2026,7 @@ body {
 
 .expand-icon {
     font-size: 18px;
-    color: #667eea;
+    color: #dbc907;
     cursor: pointer;
     transition: transform 0.3s ease;
     user-select: none;
@@ -1991,7 +2073,7 @@ body {
     padding: 12px 15px;
     background: white;
     border-radius: 8px;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #f84e9d;
     font-size: 14px;
     color: #555;
     transition: all 0.2s ease;
@@ -2009,7 +2091,7 @@ body {
 /* ============================================================================ */
 
 .test-number {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background:#f84e9d;
     color: white;
     width: 32px;
     height: 32px;
@@ -2316,22 +2398,22 @@ body.pdf-open {
         flex-wrap: wrap;
         gap: 10px;
     }
-    
+
     .pdf-header h3 {
         font-size: 18px;
         width: 100%;
     }
-    
+
     .pdf-timer {
         font-size: 20px;
         padding: 8px 16px;
     }
-    
+
     .close-pdf-btn {
         padding: 10px 16px;
         font-size: 14px;
     }
-    
+
     .pdf-watermark {
         font-size: 40px;
     }
@@ -2348,7 +2430,8 @@ body.pdf-open {
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 10000; /* Higher than PDF viewer */
+    z-index: 10000;
+    /* Higher than PDF viewer */
     animation: fadeIn 0.3s ease;
 }
 
@@ -2356,6 +2439,7 @@ body.pdf-open {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -2376,6 +2460,7 @@ body.pdf-open {
         transform: translateY(50px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -2719,30 +2804,30 @@ body.pdf-open {
     .checked-file-actions {
         flex-direction: column;
     }
-    
+
     .view-checked-btn,
     .download-checked-btn {
         width: 100%;
     }
-    
+
     .result-marks {
         flex-direction: column;
         text-align: center;
         gap: 15px;
     }
-    
+
     .marks-info {
         text-align: center;
     }
-    
+
     .marks-display {
         font-size: 36px;
     }
-    
+
     .percentage {
         font-size: 28px;
     }
-    
+
     .result-meta {
         flex-direction: column;
         gap: 10px;
@@ -2755,6 +2840,7 @@ body.pdf-open {
         transform: translateX(400px);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -2766,6 +2852,7 @@ body.pdf-open {
         transform: translateX(0);
         opacity: 1;
     }
+
     to {
         transform: translateX(400px);
         opacity: 0;
@@ -2790,7 +2877,11 @@ body.pdf-open {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+    0% {
+        transform: rotate(0deg);
+    }
 
+    100% {
+        transform: rotate(360deg);
+    }
+}

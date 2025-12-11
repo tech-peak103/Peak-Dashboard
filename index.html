@@ -17,7 +17,11 @@
     <!-- Registration Form -->
     <div class="registration-container" id="registrationContainer">
         <div class="registration-form">
-            <h2>Peak Test Series Registration</h2>
+            <div class="registration-logo">
+                <div class="logo"></div>
+                <h2>Peak Test Series Registration</h2>
+            </div>
+
 
             <!-- ✅ NEW: Online/Offline Mode Selection -->
             <div class="form-group">
@@ -128,7 +132,8 @@
             <!-- ✅ NEW: Auto-save indicator -->
             <p style="text-align: center; color: #666; font-size: 14px; margin-top: 15px; line-height: 1.8;">
                 Have any questions? Feel free to reach out!<br>
-                📞 Call us: <a href="https://wa.me/919818184460" target="_blank"  style="color: #667eea; text-decoration: none;">+91 98181
+                📞 Call us: <a href="https://wa.me/919818184460" target="_blank"
+                    style="color: #667eea; text-decoration: none;">+91 98181
                     84460</a><br>
                 📧 Email us: <a href="mailto:info@peakpotentia.com"
                     style="color: #667eea; text-decoration: none;">info@peakpotentia.com</a>
@@ -183,7 +188,7 @@
         <!-- Header -->
         <div class="dashboard-header">
             <div class="logo-section">
-                <div class="logo">PT</div>
+                <div class="logo"></div>
                 <div class="brand-name">Peak Test Series</div>
             </div>
             <div class="user-info-section">
@@ -194,7 +199,6 @@
                 <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
-
         <!-- Subjects Page -->
         <div id="subjectsPage">
             <div class="subjects-container">
@@ -252,22 +256,22 @@
     <div class="screenshot-blocker" id="screenshotBlocker"></div>
 
     <!-- Upload Answer Modal -->
-   <div class="upload-modal" id="uploadModal">
+    <div class="upload-modal" id="uploadModal">
         <div class="upload-content">
             <h3>📤 Submit Your Answer</h3>
             <p style="color: #666; margin-bottom: 20px;">
                 Upload your answer sheet (PDF, Word, or Image files)
             </p>
-            
+
             <input type="file" id="answerFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-            
+
             <div class="upload-progress" id="uploadProgress">
                 <div class="progress-bar">
                     <div class="progress-fill" id="uploadProgressBar">0%</div>
                 </div>
                 <div class="upload-status" id="uploadStatus">Uploading...</div>
             </div>
-            
+
             <div class="upload-buttons">
                 <button class="upload-btn secondary" onclick="closeUploadDialog()">
                     Cancel
@@ -280,7 +284,7 @@
     </div>
 
     <footer class="dashboard-footer" id="dashboardFooter"
-        style="background: linear-gradient(135deg, #003f5c 0%, #58508d 100%); color: white; padding: 40px 20px 30px 20px; margin-top: 60px; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);">
+        style=" padding: 40px 20px 30px 20px; margin-top: 60px; box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);">
         <div class="footer-container" style="max-width: 1400px; margin: 0 auto;">
             <div class="footer-top"
                 style="display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; padding-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.2); flex-wrap: wrap;">
