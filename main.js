@@ -3,15 +3,15 @@
 // ============================================================================
 
 // SUPABASE CONFIG
-const SUPABASE_URL = 'https://gkloowizszlxzxdhnszm.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrbG9vd2l6c3pseHp4ZGhuc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTY5MzQsImV4cCI6MjA3OTc5MjkzNH0.0ZQXY5xKMkP1_pY0mb2RxGFGCMeQZbPU0Zu6DVTRc1o';
+const MY_SUPABASE_URL = 'https://gkloowizszlxzxdhnszm.supabase.co';
+const MY_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrbG9vd2l6c3pseHp4ZGhuc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTY5MzQsImV4cCI6MjA3OTc5MjkzNH0.0ZQXY5xKMkP1_pY0mb2RxGFGCMeQZbPU0Zu6DVTRc1o';
 
 let supabase = null;
 let supabaseEnabled = false;
 
 try {
     if (typeof window.supabase !== 'undefined') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        supabase = window.supabase.createClient(MY_SUPABASE_URL, MY_SUPABASE_KEY);
         supabaseEnabled = true;
         // console.log('✅ Supabase connected');
     }
@@ -22,6 +22,66 @@ try {
 
 const RAZORPAY_KEY_ID = 'rzp_live_RpP8olgNI2tM7u';
 const PRICE_PER_SUBJECT = 15000;
+
+async function createRazorpayOrder(amount, studentData) {
+    try {
+        const response = await fetch(
+            `${MY_SUPABASE_URL}/functions/v1/create-order`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${MY_SUPABASE_KEY}`
+                },
+                body: JSON.stringify({ amount, studentData })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.error || 'Order creation failed');
+        }
+
+        console.log('✅ Order created:', data.order.id);
+        return data.order;
+
+    } catch (error) {
+        console.error('❌ Order error:', error);
+        alert('⚠️ Payment setup failed. Please try again.');
+        return null;
+    }
+}
+
+// Function 2: Verify Razorpay Payment
+async function verifyRazorpayPayment(paymentResponse, studentData) {
+    try {
+        const response = await fetch(
+            `${MY_SUPABASE_URL}/functions/v1/verify-payment`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${MY_SUPABASE_KEY}`
+                },
+                body: JSON.stringify({
+                    razorpay_order_id: paymentResponse.razorpay_order_id,
+                    razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                    razorpay_signature: paymentResponse.razorpay_signature,
+                    studentData: studentData
+                })
+            }
+        );
+
+        const data = await response.json();
+        console.log('Verification result:', data);
+        return data;
+
+    } catch (error) {
+        console.error('❌ Verification error:', error);
+        return { success: false, error: error.message };
+    }
+}
 
 let currentUser = null;
 let currentSubject = null;
@@ -537,6 +597,7 @@ async function checkBackendAccess() {
 // REGISTRATION WITH PAYMENT
 // ============================================================================
 async function handleRegistrationWithPayment() {
+    console.log("🚀 Registration started");
     const name = document.getElementById('studentName')?.value?.trim();
     const email = document.getElementById('studentEmail')?.value?.trim();
     const grade = document.getElementById('studentGrade')?.value;
@@ -598,43 +659,6 @@ async function handleRegistrationWithPayment() {
     // await saveStudentRegistration(studentData);
 }
 
-async function processRegistrationPayment(studentData, amount) {
-    if (typeof Razorpay === 'undefined') {
-        alert('⚠️ Payment gateway not loaded. Please refresh.');
-        return;
-    }
-
-    const options = {
-        key: RAZORPAY_KEY_ID,
-        amount: amount * 100,
-        currency: 'INR',
-        name: 'Peak Test Series',
-        description: `Registration - ${studentData.registration_mode} (${studentData.interested_subjects.length} subjects)`,
-        prefill: {
-            name: studentData.name,
-            email: studentData.email,
-            contact: studentData.phone
-        },
-        theme: {
-            color: '#667eea'
-        },
-        handler: async function (response) {
-            studentData.payment_id = response.razorpay_payment_id;
-            studentData.payment_status = 'completed';
-            studentData.payment_date = new Date().toISOString();
-
-            await saveStudentRegistration(studentData);
-        },
-        modal: {
-            ondismiss: function () {
-                alert('Payment cancelled. Registration incomplete.');
-            }
-        }
-    };
-
-    const razorpay = new Razorpay(options);
-    razorpay.open();
-}
 
 async function saveStudentRegistration(studentData) {
     try {
@@ -685,6 +709,78 @@ async function saveStudentRegistration(studentData) {
         alert('⚠️ Registration failed!');
     }
 }
+
+
+async function processRegistrationPayment(studentData, amount) {
+    if (typeof Razorpay === 'undefined') {
+        alert('⚠️ Payment gateway not loaded. Please refresh.');
+        return;
+    }
+    console.log('🚀 Starting payment process...');
+    const order = await createRazorpayOrder(amount, studentData);
+    if (!order) {
+        console.error('❌ Order creation failed');
+        return;
+    }
+
+    console.log('✅ Order created successfully:', order.id);
+
+    const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.id,
+        name: 'Peak Test Series',
+        description: `Registration - ${studentData.registration_mode} (${studentData.interested_subjects.length} subjects)`,
+        prefill: {
+            name: studentData.name,
+            email: studentData.email,
+            contact: studentData.phone
+        },
+        theme: {
+            color: '#667eea'
+        },
+        handler: async function (response) {
+            console.log('✅ Payment completed:', response.razorpay_payment_id);
+            console.log('🔍 Verifying payment...');
+            const verificationResult = await verifyRazorpayPayment(response, studentData);
+
+            if (verificationResult.success) {
+                console.log('✅ Payment verified successfully!');
+
+                studentData.payment_id = response.razorpay_payment_id;
+                studentData.order_id = response.razorpay_order_id;
+                studentData.payment_status = 'completed';
+                studentData.payment_date = new Date().toISOString();
+
+                currentUser = studentData;
+                localStorage.setItem('peakTestUser', JSON.stringify(studentData));
+
+                //  await saveStudentRegistration(studentData);
+                 showRegistrationThankYou(studentData);
+
+            } else {
+                console.error('❌ Payment verification failed');
+                alert(
+                    '⚠️ Payment verification failed!\n\n' +
+                    'Payment ID: ' + response.razorpay_payment_id + '\n\n' +
+                    'Please contact support:\n' +
+                    'Email: peaktest24@gmail.com\n' +
+                    'Phone: +91 98181 84460'
+                );
+            }
+        },
+        modal: {
+            ondismiss: function () {
+                alert('Payment cancelled. Registration incomplete.');
+            }
+        }
+    };
+
+    const razorpay = new Razorpay(options);
+    razorpay.open();
+}
+
 
 async function sendRegistrationEmail(studentData) {
     console.log('📧 Sending email...');
@@ -1590,7 +1686,7 @@ async function loadSubmittedTests() {
 // ============================================================================
 function viewCheckedFile(fileUrl, testNumber) {
     console.log('👁️ Opening checked file:', fileUrl);
-    
+
     // Create modal viewer
     const modal = document.createElement('div');
     modal.id = 'checkedFileModal';
@@ -1605,7 +1701,7 @@ function viewCheckedFile(fileUrl, testNumber) {
         display: flex;
         flex-direction: column;
     `;
-    
+
     modal.innerHTML = `
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center;">
             <h3 style="margin: 0;">📋 Checked Answer Sheet - Test ${testNumber}</h3>
@@ -1617,7 +1713,7 @@ function viewCheckedFile(fileUrl, testNumber) {
             <iframe src="${fileUrl}" style="width: 100%; height: 100%; border: none; background: white;"></iframe>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
     document.body.classList.add('pdf-open');
 }
@@ -1638,18 +1734,18 @@ function closeCheckedFileModal() {
 // ============================================================================
 function downloadCheckedFile(fileUrl, fileName) {
     console.log('📥 Downloading checked file:', fileUrl);
-    
+
     // Create invisible download link
     const link = document.createElement('a');
     link.href = fileUrl;
     link.download = fileName || 'Checked_Answer_Sheet';
     link.target = '_blank';
-    
+
     // Trigger download
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     // Show success message
     showToast('✅ Download started! Check your downloads folder.', 'success');
 }
@@ -1674,7 +1770,7 @@ function showToast(message, type = 'info') {
         animation: slideInRight 0.3s ease;
     `;
     toast.textContent = message;
-    
+
     // Add animation
     const style = document.createElement('style');
     style.textContent = `
@@ -1690,9 +1786,9 @@ function showToast(message, type = 'info') {
         }
     `;
     document.head.appendChild(style);
-    
+
     document.body.appendChild(toast);
-    
+
     // Auto remove after 3 seconds
     setTimeout(() => {
         toast.style.animation = 'slideInRight 0.3s ease reverse';
