@@ -1,8 +1,3 @@
-// ============================================================================
-// ✅ FINAL WORKING VERSION - Tests Fixed with Proper Error Handling
-// ============================================================================
-
-// SUPABASE CONFIG
 const SUPABASE_URL = 'https://gkloowizszlxzxdhnszm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrbG9vd2l6c3pseHp4ZGhuc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTY5MzQsImV4cCI6MjA3OTc5MjkzNH0.0ZQXY5xKMkP1_pY0mb2RxGFGCMeQZbPU0Zu6DVTRc1o';
 
