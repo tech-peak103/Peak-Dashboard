@@ -38,8 +38,8 @@ serve(async (req) => {
     }
     
     // Save to database
-    const supabaseUrl = Deno.env.get('MY_SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('MY_SERVICE_ROLE_KEY')!
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
     
     const { data: existingUser } = await supabase

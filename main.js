@@ -3,15 +3,15 @@
 // ============================================================================
 
 // SUPABASE CONFIG
-const MY_SUPABASE_URL = 'https://gkloowizszlxzxdhnszm.supabase.co';
-const MY_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrbG9vd2l6c3pseHp4ZGhuc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTY5MzQsImV4cCI6MjA3OTc5MjkzNH0.0ZQXY5xKMkP1_pY0mb2RxGFGCMeQZbPU0Zu6DVTRc1o';
+const SUPABASE_URL = 'https://gkloowizszlxzxdhnszm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrbG9vd2l6c3pseHp4ZGhuc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTY5MzQsImV4cCI6MjA3OTc5MjkzNH0.0ZQXY5xKMkP1_pY0mb2RxGFGCMeQZbPU0Zu6DVTRc1o';
 
 let supabase = null;
 let supabaseEnabled = false;
 
 try {
     if (typeof window.supabase !== 'undefined') {
-        supabase = window.supabase.createClient(MY_SUPABASE_URL, MY_SUPABASE_KEY);
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         supabaseEnabled = true;
         // console.log('✅ Supabase connected');
     }
@@ -26,12 +26,12 @@ const PRICE_PER_SUBJECT = 15000;
 async function createRazorpayOrder(amount, studentData) {
     try {
         const response = await fetch(
-            `${MY_SUPABASE_URL}/functions/v1/create-order`,
+            `${SUPABASE_URL}/functions/v1/create-order`,
             {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${MY_SUPABASE_KEY}`
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
                 },
                 body: JSON.stringify({ amount, studentData })
             }
@@ -57,12 +57,12 @@ async function createRazorpayOrder(amount, studentData) {
 async function verifyRazorpayPayment(paymentResponse, studentData) {
     try {
         const response = await fetch(
-            `${MY_SUPABASE_URL}/functions/v1/verify-payment`,
+            `${SUPABASE_URL}/functions/v1/verify-payment`,
             {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${MY_SUPABASE_KEY}`
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
                 },
                 body: JSON.stringify({
                     razorpay_order_id: paymentResponse.razorpay_order_id,
@@ -275,6 +275,7 @@ function updateSubjectsCheckboxes() {
 
     // console.log('✅ Subjects displayed successfully');
 }
+
 
 function updateBoardDropdown() {
     const gradeSelect = document.getElementById('studentGrade');
