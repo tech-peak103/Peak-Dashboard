@@ -142,8 +142,7 @@ const testDatesByGradeBoard = {
     // }
 };
 
- document.getElementById('studentGrade').value  
-   document.getElementById('studentBoard').innerHTML
+ 
 function updateSubjectsCheckboxes() {
  
     const grade = document.getElementById('studentGrade')?.value || '';
@@ -409,10 +408,10 @@ async function autoSaveFormData() {
             last_updated: new Date().toISOString()
         };
 
-        if (supabaseEnabled && supabase) {
+        if (supabaseEnabled && supabaseClient) {
             try {
                 // ✅ STEP 4: Check if record exists first
-                const { data: existing, error: checkError } = await supabase
+                const { data: existing, error: checkError } = await supabaseClient
                     .from('incomplete_registrations')
                     .select('email')
                     .eq('email', email)
@@ -420,7 +419,7 @@ async function autoSaveFormData() {
 
                 if (existing) {
                     // ✅ Update existing record
-                    const { error: updateError } = await supabase
+                    const { error: updateError } = await supabaseClient
                         .from('incomplete_registrations')
                         .update(formData)
                         .eq('email', email);
@@ -432,7 +431,7 @@ async function autoSaveFormData() {
                     }
                 } else {
                     // ✅ Insert new record
-                    const { error: insertError } = await supabase
+                    const { error: insertError } = await supabaseClient
                         .from('incomplete_registrations')
                         .insert([formData]);
 
@@ -499,9 +498,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 async function checkBackendAccess() {
     console.log('🔍 Checking backend access for:', currentUser.email);
 
-    if (supabaseEnabled && supabase && currentUser && currentUser.email) {
+    if (supabaseEnabled && supabaseClient && currentUser && currentUser.email) {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('students')
                 .select('*')
                 .eq('email', currentUser.email)
@@ -661,8 +660,8 @@ async function handleRegistrationWithPayment() {
 
 async function saveStudentRegistration(studentData) {
     try {
-        if (supabaseEnabled && supabase) {
-            const { data: existingUsers, error: checkError } = await supabase
+        if (supabaseEnabled && supabaseClient) {
+            const { data: existingUsers, error: checkError } = await supabaseClient
                 .from('students')
                 .select('email')
                 .eq('email', studentData.email)
@@ -673,7 +672,7 @@ async function saveStudentRegistration(studentData) {
                 return;
             }
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('students')
                 .insert([studentData]);
 
@@ -686,7 +685,7 @@ async function saveStudentRegistration(studentData) {
             currentUser = studentData;
             localStorage.setItem('peakTestUser', JSON.stringify(studentData));
 
-            await supabase
+            await supabaseClient
                 .from('incomplete_registrations')
                 .delete()
                 .eq('email', studentData.email);
@@ -940,8 +939,8 @@ async function handleLogin() {
     }
 
     try {
-        if (supabaseEnabled && supabase) {
-            const { data, error } = await supabase
+        if (supabaseEnabled && supabaseClient) {
+            const { data, error } = await supabaseClient
                 .from('students')
                 .select('*')
                 .eq('email', email)
@@ -1053,10 +1052,10 @@ async function selectSubject(subject) {
         }
     }
 
-    if (supabaseEnabled && supabase && currentUser && currentUser.email) {
+    if (supabaseEnabled && supabaseClient && currentUser && currentUser.email) {
         console.log('🔄 Fetching test access data...');
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('students')
                 .select('test_access')
                 .eq('email', currentUser.email)
@@ -1132,14 +1131,14 @@ async function loadTests() {
                 // Update in Supabase
                 if (supabaseEnabled && currentUser.email) {
                     try {
-                        await supabase
+                        await supabaseClient
                             .from('test_attempts')
                             .update({ status: 'expired' })
                             .eq('student_email', currentUser.email)
                             .eq('test_key', testKey);
 
                         // Also update students table
-                        await supabase
+                        await supabaseClient
                             .from('students')
                             .update({ test_access: currentUser.test_access })
                             .eq('email', currentUser.email);
@@ -1208,7 +1207,7 @@ async function openTest(testNumber) {
             // Save to Supabase if enabled
             if (supabaseEnabled && currentUser.email) {
                 // Insert into test_attempts
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('test_attempts')
                     .insert([{
                         student_email: currentUser.email,
@@ -1227,7 +1226,7 @@ async function openTest(testNumber) {
 
                 // ✅ FIX 1: Update students table test_access
                 console.log('📝 Updating students.test_access on test start...');
-                const { error: updateError } = await supabase
+                const { error: updateError } = await supabaseClient
                     .from('students')
                     .update({
                         test_access: currentUser.test_access
@@ -1265,7 +1264,7 @@ async function openTest(testNumber) {
     try {
         if (supabaseEnabled) {
             // Get PDF URL from database
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('test_files')
                 .select('file_url')
                 .eq('subject', currentSubject)
@@ -1344,7 +1343,7 @@ async function submitTest() {
             try {
                 // Update in Supabase if enabled
                 if (supabaseEnabled && currentUser.email) {
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('test_attempts')
                         .update({
                             status: 'completed',
@@ -1366,7 +1365,7 @@ async function submitTest() {
                     console.log('📝 Updating students.test_access on submit...');
                     console.log('📝 Current test_access before update:', JSON.stringify(currentUser.test_access, null, 2));
 
-                    const { data: updateResult, error: studentError } = await supabase
+                    const { data: updateResult, error: studentError } = await supabaseClient
                         .from('students')
                         .update({
                             test_access: currentUser.test_access
@@ -1443,7 +1442,7 @@ function startPdfTimer() {
                 try {
                     // Update in Supabase if enabled
                     if (supabaseEnabled && currentUser.email) {
-                        const { error } = await supabase
+                        const { error } = await supabaseClient
                             .from('test_attempts')
                             .update({
                                 status: 'expired',
@@ -1520,7 +1519,7 @@ async function loadSubmittedTests() {
 
         // Fetch submissions for current subject
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('answer_submissions')
             .select('*')
             .eq('student_email', currentUser.email)
@@ -1856,7 +1855,7 @@ async function uploadAnswerFile() {
         const timerElement = document.getElementById('pdfTimer');
         const timeRemaining = timerElement ? timerElement.textContent : '00:00:00';
 
-        if (!supabaseEnabled || !supabase) {
+        if (!supabaseEnabled || !supabaseClient) {
             throw new Error('Supabase not configured. Cannot upload file.');
         }
 
@@ -1882,7 +1881,7 @@ async function uploadAnswerFile() {
         }, 200);
 
         // Upload to Supabase Storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { data: uploadData, error: uploadError } = await supabaseClient.storage
             .from('answer-submissions')
             .upload(storagePath, file, {
                 cacheControl: '3600',
@@ -1904,7 +1903,7 @@ async function uploadAnswerFile() {
         document.getElementById('uploadStatus').textContent = 'Processing...';
 
         // Get public URL
-        const { data: urlData } = supabase.storage
+        const { data: urlData } = supabaseClient.storage
             .from('answer-submissions')
             .getPublicUrl(storagePath);
 
@@ -1925,7 +1924,7 @@ async function uploadAnswerFile() {
             status: 'submitted'
         };
 
-        const { data: dbData, error: dbError } = await supabase
+        const { data: dbData, error: dbError } = await supabaseClient
             .from('answer_submissions')
             .insert([submissionData])
             .select();
@@ -1950,7 +1949,7 @@ async function uploadAnswerFile() {
 
         // Update test attempt in database
         try {
-            await supabase
+            await supabaseClient
                 .from('test_attempts')
                 .update({
                     status: 'submitted',
