@@ -142,13 +142,13 @@ const testDatesByGradeBoard = {
     // }
 };
 
- 
+
 function updateSubjectsCheckboxes() {
- 
+
     const grade = document.getElementById('studentGrade')?.value || '';
     const board = document.getElementById('studentBoard')?.value || '';
     const container = document.getElementById('subjectsCheckboxContainer');
-   
+
 
     // If container doesn't exist, return
     if (!container) {
@@ -874,7 +874,7 @@ function displaySelectedSubjectsWithDates(studentData) {
             </h3>
             
             <!-- Important Notice -->
-            <div style="background: ; color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); border-left: 5px solid #ffd700;">
+            <div style="background: ; color: #02b2bc; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); border-left: 5px solid #ffd700;">
                 <div style="display: flex; align-items: start; gap: 12px;">
                     <span style="font-size: 24px; flex-shrink: 0;">⚠️</span>
                     <div>
@@ -896,7 +896,7 @@ function displaySelectedSubjectsWithDates(studentData) {
             <div style="background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
                     <h4 style="color: #333; font-size: 18px; margin: 0; display: flex; align-items: center; gap: 10px;">
-                        <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold;">${index + 1}</span>
+                        <span style="background: #02b2bc; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold;">${index + 1}</span>
                         ${subject}
                     </h4>
                     <span style="background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;">
@@ -907,8 +907,8 @@ function displaySelectedSubjectsWithDates(studentData) {
                 ${subjectDates.length > 0 ? `
                     <div style="display: grid; gap: 10px;">
                         ${subjectDates.map((date, idx) => `
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
-                                <span style="background: #667eea; color: white; min-width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold;">${idx + 1}</span>
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #02b2bc;">
+                                <span style="background: #f84e9d; color: white; min-width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: bold;">${idx + 1}</span>
                                 <span style="color: #555; font-size: 15px; flex: 1;">${date}</span>
                                 <span style="font-size: 20px;">📅</span>
                             </div>
@@ -1065,6 +1065,10 @@ async function selectSubject(subject) {
                 currentUser.test_access = data.test_access || {};
                 localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
                 console.log('✅ Test access data loaded');
+                console.log('📊 All test statuses:', Object.entries(data.test_access || {}).map(([key, val]) => ({
+                    test: key,
+                    status: val.status
+                })));
             }
         } catch (error) {
             console.error('❌ Error fetching test access:', error);
@@ -1098,6 +1102,8 @@ function backToSubjects() {
 // ✅ LOAD TESTS - COMPLETE FIX WITH FALLBACK
 // ============================================================================
 async function loadTests() {
+    console.log('🔄 Loading tests for:', currentSubject);
+    console.log('📊 Current test_access:', currentUser.test_access);
     const testsGrid = document.getElementById('testsGrid');
     testsGrid.innerHTML = '';
 
@@ -1118,6 +1124,7 @@ async function loadTests() {
 
             // Hide completed or expired tests
             if (testAccess.status === 'completed') {
+                console.log(`✅ Test ${i} is COMPLETED - HIDING IT`);
                 continue; // Skip this test, don't show it
             }
 
@@ -1333,12 +1340,13 @@ async function submitTest() {
             }
         }
 
-        // Mark test as completed
+        // Mark test as completed   
         if (testKey && currentUser.test_access[testKey]) {
             currentUser.test_access[testKey].status = 'completed';
             currentUser.test_access[testKey].submitted_at = new Date().toISOString();
             currentUser.test_access[testKey].time_remaining = timeRemaining;
             localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
+            // console.log('🔍 Before update - test_access:', JSON.stringify(currentUser.test_access[testKey]));
 
             try {
                 // Update in Supabase if enabled
@@ -1405,6 +1413,31 @@ async function submitTest() {
 
         closePdfViewer();
         alert('Test submitted successfully! ✅');
+
+        // ✅ Force reload test_access from database to ensure UI updates
+        if (supabaseEnabled && currentUser.email && supabaseClient) {
+            console.log('🔄 Force reloading test_access from database...');
+            try {
+                const { data: refreshData, error: refreshError } = await supabaseClient
+                    .from('students')
+                    .select('test_access')
+                    .eq('email', currentUser.email)
+                    .single();
+
+                if (!refreshError && refreshData) {
+                    currentUser.test_access = refreshData.test_access;
+                    localStorage.setItem('peakTestUser', JSON.stringify(currentUser));
+                    console.log('✅ test_access reloaded from database');
+                    console.log('📊 Current statuses:', Object.entries(refreshData.test_access).map(([k, v]) => `${k}: ${v.status}`).join(', '));
+                }
+            } catch (e) {
+                console.error('❌ Failed to reload test_access:', e);
+            }
+        }
+
+        // ✅ Reload tests to immediately hide the completed one
+        await loadTests();
+
     }
 }
 
