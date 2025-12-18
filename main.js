@@ -1,12 +1,12 @@
 const SUPABASE_URL = 'https://gkloowizszlxzxdhnszm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdrbG9vd2l6c3pseHp4ZGhuc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTY5MzQsImV4cCI6MjA3OTc5MjkzNH0.0ZQXY5xKMkP1_pY0mb2RxGFGCMeQZbPU0Zu6DVTRc1o';
 
-let supabase = null;
+let supabaseClient = null;
 let supabaseEnabled = false;
 
 try {
     if (typeof window.supabase !== 'undefined') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         supabaseEnabled = true;
         // console.log('✅ Supabase connected');
     }
@@ -80,6 +80,7 @@ async function verifyRazorpayPayment(paymentResponse, studentData) {
 
 let currentUser = null;
 let currentSubject = null;
+
 const boardsByGrade = {
     '10': [
         // { value: 'IGCSE', label: 'IGCSE' },
@@ -141,11 +142,14 @@ const testDatesByGradeBoard = {
     // }
 };
 
-
+ document.getElementById('studentGrade').value  
+   document.getElementById('studentBoard').innerHTML
 function updateSubjectsCheckboxes() {
+ 
     const grade = document.getElementById('studentGrade')?.value || '';
     const board = document.getElementById('studentBoard')?.value || '';
     const container = document.getElementById('subjectsCheckboxContainer');
+   
 
     // If container doesn't exist, return
     if (!container) {
@@ -314,7 +318,6 @@ function updateBoardDropdown() {
     // Recalculate total
     calculateTotal();
 }
-
 
 function toggleTestDates(subject) {
     const safe = subject.replace(/[^a-zA-Z0-9]/g, "_");
@@ -753,7 +756,7 @@ async function processRegistrationPayment(studentData, amount) {
                 localStorage.setItem('peakTestUser', JSON.stringify(studentData));
 
                 //  await saveStudentRegistration(studentData);
-                 showRegistrationThankYou(studentData);
+                showRegistrationThankYou(studentData);
 
             } else {
                 console.error('❌ Payment verification failed');
