@@ -103,8 +103,8 @@ const subjectsByGradeBoardCheckbox = {
 const testDatesByGradeBoard = {
     '10-ICSE': {
         'History': ['29 Dec 2025', '05 Jan 2026', '12 Jan 2026', '19 Jan 2026', '26 Jan 2026'],
-        'English Literature': ['22 Dec 2025', '26 Dec 2025', '15 Jan 2026', '20 Jan 2026', '25 Jan 2026'],
-        'English Language': ['24 Dec 2025', '28 Dec 2025', '23 Jan 2026', '27 Jan 2026', '01 Feb 2026'],
+        'English Literature': ['13 Jan 2026', '17 Jan 2026', '22 Jan 2026'],
+        'English Language': ['15 Jan 2026', '19 Jan 2026', '24 Jan 2026'],
         'Economics': ['31 Dec 2025', '07 Jan 2026', '14 Jan 2026', '21 Jan 2026', '28 Jan 2026'],
         'Geography': ['08 Jan 2026', '15 Jan 2026', '22 Jan 2026', '29 Jan 2026', '05 Feb 2026']
     },
@@ -115,8 +115,8 @@ const testDatesByGradeBoard = {
     //     'Biology': ['02 Jan 2026', '16 Jan 2026', '23 Jan 2026', '29 Jan 2026', '05 Feb 2026']
     // },
     '12-ISC': {
-        'English Literature': ['22 Dec 2025', '26 Dec 2026', '15 Jan 2026', '20 Jan 2026', '25 Jan 2026'],
-        'English': ['01 Jan 2026', '08 Jan 2026', '15 Jan 2026', '22 Jan 2026', '29 Jan 2026'],
+        'English Literature': ['13 Jan 2026', '17 Jan 2026', '22 Jan 2026'],
+        'English': ['15 Jan 2026', '19 Jan 2026', '24 Jan 2026'],
         'History': ['29 Dec 2025', '05 Jan 2026', '12 Jan 2026', '19 Jan 2026', '26 Jan 2026'],
         'Accounts': ['30 Dec 2025', '06 Jan 2026', '13 Jan 2026', '20 Jan 2026', '27 Jan 2026'],
         'Physics': ['30 Dec 2025', '13 Jan 2026', '27 Jan 2026', '10 Feb 2026', '24 Feb 2026'],
