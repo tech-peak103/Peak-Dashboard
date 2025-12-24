@@ -447,6 +447,49 @@ async function autoSaveFormData() {
         }
     }, 1000); // ✅ 1 second delay
 }
+async function checkIfAlreadyRegistered() {
+    const email = document.getElementById('studentEmail')?.value?.trim().toLowerCase();
+
+    if (!email || !email.includes('@')) {
+        return false; // Invalid email, don't check
+    }
+
+    if (supabaseEnabled && supabaseClient) {
+        try {
+            console.log('🔍 Checking if user exists:', email);
+
+            // Check in students table
+            const { data, error } = await supabaseClient
+                .from('students')
+                .select('*')
+                .eq('email', email)
+                .maybeSingle();
+
+            if (error) {
+                console.error('❌ Check failed:', error);
+                return false;
+            }
+
+            if (data) {
+                console.log('✅ User found in database!');
+                currentUser = data;
+                localStorage.setItem('peakTestUser', JSON.stringify(data));
+
+                // Show thank you page
+                showRegistrationThankYou(data);
+                return true;
+            }
+
+            return false;
+
+        } catch (error) {
+            console.error('❌ Error checking user:', error);
+            return false;
+        }
+    }
+
+    return false;
+}
 
 function updateSubmitButton() {
     calculateTotal();
@@ -465,7 +508,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             pdfFrame.src = '';
         }
     }
-
+    const emailField = document.getElementById('studentEmail');
+    if (emailField && emailField.value) {
+        await checkIfAlreadyRegistered();
+    }
     const savedUser = localStorage.getItem('peakTestUser');
     if (savedUser) {
         try {
@@ -596,8 +642,48 @@ async function checkBackendAccess() {
 // ============================================================================
 async function handleRegistrationWithPayment() {
     console.log("🚀 Registration started");
+    const email = document.getElementById('studentEmail')?.value?.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+        alert('⚠️ Please enter a valid email address!');
+        return;
+    }
+
+    // ✅ STEP 2: Check if already registered in backend
+    if (supabaseEnabled && supabaseClient) {
+        try {
+            console.log('🔍 Checking if user already registered:', email);
+            
+            const { data: existingUser, error: checkError } = await supabaseClient
+                .from('students')
+                .select('*')
+                .eq('email', email)
+                .maybeSingle();
+
+            if (checkError) {
+                console.error('❌ Check error:', checkError);
+                // Continue with registration if check fails
+            }
+
+            if (existingUser) {
+                console.log('✅ User already registered! Showing thank you page...');
+                currentUser = existingUser;
+                localStorage.setItem('peakTestUser', JSON.stringify(existingUser));
+                showRegistrationThankYou(existingUser);
+                return; // ✅ STOP HERE - Don't proceed with payment
+            } else {
+                console.log('ℹ️ New user - proceeding with registration');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error checking registration:', error);
+            // Continue with registration if check fails
+        }
+    }
+
+
+
     const name = document.getElementById('studentName')?.value?.trim();
-    const email = document.getElementById('studentEmail')?.value?.trim();
+
     const grade = document.getElementById('studentGrade')?.value;
     const board = document.getElementById('studentBoard')?.value;
     const address = document.getElementById('studentAddress')?.value?.trim();
