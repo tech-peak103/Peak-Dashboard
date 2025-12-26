@@ -83,7 +83,7 @@ let currentSubject = null;
 
 const boardsByGrade = {
     '10': [
-        // { value: 'IGCSE', label: 'IGCSE' },
+        { value: 'IGCSE', label: 'IGCSE' },
         { value: 'ICSE', label: 'ICSE' }
     ],
     '12': [
@@ -94,7 +94,7 @@ const boardsByGrade = {
 };
 const subjectsByGradeBoardCheckbox = {
     '10-ICSE': ['History', 'English Literature', 'English Language', 'Economics', 'Geography'],
-    // '10-IGCSE': ['Physics', 'Business Study', 'Hindi', 'Biology'],
+    '10-IGCSE': ['Economics 1','Economics 2'],
     '12-ISC': ['English Literature', 'English', 'History', 'Accounts', 'Physics', 'Math', 'Chemistry', 'Commerce', 'Economics', 'Political Science', 'Psychology'],
     '12-CBSE': ['Physics', 'Chemistry', 'Mathematics', 'Accounts', 'Economics', 'Social Science', 'Business Studies Commerce'],
     // '12-IB': ['Biology', 'Business Management']
@@ -108,12 +108,10 @@ const testDatesByGradeBoard = {
         'Economics': ['31 Dec 2025', '07 Jan 2026', '14 Jan 2026', '21 Jan 2026', '28 Jan 2026'],
         'Geography': ['08 Jan 2026', '15 Jan 2026', '22 Jan 2026', '29 Jan 2026', '05 Feb 2026']
     },
-    // '10-IGCSE': {
-    //     'Physics': ['29 Dec 2025', '05 Jan 2026', '12 Jan 2026', '19 Jan 2026', '26 Jan 2026'],
-    //     'Business Study': ['30 Dec 2025', '06 Jan 2026', '13 Jan 2026', '20 Jan 2026', '27 Jan 2026'],
-    //     'Hindi': ['31 Dec 2025', '07 Jan 2026', '14 Jan 2026', '21 Jan 2026', '28 Jan 2026'],
-    //     'Biology': ['02 Jan 2026', '16 Jan 2026', '23 Jan 2026', '29 Jan 2026', '05 Feb 2026']
-    // },
+    '10-IGCSE': {
+        'Economics 1': ['6 Jan 2026 Timimg 11AM - 2PM', '13 Jan 2026 Timimg 11AM - 2PM', '20 Jan 2026 Timimg 11AM - 2PM', '26 Jan 2026 Timimg 11AM - 2PM'],
+        'Economics 2': ['09 Jan 2026 Timimg 11AM - 2PM', '16 Jan 2026 Timimg 11AM - 2PM', '23 Jan 2026 Timimg 11AM - 2PM', '29 Jan 2026 Timimg 11AM - 2PM'],
+     },
     '12-ISC': {
         'English Literature': ['13 Jan 2026', '17 Jan 2026', '22 Jan 2026'],
         'English': ['15 Jan 2026', '19 Jan 2026', '24 Jan 2026'],
