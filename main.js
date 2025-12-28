@@ -123,7 +123,7 @@ const testDatesByGradeBoard = {
         'Commerce': ['08 Jan 2026', '15 Jan 2026', '29 Jan 2026', '05 Feb 2026', '12 Feb 2026'],
         'Economics': ['02 Jan 2026', '16 Jan 2026', '06 Mar 2026', ' 13 Mar 2026', '20 Mar 2026'],
         'Political Science': ['07 Jan 2026', '21 Jan 2026', '28 Jan 2026', ' 11 Feb 2026', '18 Feb 2026'],
-        'Psychology': ['29 Dec 2025', '05 Jan 2026', '12 Jan 2026', ' 19 Jan 2026', '26 Jan 2026',]
+        'Psychology': ['29 Dec 2025 Timimg 3PM - 6PM', '05 Jan 2026', '12 Jan 2026', ' 19 Jan 2026', '26 Jan 2026',]
     },
     '12-CBSE': {
         'Physics': ['29 Dec 2025', '12 Jan 2026', '26 Jan 2026', '5 Feb 2026', '9 Feb 2026'],
