@@ -105,7 +105,7 @@ const testDatesByGradeBoard = {
         'History': ['29 Dec 2025', '05 Jan 2026', '12 Jan 2026', '19 Jan 2026', '26 Jan 2026'],
         'English Literature': ['13 Jan 2026', '17 Jan 2026', '22 Jan 2026'],
         'English Language': ['15 Jan 2026', '19 Jan 2026', '24 Jan 2026'],
-        'Economics': ['31 Dec 2025', '07 Jan 2026', '14 Jan 2026', '21 Jan 2026', '28 Jan 2026'],
+        'Economics': ['31 Dec 2025 Timimg 10:00AM - 01:15PM', '07 Jan 2026', '14 Jan 2026', '21 Jan 2026', '28 Jan 2026'],
         'Geography': ['08 Jan 2026', '15 Jan 2026', '22 Jan 2026', '29 Jan 2026', '05 Feb 2026']
     },
     '10-IGCSE': {
