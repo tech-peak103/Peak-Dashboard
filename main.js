@@ -63,13 +63,22 @@ async function verifyRazorpayPayment(paymentResponse, studentData) {
                     razorpay_order_id: paymentResponse.razorpay_order_id,
                     razorpay_payment_id: paymentResponse.razorpay_payment_id,
                     razorpay_signature: paymentResponse.razorpay_signature,
-                    studentData: studentData
+                    studentData: {
+                        ...studentData,
+                        email: studentData.email.toLowerCase() // ✅ Email lowercase kar do
+                    }
                 })
             }
         );
 
         const data = await response.json();
-        console.log('Verification result:', data);
+        if (!data.success) {
+            console.error('❌ Verification failed:', data);
+            alert(`Payment verification failed!\n\nError: ${data.message}\n\nPayment ID: ${paymentResponse.razorpay_payment_id}\n\nPlease contact support with this Payment ID.`);
+            return { success: false, error: data.message };
+        }
+
+        console.log('✅ Verification successful:', data);
         return data;
 
     } catch (error) {
@@ -94,7 +103,7 @@ const boardsByGrade = {
 };
 const subjectsByGradeBoardCheckbox = {
     '10-ICSE': ['History', 'English Literature', 'English Language', 'Economics', 'Geography'],
-    '10-IGCSE': ['Economics 1','Economics 2'],
+    '10-IGCSE': ['Economics 1', 'Economics 2'],
     '12-ISC': ['English Literature', 'English', 'History', 'Accounts', 'Physics', 'Math', 'Chemistry', 'Commerce', 'Economics', 'Political Science', 'Psychology'],
     '12-CBSE': ['Physics', 'Chemistry', 'Mathematics', 'Accounts', 'Economics', 'Social Science', 'Business Studies Commerce'],
     // '12-IB': ['Biology', 'Business Management']
@@ -111,7 +120,7 @@ const testDatesByGradeBoard = {
     '10-IGCSE': {
         'Economics 1': ['6 Jan 2026 Timimg 11AM - 2PM', '13 Jan 2026 Timimg 11AM - 2PM', '20 Jan 2026 Timimg 11AM - 2PM', '26 Jan 2026 Timimg 11AM - 2PM'],
         'Economics 2': ['09 Jan 2026 Timimg 11AM - 2PM', '16 Jan 2026 Timimg 11AM - 2PM', '23 Jan 2026 Timimg 11AM - 2PM', '29 Jan 2026 Timimg 11AM - 2PM'],
-     },
+    },
     '12-ISC': {
         'English Literature': ['13 Jan 2026', '17 Jan 2026', '22 Jan 2026'],
         'English': ['15 Jan 2026', '19 Jan 2026', '24 Jan 2026'],
@@ -650,7 +659,7 @@ async function handleRegistrationWithPayment() {
     if (supabaseEnabled && supabaseClient) {
         try {
             console.log('🔍 Checking if user already registered:', email);
-            
+
             const { data: existingUser, error: checkError } = await supabaseClient
                 .from('students')
                 .select('*')
@@ -671,7 +680,7 @@ async function handleRegistrationWithPayment() {
             } else {
                 console.log('ℹ️ New user - proceeding with registration');
             }
-            
+
         } catch (error) {
             console.error('❌ Error checking registration:', error);
             // Continue with registration if check fails
