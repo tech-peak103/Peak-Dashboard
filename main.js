@@ -1732,8 +1732,7 @@ async function loadSubmittedTests() {
                                 ${submission.marks}/${submission.max_marks || 80}
                             </div>
                             <div class="marks-info">
-                                <div class="percentage">${percentage}%</div>
-                                <span class="grade-badge ${gradeClass}">${grade}</span>
+                               
                             </div>
                         </div>
                         
