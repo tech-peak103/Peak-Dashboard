@@ -360,7 +360,7 @@ function calculateTotal() {
         if (count > 0) {
             submitBtn.innerHTML = `💳 Pay ₹${total.toLocaleString('en-IN')} & Complete Registration`;
         } else {
-            submitBtn.innerHTML = '💳 Pay ₹0 & Complete Registration';
+            submitBtn.innerHTML = '💳 Pay & Complete Registration';
         }
     }
 
