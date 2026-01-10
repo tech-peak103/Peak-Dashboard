@@ -1212,7 +1212,7 @@ async function loadTests() {
 
         if (testAccess) {
             const startTime = new Date(testAccess.start_time);
-            const endTime = new Date(startTime.getTime() + (2 * 60 * 60 * 1000) + (15 * 60 * 1000)); // 3 hours 15 minutes
+            const endTime = new Date(startTime.getTime() + (3 * 60 * 60 * 1000) + (15 * 60 * 1000)); // 3 hours 15 minutes
             const now = new Date();
 
             // Hide completed or expired tests
@@ -1536,7 +1536,7 @@ async function submitTest() {
 
 // Start PDF Timer
 function startPdfTimer() {
-    const endTime = new Date(testStartTime.getTime() + (2 * 60 * 60 * 1000) + (15 * 60 * 1000)); // 3 hours 15 minutes from start
+    const endTime = new Date(testStartTime.getTime() + (3 * 60 * 60 * 1000) + (15 * 60 * 1000)); // 3 hours 15 minutes from start
 
     pdfTimer = setInterval(async () => {
         const now = new Date();
