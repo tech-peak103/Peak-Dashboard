@@ -103,7 +103,7 @@ const boardsByGrade = {
 };
 const subjectsByGradeBoardCheckbox = {
     '10-ICSE': ['History', 'English Literature', 'English Language', 'Economics', 'Geography'],
-    '10-IGCSE': ['Economics 1', 'Economics 2'],
+    '10-IGCSE': ['Economics'],
     '12-ISC': ['English Literature', 'English', 'History', 'Accounts', 'Physics', 'Math', 'Chemistry', 'Commerce', 'Economics', 'Political Science', 'Psychology'],
     '12-CBSE': ['Physics', 'Chemistry', 'Mathematics', 'Accounts', 'Economics', 'Social Science', 'Business Studies Commerce'],
     // '12-IB': ['Biology', 'Business Management']
@@ -118,8 +118,15 @@ const testDatesByGradeBoard = {
         'Geography': ['08 Jan 2026', '15 Jan 2026', '22 Jan 2026', '29 Jan 2026', '05 Feb 2026']
     },
     '10-IGCSE': {
-        'Economics 1': ['6 Jan 2026 Timimg 11AM - 2PM', '13 Jan 2026 Timimg 11AM - 2PM', '20 Jan 2026 Timimg 11AM - 2PM', '26 Jan 2026 Timimg 11AM - 2PM'],
-        'Economics 2': ['09 Jan 2026 Timimg 11AM - 2PM', '16 Jan 2026 Timimg 11AM - 2PM', '23 Jan 2026 Timimg 11AM - 2PM', '29 Jan 2026 Timimg 11AM - 2PM'],
+        'Economics': ['Economics1 (6 Jan 2026 Timimg 11AM - 2PM) ',
+            'Economics 1 (13 Jan 2026 Timimg 11AM - 2PM)',
+            'Economics 1 (20 Jan 2026 Timimg 11AM - 2PM)',
+            'Economics 1 (26 Jan 2026 Timimg 11AM - 2PM)',
+            'Economics 2 (09 Jan 2026 Timimg 11AM - 2PM)',
+            'Economics 2 (16 Jan 2026 Timimg 11AM - 2PM)',
+            'Economics 2  (23 Jan 2026 Timimg 11AM - 2PM)',
+            'Economics 2 (29 Jan 2026 Timimg 11AM - 2PM)']
+
     },
     '12-ISC': {
         'English Literature': ['13 Jan 2026', '17 Jan 2026', '22 Jan 2026'],
