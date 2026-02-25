@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Worksheets - Peak AP Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .worksheet-upload-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .upload-section {
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .upload-section.dragover {
+            border-color: var(--primary-color);
+            background: var(--bg-secondary);
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+        }
+
+        .uploaded-files-list {
+            margin-top: 2rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-icon {
+            font-size: 2rem;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-view {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .subject-filter {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .subject-filter select {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .worksheet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .worksheet-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .worksheet-item:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .worksheet-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .status-uploaded {
+            color: var(--secondary-color);
+        }
+
+        .status-missing {
+            color: #ef4444;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Peak AP Dashboard - Admin</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="admin.html" style="text-decoration: none; color: var(--text-primary); font-weight: 600;">Dashboard</a>
+                <button class="btn-secondary" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Container -->
+    <div class="admin-container">
+        <div class="dashboard-header" style="max-width: 1200px; margin: 2rem auto;">
+            <h1>📚 Manage Worksheets</h1>
+            <p>Upload worksheet PDFs for students. Organize by subject and worksheet number.</p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="worksheet-upload-container">
+            <h2>Upload New Worksheet</h2>
+            
+            <!-- Subject and Worksheet Selection -->
+            <div class="subject-filter">
+                <select id="subjectSelect" required>
+                    <option value="">Select Subject</option>
+                    <option value="AP Calculus AB">AP Calculus AB</option>
+                    <option value="AP Calculus BC">AP Calculus BC</option>
+                    <option value="AP Physics 1">AP Physics 1</option>
+                    <option value="AP Physics 2">AP Physics 2</option>
+                    <option value="AP Physics C: Mechanics">AP Physics C: Mechanics</option>
+                    <option value="AP Physics C: E&M">AP Physics C: E&M</option>
+                    <option value="AP Chemistry">AP Chemistry</option>
+                    <option value="AP Biology">AP Biology</option>
+                    <option value="AP Statistics">AP Statistics</option>
+                    <option value="AP Computer Science A">AP Computer Science A</option>
+                    <option value="AP Computer Science Principles">AP Computer Science Principles</option>
+                    <option value="AP English Language">AP English Language</option>
+                    <option value="AP English Literature">AP English Literature</option>
+                    <option value="AP US History">AP US History</option>
+                    <option value="AP World History">AP World History</option>
+                </select>
+
+                <select id="worksheetSelect" required>
+                    <option value="">Select Worksheet Number</option>
+                    <option value="1">Worksheet 1</option>
+                    <option value="2">Worksheet 2</option>
+                    <option value="3">Worksheet 3</option>
+                    <option value="4">Worksheet 4</option>
+                    <option value="5">Worksheet 5</option>
+                    <option value="6">Worksheet 6</option>
+                    <option value="7">Worksheet 7</option>
+                    <option value="8">Worksheet 8</option>
+                    <option value="9">Worksheet 9</option>
+                    <option value="10">Worksheet 10</option>
+                </select>
+            </div>
+
+            <!-- Drag & Drop Upload Area -->
+            <div class="upload-section" id="uploadArea">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📄</div>
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">
+                    Drag & drop PDF file here or click to browse
+                </p>
+                <input type="file" id="fileInput" accept=".pdf" style="display: none;">
+                <label for="fileInput" class="file-input-label">
+                    Choose PDF File
+                </label>
+                <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+                    Maximum file size: 10MB
+                </p>
+            </div>
+
+            <!-- Upload Progress -->
+            <div id="uploadProgress" style="display: none;">
+                <p id="uploadStatus">Uploading...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Currently Selected File -->
+            <div id="selectedFile" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                <strong>Selected File:</strong> <span id="fileName"></span>
+                <button onclick="uploadFile()" class="btn-primary" style="float: right;">Upload Now</button>
+            </div>
+        </div>
+
+        <!-- Existing Worksheets -->
+        <div class="worksheet-upload-container">
+            <h2>Existing Worksheets</h2>
+            
+            <div class="subject-filter">
+                <select id="viewSubjectSelect" onchange="loadExistingWorksheets()">
+                    <option value="">All Subjects</option>
+                    <option value="AP Calculus AB">AP Calculus AB</option>
+                    <option value="AP Calculus BC">AP Calculus BC</option>
+                    <option value="AP Physics 1">AP Physics 1</option>
+                    <option value="AP Physics 2">AP Physics 2</option>
+                    <option value="AP Physics C: Mechanics">AP Physics C: Mechanics</option>
+                    <option value="AP Physics C: E&M">AP Physics C: E&M</option>
+                    <option value="AP Chemistry">AP Chemistry</option>
+                    <option value="AP Biology">AP Biology</option>
+                    <option value="AP Statistics">AP Statistics</option>
+                    <option value="AP Computer Science A">AP Computer Science A</option>
+                    <option value="AP Computer Science Principles">AP Computer Science Principles</option>
+                    <option value="AP English Language">AP English Language</option>
+                    <option value="AP English Literature">AP English Literature</option>
+                    <option value="AP US History">AP US History</option>
+                    <option value="AP World History">AP World History</option>
+                </select>
+            </div>
+
+            <div class="worksheet-grid" id="worksheetGrid">
+                <!-- Worksheets will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="admin-worksheets.js"></script>
+</body>
+</html>

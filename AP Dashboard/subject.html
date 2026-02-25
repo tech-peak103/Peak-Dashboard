@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subject - Peak AP</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Peak AP Dashboard</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span id="studentName" style="font-weight: 600;"></span>
+                <button class="btn-secondary" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Subject Page -->
+    <div class="dashboard-container">
+        <div class="subject-page">
+            <button class="back-button" onclick="goBack()">
+                ← Back to Dashboard
+            </button>
+            
+            <div class="dashboard-header">
+                <h1 id="subjectTitle"></h1>
+                <p>View topics, access worksheets, and submit your completed work.</p>
+            </div>
+
+            <!-- Topics Section -->
+            <div style="margin-top: 3rem;">
+                <h2 style="margin-bottom: 1.5rem;">Course Topics</h2>
+                <div id="topicsList" style="background: white; padding: 2rem; border-radius: 16px; box-shadow: var(--shadow-md);">
+                    <!-- Topics will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Worksheets Section -->
+            <div style="margin-top: 3rem;">
+                <h2 style="margin-bottom: 1.5rem;">Worksheets</h2>
+                <div class="worksheets-grid" id="worksheetsGrid">
+                    <!-- Worksheets will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="subject.js"></script>
+</body>
+</html>

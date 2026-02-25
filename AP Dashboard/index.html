@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peak AP Dashboard - Advanced Placement Learning Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="https://fr1ekw4xx.tribe.junction.express/uploads/2025/05-May/29-Thu/sm/header-icon_6838241632ce3.png"
+                    alt="" class="img-fluid">
+                <h3 class="logo-text">Peak AP Dashboard</h3>
+            </div>
+            <button class="btn-primary" id="signInBtn">Sign In</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="title-line">Excel in Your</span>
+                <span class="title-line gradient-text">AP Journey</span>
+            </h1>
+            <p class="hero-subtitle">Master Advanced Placement subjects with our comprehensive dashboard. Track
+                progress, submit worksheets, and achieve academic excellence.</p>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">AP Subjects</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Worksheets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">1000+</div>
+                    <div class="stat-label">Students</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose Peak AP?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3>Comprehensive Content</h3>
+                    <p>Access structured materials for all AP subjects with expertly designed worksheets and resources.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your learning journey with detailed analytics and completion metrics.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👨‍🏫</div>
+                    <h3>Expert Guidance</h3>
+                    <p>Learn from experienced AP instructors with proven teaching methodologies.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h3>Easy Submission</h3>
+                    <p>Submit completed worksheets directly through the platform for quick feedback.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Subjects Section -->
+    <section class="subjects">
+        <div class="container">
+            <h2 class="section-title">Available AP Subjects</h2>
+            <div class="subjects-grid">
+                <div class="subject-item">AP Calculus AB</div>
+                <div class="subject-item">AP Calculus BC</div>
+                <div class="subject-item">AP Physics 1</div>
+                <div class="subject-item">AP Physics 2</div>
+                <div class="subject-item">AP Physics C: Mechanics</div>
+                <div class="subject-item">AP Physics C: E&M</div>
+                <div class="subject-item">AP Chemistry</div>
+                <div class="subject-item">AP Biology</div>
+                <div class="subject-item">AP Statistics</div>
+                <div class="subject-item">AP Computer Science A</div>
+                <div class="subject-item">AP Computer Science Principles</div>
+                <div class="subject-item">AP English Language</div>
+                <div class="subject-item">AP English Literature</div>
+                <div class="subject-item">AP US History</div>
+                <div class="subject-item">AP World History</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Peak AP Dashboard</h3>
+                    <p>Empowering students to excel in Advanced Placement courses through comprehensive resources and
+                        personalized learning.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#subjects">Subjects</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: <a href="/cdn-cgi/l/email-protection" class="__cf_email__"
+                            data-cfemail="92e1e7e2e2fde0e6d2e2f7f3f9f3e2bcf1fdff">info@peakpotentia.com</a></p>
+                    <p>Phone: +91 9818184460</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Peak AP Dashboard. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Registration Modal -->
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Register for Peak AP</h2>
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label for="fullName">Full Name *</label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username *</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Select AP Subjects * (₹80,000 + GST per subject)</label>
+                    <div class="subjects-checkbox" id="subjectsCheckbox">
+                        <label><input type="checkbox" name="subject" value="AP Calculus AB"> AP Calculus AB</label>
+                        <label><input type="checkbox" name="subject" value="AP Calculus BC"> AP Calculus BC</label>
+                        <label><input type="checkbox" name="subject" value="AP Physics 1"> AP Physics 1</label>
+                        <label><input type="checkbox" name="subject" value="AP Physics 2"> AP Physics 2</label>
+                        <label><input type="checkbox" name="subject" value="AP Physics C: Mechanics"> AP Physics C:
+                            Mechanics</label>
+                        <label><input type="checkbox" name="subject" value="AP Physics C: E&M"> AP Physics C:
+                            E&M</label>
+                        <label><input type="checkbox" name="subject" value="AP Chemistry"> AP Chemistry</label>
+                        <label><input type="checkbox" name="subject" value="AP Biology"> AP Biology</label>
+                        <label><input type="checkbox" name="subject" value="AP Statistics"> AP Statistics</label>
+                        <label><input type="checkbox" name="subject" value="AP Computer Science A"> AP Computer Science
+                            A</label>
+                        <label><input type="checkbox" name="subject" value="AP Computer Science Principles"> AP Computer
+                            Science Principles</label>
+                        <label><input type="checkbox" name="subject" value="AP English Language"> AP English
+                            Language</label>
+                        <label><input type="checkbox" name="subject" value="AP English Literature"> AP English
+                            Literature</label>
+                        <label><input type="checkbox" name="subject" value="AP US History"> AP US History</label>
+                        <label><input type="checkbox" name="subject" value="AP World History"> AP World History</label>
+                    </div>
+                </div>
+
+                <div class="payment-summary" id="paymentSummary" style="display: none;">
+                    <h3>Payment Summary</h3>
+                    <div class="summary-row">
+                        <span>Selected Subjects:</span>
+                        <span id="selectedCount">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">₹0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>GST (18%):</span>
+                        <span id="gstAmount">₹0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total Payable:</span>
+                        <span id="totalAmount">₹0</span>
+                    </div>
+                    <div class="selected-subjects-list">
+                        <strong>Selected Subjects:</strong>
+                        <ul id="selectedSubjectsList"></ul>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary btn-full">Proceed to Payment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content modal-small">
+            <span class="close">&times;</span>
+            <h2>Login</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary btn-full">Login</button>
+                <p class="form-footer">Don't have an account? <a href="#" id="switchToRegister">Register here</a></p>
+            </form>
+        </div>
+    </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="config.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
