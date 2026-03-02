@@ -1,12 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Subject - Peak AP</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ── PDF VIEWER OVERLAY ── */
+        #pdfOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.96);
+            z-index: 9999;
+            flex-direction: column;
+        }
+
+        #pdfOverlay.active {
+            display: flex;
+        }
+
+        /* Timer Bar */
+        #pdfTopBar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+            background: #1a1d27;
+            border-bottom: 1px solid #2a2d3a;
+            flex-shrink: 0;
+        }
+
+        #pdfWorksheetLabel {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #e8e9f0;
+        }
+
+        #timerWrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: #0f1117;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            padding: 0.35rem 1rem;
+            transition: all 0.4s ease;
+        }
+
+        #timerWrapper.warn {
+            border-color: #ffd166;
+            background: rgba(255, 209, 102, 0.07);
+        }
+
+        #timerWrapper.danger {
+            border-color: #ff4d6d;
+            background: rgba(255, 77, 109, 0.12);
+            animation: timerPulse 1s infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { box-shadow: none; }
+            50% { box-shadow: 0 0 12px rgba(255, 77, 109, 0.4); }
+        }
+
+        #timerDisplay {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #06d6a0;
+            letter-spacing: 0.05em;
+            transition: color 0.3s;
+        }
+
+        #timerWrapper.warn #timerDisplay { color: #ffd166; }
+        #timerWrapper.danger #timerDisplay { color: #ff4d6d; }
+
+        #timerWrapper span.tlabel {
+            font-size: 0.68rem;
+            color: #7c7f96;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #btnSubmitInPDF {
+            background: #6c63ff;
+            color: white;
+            border: none;
+            padding: 0.45rem 1.2rem;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            transition: all 0.2s;
+        }
+
+        #btnSubmitInPDF:hover { background: #5a52e0; }
+        #btnSubmitInPDF:disabled { background: #3a3a5c; color: #7c7f96; cursor: not-allowed; }
+
+        /* Progress bar */
+        #pdfProgress {
+            height: 3px;
+            background: #1a1d27;
+            flex-shrink: 0;
+        }
+
+        #pdfProgressFill {
+            height: 100%;
+            background: linear-gradient(90deg, #6c63ff, #06d6a0);
+            transition: width 1s linear, background 0.5s;
+            width: 100%;
+        }
+
+        /* PDF iframe */
+        #pdfFrame {
+            flex: 1;
+            border: none;
+            width: 100%;
+            background: #222;
+        }
+
+        /* Expired screen */
+        #expiredScreen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.2rem;
+            background: #0f1117;
+        }
+
+        #expiredScreen.show {
+            display: flex;
+        }
+
+        #expiredScreen .exp-icon { font-size: 3.5rem; }
+        #expiredScreen .exp-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ff4d6d;
+            font-family: 'Poppins', sans-serif;
+        }
+        #expiredScreen .exp-msg {
+            font-size: 0.95rem;
+            color: #7c7f96;
+            text-align: center;
+            max-width: 360px;
+            line-height: 1.7;
+            font-family: 'Poppins', sans-serif;
+        }
+        .exp-btn-row {
+            display: flex;
+            gap: 0.9rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn-exp-close {
+            background: transparent;
+            color: #7c7f96;
+            border: 1px solid #2a2d3a;
+            padding: 0.65rem 1.6rem;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.88rem;
+            transition: all 0.2s;
+        }
+        .btn-exp-close:hover { border-color: #7c7f96; color: #e8e9f0; }
+
+        .btn-view-answers {
+            background: #6c63ff;
+            color: white;
+            border: none;
+            padding: 0.65rem 1.6rem;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.88rem;
+            transition: all 0.2s;
+            display: none; /* shown only after submit */
+        }
+        .btn-view-answers:hover { background: #5a52e0; }
+        .btn-view-answers.visible { display: inline-block; }
+
+        /* 5-min warning toast */
+        #fiveMinToast {
+            position: fixed;
+            top: 75px;
+            right: 1.5rem;
+            background: #1a1d27;
+            border: 1px solid #ffd166;
+            color: #ffd166;
+            padding: 0.7rem 1.2rem;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            z-index: 99999;
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+        #fiveMinToast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar">
@@ -28,7 +244,7 @@
             <button class="back-button" onclick="goBack()">
                 ← Back to Dashboard
             </button>
-            
+
             <div class="dashboard-header">
                 <h1 id="subjectTitle"></h1>
                 <p>View topics, access worksheets, and submit your completed work.</p>
@@ -37,23 +253,82 @@
             <!-- Topics Section -->
             <div style="margin-top: 3rem;">
                 <h2 style="margin-bottom: 1.5rem;">Course Topics</h2>
-                <div id="topicsList" style="background: white; padding: 2rem; border-radius: 16px; box-shadow: var(--shadow-md);">
-                    <!-- Topics will be loaded here -->
+                <div id="topicsList"
+                    style="background: white; padding: 2rem; border-radius: 16px; box-shadow: var(--shadow-md);">
                 </div>
             </div>
 
             <!-- Worksheets Section -->
             <div style="margin-top: 3rem;">
                 <h2 style="margin-bottom: 1.5rem;">Worksheets</h2>
+                <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">
+                    ⏳ Each worksheet PDF is accessible for <strong>60 minutes</strong> only once opened.
+                </p>
                 <div class="worksheets-grid" id="worksheetsGrid">
-                    <!-- Worksheets will be loaded here -->
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════
+         PDF VIEWER OVERLAY (No separate file needed)
+    ══════════════════════════════════════ -->
+    <div id="pdfOverlay">
+
+        <!-- Top bar with timer -->
+        <div id="pdfTopBar">
+            <span id="pdfWorksheetLabel">Worksheet</span>
+
+            <div id="timerWrapper">
+                <span>⏱</span>
+                <div>
+                    <div id="timerDisplay">60:00</div>
+                    <span class="tlabel">Time Remaining</span>
+                </div>
+            </div>
+
+            <!-- Submit Worksheet button (replaces Close) -->
+            <button id="btnSubmitInPDF" onclick="document.getElementById('pdfInlineUpload').click()">
+                📤 Submit Worksheet
+            </button>
+            <input type="file" id="pdfInlineUpload" accept=".pdf,.doc,.docx"
+                style="display:none" onchange="handlePDFInlineUpload(event)">
+        </div>
+
+        <!-- Progress bar -->
+        <div id="pdfProgress">
+            <div id="pdfProgressFill"></div>
+        </div>
+
+        <!-- PDF iframe -->
+        <iframe id="pdfFrame" src="about:blank" allowfullscreen></iframe>
+
+        <!-- Expired screen (shown after 60 min or after submit) -->
+        <div id="expiredScreen">
+            <div class="exp-icon">🔒</div>
+            <div class="exp-title">Session Expired</div>
+            <div class="exp-msg">
+                Your 60-minute access window has ended.<br>
+                This worksheet is no longer available.<br>
+                Please contact your instructor if you need more time.
+            </div>
+            <div class="exp-btn-row">
+                <button class="btn-view-answers" id="btnViewAnswers" onclick="openAnswerPDF()">
+                    📋 View Answers
+                </button>
+                <button class="btn-exp-close" onclick="closeAndGoBack()">
+                    ✕ Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5-min warning toast -->
+    <div id="fiveMinToast">⚠️ Only 5 minutes remaining!</div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <script src="subject.js"></script>
 </body>
+
 </html>

@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Worksheets - Peak AP Admin</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
     <style>
         .worksheet-upload-container {
             max-width: 800px;
@@ -165,6 +168,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar">
@@ -174,7 +178,8 @@
                 <span class="logo-text">Peak AP Dashboard - Admin</span>
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="admin.html" style="text-decoration: none; color: var(--text-primary); font-weight: 600;">Dashboard</a>
+                <a href="admin.html"
+                    style="text-decoration: none; color: var(--text-primary); font-weight: 600;">Dashboard</a>
                 <button class="btn-secondary" onclick="logout()">Logout</button>
             </div>
         </div>
@@ -190,26 +195,18 @@
         <!-- Upload Section -->
         <div class="worksheet-upload-container">
             <h2>Upload New Worksheet</h2>
-            
+
             <!-- Subject and Worksheet Selection -->
             <div class="subject-filter">
                 <select id="subjectSelect" required>
                     <option value="">Select Subject</option>
-                    <option value="AP Calculus AB">AP Calculus AB</option>
-                    <option value="AP Calculus BC">AP Calculus BC</option>
-                    <option value="AP Physics 1">AP Physics 1</option>
-                    <option value="AP Physics 2">AP Physics 2</option>
-                    <option value="AP Physics C: Mechanics">AP Physics C: Mechanics</option>
-                    <option value="AP Physics C: E&M">AP Physics C: E&M</option>
-                    <option value="AP Chemistry">AP Chemistry</option>
-                    <option value="AP Biology">AP Biology</option>
-                    <option value="AP Statistics">AP Statistics</option>
-                    <option value="AP Computer Science A">AP Computer Science A</option>
-                    <option value="AP Computer Science Principles">AP Computer Science Principles</option>
-                    <option value="AP English Language">AP English Language</option>
-                    <option value="AP English Literature">AP English Literature</option>
-                    <option value="AP US History">AP US History</option>
-                    <option value="AP World History">AP World History</option>
+                    <option value="Microeconomics">Microeconomics</option>
+                    <option value="Macroeconomics">Macroeconomics</option>
+                    <option value="Math Calculus">Math Calculus</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Psychology">Psychology</option>
+                    <option value="Computer Science">Computer Science </option>
+
                 </select>
 
                 <select id="worksheetSelect" required>
@@ -251,7 +248,8 @@
             </div>
 
             <!-- Currently Selected File -->
-            <div id="selectedFile" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+            <div id="selectedFile"
+                style="display: none; margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
                 <strong>Selected File:</strong> <span id="fileName"></span>
                 <button onclick="uploadFile()" class="btn-primary" style="float: right;">Upload Now</button>
             </div>
@@ -260,25 +258,17 @@
         <!-- Existing Worksheets -->
         <div class="worksheet-upload-container">
             <h2>Existing Worksheets</h2>
-            
+
             <div class="subject-filter">
                 <select id="viewSubjectSelect" onchange="loadExistingWorksheets()">
                     <option value="">All Subjects</option>
-                    <option value="AP Calculus AB">AP Calculus AB</option>
-                    <option value="AP Calculus BC">AP Calculus BC</option>
-                    <option value="AP Physics 1">AP Physics 1</option>
-                    <option value="AP Physics 2">AP Physics 2</option>
-                    <option value="AP Physics C: Mechanics">AP Physics C: Mechanics</option>
-                    <option value="AP Physics C: E&M">AP Physics C: E&M</option>
-                    <option value="AP Chemistry">AP Chemistry</option>
-                    <option value="AP Biology">AP Biology</option>
-                    <option value="AP Statistics">AP Statistics</option>
-                    <option value="AP Computer Science A">AP Computer Science A</option>
-                    <option value="AP Computer Science Principles">AP Computer Science Principles</option>
-                    <option value="AP English Language">AP English Language</option>
-                    <option value="AP English Literature">AP English Literature</option>
-                    <option value="AP US History">AP US History</option>
-                    <option value="AP World History">AP World History</option>
+                    <option value="Microeconomics">Microeconomics</option>
+                    <option value="Macroeconomics">Macroeconomics</option>
+                    <option value="Math Calculus">Math Calculus</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Psychology">Psychology</option>
+                    <option value="Computer Science">Computer Science </option>
+
                 </select>
             </div>
 
@@ -292,4 +282,5 @@
     <script src="config.js"></script>
     <script src="admin-worksheets.js"></script>
 </body>
+
 </html>

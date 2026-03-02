@@ -199,7 +199,9 @@ function loadSubmissionsTable() {
                 <td><strong>${studentName}</strong></td>
                 <td>${submission.subject}</td>
                 <td>${submission.worksheet_title}</td>
-                <td>${submission.file_name}</td>
+                <td>${submission.file_name}  <a href="${submission.file_url}" download="${submission.file_name}" target="" title="Download">
+                ⬇️
+            </a></td>
                 <td>${submissionDate}</td>
                 <td>${fileSize}</td>
             </tr>
