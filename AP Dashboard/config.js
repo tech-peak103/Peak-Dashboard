@@ -10,8 +10,8 @@ const CONFIG = {
 
     // Razorpay Configuration
     razorpay: {
-        keyId: 'rzp_test_Rrpy0LeOVSebfA',
-        keySecret: 'mG04KXM0xaWCw0RodwmcwWxQ' // Keep this secret on server side only
+        keyId: 'rzp_live_RpP8olgNI2tM7u',
+        keySecret: 'u3GgWbLGrgLgcuwTjcOTOzPG' // Keep this secret on server side only
     },
 
     // Payment Configuration
