@@ -237,6 +237,16 @@ async function handlePDFInlineUpload(event) {
 // Open PDF inside the same page overlay with 60-min timer
 async function openTimedPDF(worksheetId) {
     console.log('Opening timed PDF for worksheet:', worksheetId);
+    const allSubmissions = JSON.parse(localStorage.getItem('submissions') || '[]');
+    const alreadySubmitted = allSubmissions.find(s =>
+        s.user_id === currentUser.user_id &&
+        s.subject === currentSubject &&
+        Number(s.worksheet_id) === Number(worksheetId)
+    );
+    if (alreadySubmitted) {
+        alert('🔒 Yeh worksheet aap pehle submit kar chuke hain. Ab ise dobara open nahi kar sakte.');
+        return;
+    }
 
     let pdfUrl = null;
 
@@ -573,7 +583,7 @@ async function loadWorksheets() {
     worksheetsGrid.innerHTML = `<p style="color:#7c7f96;padding:1rem;">Loading worksheets...</p>`;
 
     const worksheets = [];
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 26; i++) {
         worksheets.push({
             id: i,
             title: `Worksheet ${i}`,
@@ -628,30 +638,35 @@ async function loadWorksheets() {
         const isSubmitted = !!submission;
 
         return `
-            <div class="worksheet-card">
-                <h3>${worksheet.title}</h3>
-                <p>${worksheet.description}</p>
-                
-                <div class="worksheet-actions">
-                    <button class="btn-view" onclick="openTimedPDF(${worksheet.id})">
-                        View PDF
-                    </button>
-                    <input type="file" id="upload-${worksheet.id}" class="upload-input" 
-                           accept=".pdf,.doc,.docx" 
-                           onchange="handleUpload(event, ${worksheet.id})">
-                </div>
-                
-                ${isSubmitted ? `
-                    <div class="submission-status completed">
-                        ✓ Submitted on ${new Date(submission.submission_date).toLocaleDateString()}
-                    </div>
-                ` : `
-                    <div class="submission-status">
-                        Not submitted yet
-                    </div>
-                `}
+    <div class="worksheet-card ${isSubmitted ? 'worksheet-submitted' : ''}">
+        <h3>${worksheet.title}</h3>
+        <p>${worksheet.description}</p>
+
+        ${isSubmitted ? `
+            <div class="worksheet-actions">
+                <button class="btn-view btn-disabled" disabled
+                    style="opacity:0.5; cursor:not-allowed; background:#ccc; color:#555;">
+                    🔒 Locked — Already Submitted
+                </button>
             </div>
-        `;
+            <div class="submission-status completed">
+                ✓ Submitted on ${new Date(submission.submission_date).toLocaleDateString()}
+            </div>
+        ` : `
+            <div class="worksheet-actions">
+                <button class="btn-view" onclick="openTimedPDF(${worksheet.id})">
+                    View PDF
+                </button>
+                <input type="file" id="upload-${worksheet.id}" class="upload-input"
+                       accept=".pdf,.doc,.docx"
+                       onchange="handleUpload(event, ${worksheet.id})">
+            </div>
+            <div class="submission-status">
+                Not submitted yet
+            </div>
+        `}
+    </div>
+`;
     }).join('');
 }
 

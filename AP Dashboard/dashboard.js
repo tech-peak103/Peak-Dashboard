@@ -122,7 +122,7 @@ function getSubjectProgress(subjectName) {
     
     // Calculate progress based on number of worksheets submitted
     // Each subject has 10 worksheets
-    const totalWorksheets = 10;
+    const totalWorksheets = 26;
     const completedWorksheets = userSubmissions.length;
     const progress = Math.round((completedWorksheets / totalWorksheets) * 100);
     
