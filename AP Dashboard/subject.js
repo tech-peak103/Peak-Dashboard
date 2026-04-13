@@ -53,7 +53,7 @@ const subjectTopics = {
 //  PDF OVERLAY TIMER LOGIC
 // ══════════════════════════════════════════
 
-const TIMER_DURATION_MS = 60 * 60 * 1000; // 60 minutes
+const TIMER_DURATION_MS = 120 * 60 * 1000; // 60 minutes
 let pdfTimerInterval = null;
 let pdfExpiresAt = null;
 let fiveMinWarnShown = false;
@@ -296,7 +296,7 @@ async function openTimedPDF(worksheetId) {
 async function resumeSession(session) {
     console.log('=== RESUMING SESSION FROM BACKEND ===');
 
-    activeSessionId    = session.id;
+    activeSessionId = session.id;
     currentOpenRecordId = session.id;
     currentOpenWorksheetId = session.worksheet_id;
     pdfExpiresAt = new Date(session.expires_at).getTime();
@@ -368,9 +368,9 @@ function expirePDFOverlay(reason = 'expired') {
     document.getElementById('btnSubmitInPDF').style.display = 'none';
 
     const expiredScreen = document.getElementById('expiredScreen');
-    const expIcon    = expiredScreen.querySelector('.exp-icon');
-    const expTitle   = expiredScreen.querySelector('.exp-title');
-    const expMsg     = expiredScreen.querySelector('.exp-msg');
+    const expIcon = expiredScreen.querySelector('.exp-icon');
+    const expTitle = expiredScreen.querySelector('.exp-title');
+    const expMsg = expiredScreen.querySelector('.exp-msg');
     const btnAnswers = document.getElementById('btnViewAnswers');
 
     if (reason === 'submitted') {
@@ -439,8 +439,8 @@ async function handlePDFInlineUpload(event) {
         let submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
         submissions = submissions.filter(s =>
             !(s.user_id === currentUser.user_id &&
-              s.subject === currentSubject &&
-              s.worksheet_id === currentOpenWorksheetId)
+                s.subject === currentSubject &&
+                s.worksheet_id === currentOpenWorksheetId)
         );
         submissions.push(submission);
         localStorage.setItem('submissions', JSON.stringify(submissions));
@@ -530,7 +530,7 @@ function closeAndGoBack() {
     btn.style.display = '';
     btn.disabled = false;
 
-    document.getElementById('timerDisplay').textContent = '60:00';
+    document.getElementById('timerDisplay').textContent = '120:00';
     document.getElementById('timerWrapper').classList.remove('warn', 'danger');
     document.getElementById('pdfProgressFill').style.width = '100%';
     document.getElementById('pdfProgressFill').style.background =
@@ -623,7 +623,7 @@ function showResumeToast(worksheetId, minsLeft, session) {
     }
 
     toast.innerHTML = `
-        <span>⏱️ Worksheet ${worksheetId} ka session active hai — ${minsLeft} min bacha hai!</span>
+        <span>⏱️ Worksheet ${worksheetId} session is active  — ${minsLeft} mintues lefts</span>
         <button id="resumeBtn"
             style="background:white; color:#6c63ff; border:none;
                    padding:0.4rem 0.8rem; border-radius:8px;
@@ -674,6 +674,17 @@ function loadTopics() {
             <span style="font-weight: 500;">${topic}</span>
         </div>
     `).join('');
+}
+
+
+function downloadCheckedPaper(url, fileName) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 async function loadWorksheets() {
@@ -766,6 +777,9 @@ async function loadWorksheets() {
                 <div class="submission-status completed">
                     ✓ Submitted on ${new Date(submission.submission_date).toLocaleDateString()}
                 </div>
+                
+            
+                
             </div>`;
         }
 
@@ -782,7 +796,7 @@ async function loadWorksheets() {
                     </button>
                 </div>
                 <div class="submission-status" style="color:#f4a261;">
-                    ⏳ Instructor ne abhi open nahi kiya
+                    Not opened yet
                 </div>
             </div>`;
         }
@@ -854,8 +868,8 @@ async function handleUpload(event, worksheetId) {
         let submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
         submissions = submissions.filter(s =>
             !(s.user_id === currentUser.user_id &&
-              s.subject === currentSubject &&
-              s.worksheet_id === worksheetId)
+                s.subject === currentSubject &&
+                s.worksheet_id === worksheetId)
         );
         submissions.push(submission);
         localStorage.setItem('submissions', JSON.stringify(submissions));
