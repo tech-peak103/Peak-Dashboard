@@ -38,6 +38,35 @@ document.addEventListener('DOMContentLoaded', function () {
     loadExistingWorksheets();
 });
 
+
+// Worksheet open karo
+async function openWorksheet(subject, worksheetNumber) {
+    const { error } = await supabaseClient
+        .from('admin_worksheets')
+        .update({ is_open: true })
+        .eq('subject', subject)
+        .eq('worksheet_number', Number(worksheetNumber));
+
+    if (!error) {
+        alert(`✅ Worksheet ${worksheetNumber} open kar di!`);
+        loadAdminWorksheets(); // apna refresh function
+    }
+}
+
+// Worksheet band karo
+async function closeWorksheet(subject, worksheetNumber) {
+    const { error } = await supabaseClient
+        .from('admin_worksheets')
+        .update({ is_open: false })
+        .eq('subject', subject)
+        .eq('worksheet_number', Number(worksheetNumber));
+
+    if (!error) {
+        alert(`🔒 Worksheet ${worksheetNumber} band kar di!`);
+        loadAdminWorksheets();
+    }
+}
+
 // Setup drag and drop
 function setupDragAndDrop() {
     const uploadArea = document.getElementById('uploadArea');
