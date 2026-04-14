@@ -6,6 +6,69 @@
     <title>Admin Dashboard - Peak AP</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .checked-upload-btn {
+            background: #6c63ff;
+            color: white;
+            border: none;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .checked-upload-btn:hover { background: #5a52d5; }
+        .checked-upload-btn.uploaded { background: #06d6a0; }
+        .checked-upload-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 480px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-box h3 { margin: 0 0 0.5rem; font-size: 1.2rem; }
+        .modal-box p { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .modal-file-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px dashed #6c63ff;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+        .modal-actions { display: flex; gap: 1rem; justify-content: flex-end; }
+        .modal-actions button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-cancel { background: #eee; color: #333; }
+        .btn-upload-confirm { background: #6c63ff; color: white; }
+        .btn-upload-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+        .upload-progress {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+            color: #6c63ff;
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
     <!-- Navbar -->
@@ -16,7 +79,7 @@
                 <span class="logo-text">Peak AP Dashboard - Admin</span>
             </div>
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="admin-worksheets.html"  style="text-decoration: none; color: var(--text-primary); font-weight: 600; padding: 0.5rem 1rem; background: var(--bg-secondary); border-radius: 6px;">📚 Manage Worksheets</a>
+                <a href="admin-worksheets.html" style="text-decoration: none; color: var(--text-primary); font-weight: 600; padding: 0.5rem 1rem; background: var(--bg-secondary); border-radius: 6px;">📚 Manage Worksheets</a>
                 <span style="font-weight: 600;">Admin Panel</span>
                 <button class="btn-secondary" onclick="logout()">Logout</button>
             </div>
@@ -68,9 +131,7 @@
                                 <th>Payment Amount</th>
                             </tr>
                         </thead>
-                        <tbody id="studentsTableBody">
-                            <!-- Students will be loaded here -->
-                        </tbody>
+                        <tbody id="studentsTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -87,14 +148,13 @@
                                 <th>Student Name</th>
                                 <th>Subject</th>
                                 <th>Worksheet</th>
-                                <th>File Name</th>
+                                <th>Student File</th>
                                 <th>Submission Date</th>
                                 <th>File Size</th>
+                                <th>Checked Paper</th>
                             </tr>
                         </thead>
-                        <tbody id="submissionsTableBody">
-                            <!-- Submissions will be loaded here -->
-                        </tbody>
+                        <tbody id="submissionsTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -114,11 +174,29 @@
                                 <th>Avg. Completion Rate</th>
                             </tr>
                         </thead>
-                        <tbody id="subjectsTableBody">
-                            <!-- Subject stats will be loaded here -->
-                        </tbody>
+                        <tbody id="subjectsTableBody"></tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checked Paper Upload Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal-box">
+            <h3>📋 Upload Checked Paper</h3>
+            <p id="modalSubtitle">Student ka checked paper upload karo</p>
+            <input type="file" class="modal-file-input" id="checkedPaperFile"
+                   accept=".pdf,.doc,.docx">
+            <div class="upload-progress" id="uploadProgress">
+                ⏳ Uploading...
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeUploadModal()">Cancel</button>
+                <button class="btn-upload-confirm" id="confirmUploadBtn"
+                        onclick="confirmCheckedUpload()">
+                    ⬆️ Upload
+                </button>
             </div>
         </div>
     </div>

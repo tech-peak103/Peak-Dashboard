@@ -764,6 +764,7 @@ async function loadWorksheets() {
 
         // Already submitted
         if (isSubmitted) {
+            const hasChecked = !!submission.checked_paper_url;
             return `
             <div class="worksheet-card worksheet-submitted">
                 <h3>${worksheet.title}</h3>
@@ -777,9 +778,30 @@ async function loadWorksheets() {
                 <div class="submission-status completed">
                     ✓ Submitted on ${new Date(submission.submission_date).toLocaleDateString()}
                 </div>
+                 ${hasChecked ? `
+                   <div style="margin-top:0.75rem; padding:0.75rem;
+                        background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+                        border-radius:10px; border:1px solid #a5d6a7;">
+                   <div style="font-weight:600; color:#2e7d32; margin-bottom:0.5rem; font-size:0.9rem;">
+                    📋 Aapka checked paper ready hai!
+                    </div>
+                    <a href="${submission.checked_paper_url}" target="_blank"
+                    style="display:block; width:100%; padding:0.6rem;
+                           background:#2e7d32; color:white; border-radius:8px;
+                           text-align:center; font-weight:600; font-size:0.85rem;
+                           text-decoration:none;">
+                    ⬇️ Download Checked Paper
+                    </a>
+               </div>
+        ` : `
+            <div style="margin-top:0.75rem; padding:0.6rem; background:#fff8e1;
+                        border-radius:8px; border:1px solid #ffe082;
+                        color:#f57f17; font-size:0.82rem; text-align:center;">
+                Checked paper not available yet – available soon
+            </div>
+        `}
                 
-            
-                
+                       
             </div>`;
         }
 
