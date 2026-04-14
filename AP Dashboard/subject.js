@@ -766,33 +766,33 @@ async function loadWorksheets() {
         if (isSubmitted) {
             const hasChecked = !!submission.checked_paper_url;
             return `
-            <div class="worksheet-card worksheet-submitted">
-                <h3>${worksheet.title}</h3>
-                <p>${worksheet.description}</p>
-                <div class="worksheet-actions">
-                    <button class="btn-view btn-disabled" disabled
-                        style="opacity:0.5;cursor:not-allowed;background:#ccc;color:#555;">
-                        🔒 Locked — Already Submitted
-                    </button>
-                </div>
-                <div class="submission-status completed">
-                    ✓ Submitted on ${new Date(submission.submission_date).toLocaleDateString()}
-                </div>
-                 ${hasChecked ? `
-                   <div style="margin-top:0.75rem; padding:0.75rem;
+               <div class="worksheet-card worksheet-submitted">
+                 <h3>${worksheet.title}</h3>
+        <p>${worksheet.description}</p>
+            <div class="worksheet-actions">
+            <button class="btn-view btn-disabled" disabled
+                style="opacity:0.5;cursor:not-allowed;background:#ccc;color:#555;">
+                🔒 Locked — Already Submitted
+            </button>
+        </div>
+        <div class="submission-status completed">
+            ✓ Submitted on ${new Date(submission.submission_date).toLocaleDateString()}
+        </div>
+        ${hasChecked ? `
+            <div style="margin-top:0.75rem; padding:0.75rem;
                         background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
                         border-radius:10px; border:1px solid #a5d6a7;">
-                   <div style="font-weight:600; color:#2e7d32; margin-bottom:0.5rem; font-size:0.9rem;">
-                    📋 Aapka checked paper ready hai!
-                    </div>
-                    <a href="${submission.checked_paper_url}" target="_blank"
+                <div style="font-weight:600; color:#2e7d32; margin-bottom:0.5rem; font-size:0.9rem;">
+                    Your checked paper is ready!
+                </div>
+                <a href="${submission.checked_paper_url}" target="_blank"
                     style="display:block; width:100%; padding:0.6rem;
                            background:#2e7d32; color:white; border-radius:8px;
                            text-align:center; font-weight:600; font-size:0.85rem;
                            text-decoration:none;">
                     ⬇️ Download Checked Paper
-                    </a>
-               </div>
+                </a>
+            </div>
         ` : `
             <div style="margin-top:0.75rem; padding:0.6rem; background:#fff8e1;
                         border-radius:8px; border:1px solid #ffe082;
@@ -800,9 +800,7 @@ async function loadWorksheets() {
                 Checked paper not available yet – available soon
             </div>
         `}
-                
-                       
-            </div>`;
+    </div>`;
         }
 
         // Admin ne abhi open nahi kiya
