@@ -1,33 +1,22 @@
 :root {
     /* Brand / Primary */
-    --primary-color: #35BCBF;
-    /* Vibrant Teal */
-    --primary-dark: #0D2C2E;
-    /* Deep Dark Teal (hover, header) */
-    --primary-light: #B8EDEC;
-    /* Soft Mint Teal */
+    --primary-color: #35BCBF;        /* Vibrant Teal */
+    --primary-dark: #0D2C2E;         /* Deep Dark Teal (hover, header) */
+    --primary-light: #B8EDEC;        /* Soft Mint Teal */
 
     /* Accent */
-    --accent-primary: #F4D049;
-    /* Warm Golden Yellow (CTA) */
-    --accent-secondary: #B8EDEC;
-    /* Mint (tags, highlights) */
+    --accent-primary: #F4D049;       /* Warm Golden Yellow (CTA) */
+    --accent-secondary: #B8EDEC;     /* Mint (tags, highlights) */
 
     /* Text */
-    --text-primary: #0D2C2E;
-    /* Deep Dark Teal — strong & readable */
-    --text-secondary: #2A6E71;
-    /* Mid Teal Grey */
-    --text-muted: #6AAFB2;
-    /* Soft Teal Muted */
+    --text-primary: #0D2C2E;         /* Deep Dark Teal — strong & readable */
+    --text-secondary: #2A6E71;       /* Mid Teal Grey */
+    --text-muted: #6AAFB2;           /* Soft Teal Muted */
 
     /* Backgrounds */
-    --bg-primary: #F9FEFD;
-    /* Near White with cool tint */
-    --bg-secondary: #EEF9F9;
-    /* Very light teal wash */
-    --bg-tertiary: #B8EDEC;
-    /* Mint Teal surface */
+    --bg-primary: #F9FEFD;           /* Near White with cool tint */
+    --bg-secondary: #EEF9F9;         /* Very light teal wash */
+    --bg-tertiary: #B8EDEC;          /* Mint Teal surface */
 
     /* Borders */
     --border-color: #C8E9E9;
@@ -119,12 +108,11 @@ body {
 }
 
 .logo-text {
-    background: #2A6E71;
+    background:#2A6E71 ;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    font-family: 'Cormorant Garamond', serif;
-    ;
+    font-family: 'Cormorant Garamond', serif;;
 }
 
 /* Buttons */
@@ -764,7 +752,7 @@ body {
 .btn-upload {
     flex: 1;
     padding: 0.75rem;
-    background: var(--accent-primary);
+    background: var( --accent-primary);
     color: black;
     border: none;
     border-radius: 8px;
@@ -937,107 +925,3 @@ tr:hover {
     font-weight: 600;
 }
 
-.checked-upload-btn {
-    background: #6c63ff;
-    color: white;
-    border: none;
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.checked-upload-btn:hover {
-    background: #5a52d5;
-}
-
-.checked-upload-btn.uploaded {
-    background: #06d6a0;
-}
-
-.checked-upload-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Modal */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-overlay.active {
-    display: flex;
-}
-
-.modal-box {
-    background: white;
-    border-radius: 16px;
-    padding: 2rem;
-    width: 90%;
-    max-width: 480px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-}
-
-.modal-box h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.2rem;
-}
-
-.modal-box p {
-    color: #666;
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
-}
-
-.modal-file-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px dashed #6c63ff;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-    cursor: pointer;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-}
-
-.modal-actions button {
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-cancel {
-    background: #eee;
-    color: #333;
-}
-
-.btn-upload-confirm {
-    background: #6c63ff;
-    color: white;
-}
-
-.btn-upload-confirm:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.upload-progress {
-    display: none;
-    text-align: center;
-    padding: 1rem;
-    color: #6c63ff;
-    font-weight: 600;
-}

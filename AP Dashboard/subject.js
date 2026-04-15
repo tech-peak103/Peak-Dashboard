@@ -53,7 +53,7 @@ const subjectTopics = {
 //  PDF OVERLAY TIMER LOGIC
 // ══════════════════════════════════════════
 
-const TIMER_DURATION_MS = 120 * 60 * 1000; // 60 minutes
+const TIMER_DURATION_MS = 60 * 60 * 1000; // 60 minutes
 let pdfTimerInterval = null;
 let pdfExpiresAt = null;
 let fiveMinWarnShown = false;
@@ -530,7 +530,7 @@ function closeAndGoBack() {
     btn.style.display = '';
     btn.disabled = false;
 
-    document.getElementById('timerDisplay').textContent = '120:00';
+    document.getElementById('timerDisplay').textContent = '60:00';
     document.getElementById('timerWrapper').classList.remove('warn', 'danger');
     document.getElementById('pdfProgressFill').style.width = '100%';
     document.getElementById('pdfProgressFill').style.background =
@@ -827,8 +827,11 @@ async function loadWorksheets() {
             <h3>${worksheet.title}</h3>
             <p>${worksheet.description}</p>
             <div class="worksheet-actions">
+               <button class="btn-view" onclick="window.open('https://www.flexiquiz.com/SC/N/7138aad8-8b54-410b-bf9b-424e49396136', '_blank')">
+                   View Section - I
+               </button>
                 <button class="btn-view" onclick="openTimedPDF(${worksheet.id})">
-                    View PDF
+                    View Section - II
                 </button>
                 <input type="file" id="upload-${worksheet.id}"
                        class="upload-input" accept=".pdf,.doc,.docx"
