@@ -68,6 +68,13 @@
             color: #6c63ff;
             font-weight: 600;
         }
+        .grade-btn {
+    background: #f4a261; color: white; border: none;
+    padding: 0.35rem 0.75rem; border-radius: 6px;
+    cursor: pointer; font-size: 0.8rem; font-weight: 600;
+}
+.grade-btn:hover { background: #e08c4a; }
+.grade-btn.graded { background: #06d6a0; }
     </style>
 </head>
 <body>
@@ -152,6 +159,7 @@
                                 <th>Submission Date</th>
                                 <th>File Size</th>
                                 <th>Checked Paper</th>
+                                <th>Grade</th>
                             </tr>
                         </thead>
                         <tbody id="submissionsTableBody"></tbody>
@@ -159,6 +167,30 @@
                 </div>
             </div>
         </div>
+
+        <!-- Grade Modal -->
+<div class="modal-overlay" id="gradeModal">
+    <div class="modal-box">
+        <h3>📊 Grade Enter Karo</h3>
+        <p class="subtitle" id="gradeModalSubtitle"></p>
+        <div style="margin-bottom:1rem;">
+            <label style="display:block;font-weight:600;margin-bottom:0.5rem;color:#555;">
+                Grade (e.g. A, B+, 5, 85%)
+            </label>
+            <input type="text" id="gradeInput"
+                style="width:100%;padding:0.75rem;border:2px solid #6c63ff;
+                       border-radius:10px;font-size:1.1rem;font-weight:600;
+                       text-align:center;box-sizing:border-box;font-family:inherit;"
+                placeholder="Grade yahan likho...">
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeGradeModal()">Cancel</button>
+            <button class="btn-confirm" id="confirmGradeBtn" onclick="saveGrade()">
+                💾 Save Grade
+            </button>
+        </div>
+    </div>
+</div>
 
         <!-- Subject-wise Analytics -->
         <div class="students-table" style="margin-top: 2rem;">

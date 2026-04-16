@@ -53,7 +53,7 @@ const subjectTopics = {
 //  PDF OVERLAY TIMER LOGIC
 // ══════════════════════════════════════════
 
-const TIMER_DURATION_MS = 60 * 60 * 1000; // 60 minutes
+const TIMER_DURATION_MS = 120 * 60 * 1000; // 60 minutes
 let pdfTimerInterval = null;
 let pdfExpiresAt = null;
 let fiveMinWarnShown = false;
@@ -383,7 +383,7 @@ function expirePDFOverlay(reason = 'expired') {
         expIcon.textContent = '🔒';
         expTitle.textContent = 'Session Expired';
         expTitle.style.color = '#ff4d6d';
-        expMsg.innerHTML = 'Your 60-minute access window has ended.<br>This worksheet is no longer available.<br>Please contact your instructor if you need more time.';
+        expMsg.innerHTML = 'Your 120-minute access window has ended.<br>This worksheet is no longer available.<br>Please contact your instructor if you need more time.';
         btnAnswers.classList.remove('visible');
     }
 
@@ -530,7 +530,7 @@ function closeAndGoBack() {
     btn.style.display = '';
     btn.disabled = false;
 
-    document.getElementById('timerDisplay').textContent = '60:00';
+    document.getElementById('timerDisplay').textContent = '120:00';
     document.getElementById('timerWrapper').classList.remove('warn', 'danger');
     document.getElementById('pdfProgressFill').style.width = '100%';
     document.getElementById('pdfProgressFill').style.background =
@@ -702,7 +702,7 @@ async function loadWorksheets() {
 
     // ── Submissions fetch ──
     let userSubmissions = [];
-    if (supabaseClient) {
+        if (supabaseClient) {
         try {
             const { data, error } = await supabaseClient
                 .from('submissions')
@@ -753,6 +753,18 @@ async function loadWorksheets() {
             console.warn('Permissions fetch failed:', err);
         }
     }
+    // Grades fetch
+        let userGrades = [];
+        if (supabaseClient) {
+            try {
+                const { data } = await supabaseClient
+                    .from('admin_worksheets')
+                   .select('worksheet_number, grade')
+            .eq('subject', currentSubject)
+            .not('grade', 'is', null);
+                if (data) userGrades = data;
+            } catch (e) { console.warn('Grades fetch failed'); }
+        }
 
     // ── Cards render ──
     worksheetsGrid.innerHTML = worksheets.map(worksheet => {
@@ -765,6 +777,9 @@ async function loadWorksheets() {
         // Already submitted
         if (isSubmitted) {
             const hasChecked = !!submission.checked_paper_url;
+             const gradeData = userGrades.find(g =>
+        Number(g.worksheet_id) === Number(worksheet.id)
+    );
             return `
                <div class="worksheet-card worksheet-submitted">
                  <h3>${worksheet.title}</h3>
@@ -778,6 +793,23 @@ async function loadWorksheets() {
         <div class="submission-status completed">
             ✓ Submitted on ${new Date(submission.submission_date).toLocaleDateString()}
         </div>
+
+        ${gradeData ? `
+        <div style="margin-top:0.75rem;padding:1rem;
+                    background:linear-gradient(135deg,#ede7f6,#e8eaf6);
+                    border-radius:12px;border:1px solid #b39ddb;text-align:center;">
+            <div style="font-size:0.8rem;font-weight:600;color:#6c63ff;margin-bottom:0.4rem;">
+                📊 Your Grade
+            </div>
+            <div style="font-size:2rem;font-weight:700;color:#4527a0;">
+                ${gradeData.grade}
+            </div>
+        </div>` : `
+        <div style="margin-top:0.75rem;padding:0.6rem;background:#f5f5f5;
+                    border-radius:8px;color:#999;font-size:0.82rem;text-align:center;">
+            ⏳ Grade not available 
+        </div>`}
+        
         ${hasChecked ? `
             <div style="margin-top:0.75rem; padding:0.75rem;
                         background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
@@ -827,11 +859,9 @@ async function loadWorksheets() {
             <h3>${worksheet.title}</h3>
             <p>${worksheet.description}</p>
             <div class="worksheet-actions">
-               <button class="btn-view" onclick="window.open('https://www.flexiquiz.com/SC/N/7138aad8-8b54-410b-bf9b-424e49396136', '_blank')">
-                   View Section - I
-               </button>
+            
                 <button class="btn-view" onclick="openTimedPDF(${worksheet.id})">
-                    View Section - II
+                    View Worksheet
                 </button>
                 <input type="file" id="upload-${worksheet.id}"
                        class="upload-input" accept=".pdf,.doc,.docx"

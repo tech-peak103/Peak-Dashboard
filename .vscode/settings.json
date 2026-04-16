@@ -20,5 +20,7 @@
   ],
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
-  }
+  },
+  "css.format.enable": true,
+  "compile-hero.disable-compile-files-on-did-save-code": false
 }
