@@ -54,9 +54,17 @@ const subjectTopics = {
 // ══════════════════════════════════════════
 
 function getTimerDuration(worksheetId) {
-    if (Number(worksheetId) === 1) return 120 * 60 * 1000; // Worksheet 1: 120 min
-    return 60 * 60 * 1000; // Baaki sab: 60 min
-}let pdfTimerInterval = null;
+   if (
+        currentSubject === 'Microeconomics' &&
+        Number(worksheetId) === 1
+    ) {
+        return 120 * 60 * 1000; // 120 minutes
+    }
+
+    // Baaki sab ke liye 60 min
+    return 60 * 60 * 1000; // 60 minutes
+}
+let pdfTimerInterval = null;
 let pdfExpiresAt = null;
 let fiveMinWarnShown = false;
 let currentOpenWorksheetId = null;
@@ -384,7 +392,7 @@ function tickPDFTimer() {
     const pct = duration > 0 ? (remaining / duration) * 100 : 100;    
     const fill = document.getElementById('pdfProgressFill');
         fill.style.width = pct + '%';
-    
+
     const wrapper = document.getElementById('timerWrapper');
     if (secondsLeft <= 300) {
         wrapper.classList.remove('warn');
