@@ -53,12 +53,15 @@ const subjectTopics = {
 //  PDF OVERLAY TIMER LOGIC
 // ══════════════════════════════════════════
 
-const TIMER_DURATION_MS = 120 * 60 * 1000; // 60 minutes
+const TIMER_DURATION_MS = 60 * 60 * 1000; // 60 minutes
 let pdfTimerInterval = null;
 let pdfExpiresAt = null;
 let fiveMinWarnShown = false;
 let currentOpenWorksheetId = null;
 let currentOpenRecordId = null;
+
+// ── Toast live countdown interval ──
+let toastCountdownInterval = null;
 
 // ── CREATE session in worksheet_opens (backend) ──
 async function createBackendSession(worksheetId, pdfUrl) {
@@ -113,7 +116,7 @@ async function fetchActiveSession() {
             .eq('user_id', currentUser.user_id)
             .eq('subject', currentSubject)
             .eq('status', 'active')
-            .gt('expires_at', now)          // sirf woh jo abhi expire nahi hui
+            .gt('expires_at', now)
             .order('opened_at', { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -216,6 +219,7 @@ function openPDFOverlay(pdfUrl, worksheetId) {
     document.getElementById('pdfOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
+
 // ── Check if admin has opened this worksheet ──
 async function checkAdminPermission(worksheetId) {
     if (!supabaseClient) return true;
@@ -229,10 +233,7 @@ async function checkAdminPermission(worksheetId) {
             .maybeSingle();
 
         if (error) throw error;
-
-        // Row hi nahi hai — matlab PDF upload nahi hui abhi
         if (!data) return false;
-
         return data.is_open === true;
 
     } catch (err) {
@@ -240,9 +241,48 @@ async function checkAdminPermission(worksheetId) {
         return false;
     }
 }
-// Permissions fetch
 
-// ── Open PDF with fresh 60-min timer ──
+// ── FIX 1: Check if worksheet session has expired (never submitted) ──
+async function checkIfSessionExpired(worksheetId) {
+    if (!supabaseClient) return false;
+
+    try {
+        const now = new Date().toISOString();
+
+        // Check karein: koi session thi is worksheet ke liye jo expire ho gayi
+        const { data, error } = await supabaseClient
+            .from('worksheet_opens')
+            .select('id, expires_at, status')
+            .eq('user_id', currentUser.user_id)
+            .eq('subject', currentSubject)
+            .eq('worksheet_id', Number(worksheetId))
+            .order('opened_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        if (!data) return false; // Koi session hi nahi thi
+
+        // Agar status 'expired' hai ya time nikal gaya
+        if (data.status === 'expired') return true;
+        if (data.status === 'active' && new Date(data.expires_at) < new Date()) {
+            // Backend update karo
+            await supabaseClient
+                .from('worksheet_opens')
+                .update({ status: 'expired', updated_at: now })
+                .eq('id', data.id);
+            return true;
+        }
+
+        return false;
+    } catch (err) {
+        console.error('checkIfSessionExpired error:', err);
+        return false;
+    }
+}
+
+// ── Open PDF with fresh 120-min timer ──
 async function openTimedPDF(worksheetId) {
     console.log('Opening timed PDF for worksheet:', worksheetId);
 
@@ -302,7 +342,6 @@ async function resumeSession(session) {
     pdfExpiresAt = new Date(session.expires_at).getTime();
     fiveMinWarnShown = (pdfExpiresAt - Date.now()) <= 5 * 60 * 1000;
 
-    // PDF URL — session mein stored hai, warna re-fetch
     let pdfUrl = session.pdf_url;
     if (!pdfUrl) pdfUrl = await fetchPdfUrl(session.worksheet_id);
 
@@ -317,6 +356,9 @@ async function resumeSession(session) {
     if (pdfTimerInterval) clearInterval(pdfTimerInterval);
     pdfTimerInterval = setInterval(tickPDFTimer, 1000);
     tickPDFTimer();
+
+    // Toast band karo agar khula hua hai
+    stopToastCountdown();
 
     const minsLeft = Math.ceil((pdfExpiresAt - Date.now()) / 60000);
     console.log(`✓ Session resumed — ${minsLeft} min remaining`);
@@ -355,11 +397,12 @@ function tickPDFTimer() {
         clearInterval(pdfTimerInterval);
         pdfTimerInterval = null;
         expirePDFOverlay('expired');
+        // Worksheet cards reload karo taaki expired card show ho
+        loadWorksheets();
     }
 }
 
 function expirePDFOverlay(reason = 'expired') {
-    // Backend update karo
     updateOpenStatus(reason);
     activeSessionId = null;
 
@@ -515,9 +558,6 @@ function closeAndGoBack() {
         pdfTimerInterval = null;
     }
 
-    // ⚠️ updateOpenStatus NAHI call karte — session backend mein active rehni chahiye
-    // Student wapas aane pe resume ho sake
-
     document.getElementById('pdfOverlay').classList.remove('active');
     document.getElementById('pdfFrame').src = 'about:blank';
     document.getElementById('expiredScreen').classList.remove('show');
@@ -530,18 +570,42 @@ function closeAndGoBack() {
     btn.style.display = '';
     btn.disabled = false;
 
-    document.getElementById('timerDisplay').textContent = '120:00';
+    document.getElementById('timerDisplay').textContent = '60:00';
     document.getElementById('timerWrapper').classList.remove('warn', 'danger');
     document.getElementById('pdfProgressFill').style.width = '100%';
     document.getElementById('pdfProgressFill').style.background =
         'linear-gradient(90deg, #6c63ff, #06d6a0)';
     document.getElementById('btnViewAnswers').classList.remove('visible');
+
+    // Overlay band hone ke baad toast live countdown restart karo
+    const activeExp = pdfExpiresAt;
+    if (activeExp && activeExp > Date.now()) {
+        const worksheetId = currentOpenWorksheetId;
+        const minsLeft = Math.ceil((activeExp - Date.now()) / 60000);
+        // Fake session object for toast
+        showResumeToast(worksheetId, minsLeft, {
+            id: currentOpenRecordId,
+            worksheet_id: worksheetId,
+            expires_at: new Date(activeExp).toISOString(),
+            pdf_url: null
+        });
+    }
 }
 
 function showFiveMinToast() {
     const toast = document.getElementById('fiveMinToast');
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 6000);
+}
+
+// ── FIX 2: Stop toast countdown ──
+function stopToastCountdown() {
+    if (toastCountdownInterval) {
+        clearInterval(toastCountdownInterval);
+        toastCountdownInterval = null;
+    }
+    const toast = document.getElementById('resumeSessionToast');
+    if (toast) toast.remove();
 }
 
 // Block right-click and keyboard shortcuts when overlay is open
@@ -592,7 +656,7 @@ async function loadSubjectPage() {
     loadTopics();
     await loadWorksheets();
 
-    // ── Backend se active session check karo ──
+    // Backend se active session check karo
     const activeSession = await fetchActiveSession();
     if (activeSession) {
         const minsLeft = Math.ceil(
@@ -602,43 +666,82 @@ async function loadSubjectPage() {
     }
 }
 
-// ── Resume toast ──
+// ── FIX 3: Resume toast with LIVE countdown ──
 function showResumeToast(worksheetId, minsLeft, session) {
-    let toast = document.getElementById('resumeSessionToast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'resumeSessionToast';
-        toast.style.cssText = `
-            position: fixed; bottom: 2rem; left: 50%;
-            transform: translateX(-50%);
-            background: #6c63ff; color: white;
-            padding: 1rem 1.5rem; border-radius: 12px;
-            font-size: 0.95rem; font-weight: 600;
-            z-index: 9999;
-            box-shadow: 0 4px 20px rgba(108,99,255,0.4);
-            display: flex; align-items: center;
-            gap: 1rem; max-width: 90vw;
-        `;
-        document.body.appendChild(toast);
+    // Pehle purana toast aur interval saaf karo
+    stopToastCountdown();
+
+    let toast = document.createElement('div');
+    toast.id = 'resumeSessionToast';
+    toast.style.cssText = `
+        position: fixed; bottom: 2rem; left: 50%;
+        transform: translateX(-50%);
+        background: #6c63ff; color: white;
+        padding: 1rem 1.5rem; border-radius: 12px;
+        font-size: 0.95rem; font-weight: 600;
+        z-index: 9999;
+        box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+        display: flex; align-items: center;
+        gap: 1rem; max-width: 90vw;
+    `;
+    document.body.appendChild(toast);
+
+    const expiresAtMs = new Date(session.expires_at).getTime();
+
+    // Live time calculate karne ka function
+    function getTimeLeft() {
+        const diff = Math.max(0, expiresAtMs - Date.now());
+        const totalSecs = Math.ceil(diff / 1000);
+        const h = Math.floor(totalSecs / 3600);
+        const m = Math.floor((totalSecs % 3600) / 60);
+        const s = totalSecs % 60;
+
+        if (h > 0) {
+            return `${h}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
+        }
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     }
 
-    toast.innerHTML = `
-        <span>⏱️ Worksheet ${worksheetId} session is active  — ${minsLeft} mintues lefts</span>
-        <button id="resumeBtn"
-            style="background:white; color:#6c63ff; border:none;
-                   padding:0.4rem 0.8rem; border-radius:8px;
-                   cursor:pointer; font-weight:700; font-size:0.85rem;">
-            Resume →
-        </button>
-        <button onclick="document.getElementById('resumeSessionToast').remove()"
-            style="background:transparent; color:white; border:none;
-                   cursor:pointer; font-size:1.1rem; line-height:1;">✕</button>
-    `;
+    function renderToast(timeStr) {
+        toast.innerHTML = `
+            <span>⏱️ Worksheet ${worksheetId} session active — <strong>${timeStr}</strong> left</span>
+            <button id="resumeBtn"
+                style="background:white; color:#6c63ff; border:none;
+                       padding:0.4rem 0.8rem; border-radius:8px;
+                       cursor:pointer; font-weight:700; font-size:0.85rem;">
+                Resume →
+            </button>
+            <button id="dismissToastBtn"
+                style="background:transparent; color:white; border:none;
+                       cursor:pointer; font-size:1.1rem; line-height:1;">✕</button>
+        `;
 
-    document.getElementById('resumeBtn').addEventListener('click', () => {
-        toast.remove();
-        resumeSession(session);
-    });
+        document.getElementById('resumeBtn').addEventListener('click', () => {
+            stopToastCountdown();
+            resumeSession(session);
+        });
+
+        document.getElementById('dismissToastBtn').addEventListener('click', () => {
+            stopToastCountdown();
+        });
+    }
+
+    // Pehli render
+    renderToast(getTimeLeft());
+
+    // Har second update karo
+    toastCountdownInterval = setInterval(() => {
+        const remaining = expiresAtMs - Date.now();
+        if (remaining <= 0) {
+            stopToastCountdown();
+            // Worksheets reload karo taaki expired card dikhaye
+            loadWorksheets();
+            return;
+        }
+        // Sirf time span update karo (bina pura re-render ke)
+        const timeSpan = toast.querySelector('strong');
+        if (timeSpan) timeSpan.textContent = getTimeLeft();
+    }, 1000);
 }
 
 async function syncWorksheets() {
@@ -676,7 +779,6 @@ function loadTopics() {
     `).join('');
 }
 
-
 function downloadCheckedPaper(url, fileName) {
     const a = document.createElement('a');
     a.href = url;
@@ -702,7 +804,7 @@ async function loadWorksheets() {
 
     // ── Submissions fetch ──
     let userSubmissions = [];
-        if (supabaseClient) {
+    if (supabaseClient) {
         try {
             const { data, error } = await supabaseClient
                 .from('submissions')
@@ -753,18 +855,65 @@ async function loadWorksheets() {
             console.warn('Permissions fetch failed:', err);
         }
     }
-    // Grades fetch
-        let userGrades = [];
+    // Permissions fetch ke neeche yeh add karo
+        let section1Urls = {};
         if (supabaseClient) {
             try {
                 const { data } = await supabaseClient
                     .from('admin_worksheets')
-                   .select('worksheet_number, grade')
+                    .select('worksheet_number, section1_url')
+                    .eq('subject', currentSubject);
+
+                if (data) {
+                    data.forEach(p => {
+                        section1Urls[p.worksheet_number] = p.section1_url;
+                    });
+                }
+                console.log('✓ Section1 URLs fetched:', section1Urls);
+            } catch (err) {
+                console.warn('Section1 URLs fetch failed:', err);
+            }
+        }
+
+    // ── Grades fetch ──
+    let userGrades = [];
+    if (supabaseClient) {
+        try {
+           const { data } = await supabaseClient
+            .from('submissions')
+            .select('worksheet_id, grade')
+            .eq('user_id', currentUser.user_id)
             .eq('subject', currentSubject)
             .not('grade', 'is', null);
-                if (data) userGrades = data;
-            } catch (e) { console.warn('Grades fetch failed'); }
+            if (data) userGrades = data;
+        } catch (e) { console.warn('Grades fetch failed'); }
+    }
+
+    // ── FIX 4: Expired sessions fetch ──
+    // Woh worksheets jinki session expire ho gayi aur submit nahi hui
+    let expiredWorksheetIds = new Set();
+    if (supabaseClient) {
+        try {
+            const now = new Date().toISOString();
+            const { data: expiredSessions } = await supabaseClient
+                .from('worksheet_opens')
+                .select('worksheet_id, expires_at, status')
+                .eq('user_id', currentUser.user_id)
+                .eq('subject', currentSubject);
+
+            if (expiredSessions) {
+                expiredSessions.forEach(s => {
+                    // Status expired hai ya time nikal gaya
+                    if (s.status === 'expired' || new Date(s.expires_at) < new Date()) {
+                        expiredWorksheetIds.add(Number(s.worksheet_id));
+                    }
+                });
+            }
+            console.log('✓ Expired worksheet IDs:', [...expiredWorksheetIds]);
+        } catch (err) {
+            console.warn('Expired sessions fetch failed:', err);
         }
+    }
 
     // ── Cards render ──
     worksheetsGrid.innerHTML = worksheets.map(worksheet => {
@@ -777,62 +926,85 @@ async function loadWorksheets() {
         // Already submitted
         if (isSubmitted) {
             const hasChecked = !!submission.checked_paper_url;
-             const gradeData = userGrades.find(g =>
-        Number(g.worksheet_id) === Number(worksheet.id)
-    );
+          const gradeData = userGrades.find(g =>
+    Number(g.worksheet_id) === Number(worksheet.id)
+);
             return `
                <div class="worksheet-card worksheet-submitted">
                  <h3>${worksheet.title}</h3>
-        <p>${worksheet.description}</p>
-            <div class="worksheet-actions">
-            <button class="btn-view btn-disabled" disabled
-                style="opacity:0.5;cursor:not-allowed;background:#ccc;color:#555;">
-                🔒 Locked — Already Submitted
-            </button>
-        </div>
-        <div class="submission-status completed">
-            ✓ Submitted on ${new Date(submission.submission_date).toLocaleDateString()}
-        </div>
+                 <p>${worksheet.description}</p>
+                 <div class="worksheet-actions">
+                     <button class="btn-view btn-disabled" disabled
+                         style="opacity:0.5;cursor:not-allowed;background:#ccc;color:#555;">
+                         🔒 Locked — Already Submitted
+                     </button>
+                 </div>
+                 <div class="submission-status completed">
+                     ✓ Submitted on ${new Date(submission.submission_date).toLocaleDateString()}
+                 </div>
 
-        ${gradeData ? `
-        <div style="margin-top:0.75rem;padding:1rem;
-                    background:linear-gradient(135deg,#ede7f6,#e8eaf6);
-                    border-radius:12px;border:1px solid #b39ddb;text-align:center;">
-            <div style="font-size:0.8rem;font-weight:600;color:#6c63ff;margin-bottom:0.4rem;">
-                📊 Your Grade
-            </div>
-            <div style="font-size:2rem;font-weight:700;color:#4527a0;">
-                ${gradeData.grade}
-            </div>
-        </div>` : `
-        <div style="margin-top:0.75rem;padding:0.6rem;background:#f5f5f5;
-                    border-radius:8px;color:#999;font-size:0.82rem;text-align:center;">
-            ⏳ Grade not available 
-        </div>`}
-        
-        ${hasChecked ? `
-            <div style="margin-top:0.75rem; padding:0.75rem;
-                        background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
-                        border-radius:10px; border:1px solid #a5d6a7;">
-                <div style="font-weight:600; color:#2e7d32; margin-bottom:0.5rem; font-size:0.9rem;">
-                    Your checked paper is ready!
+                 ${gradeData ? `
+                 <div style="margin-top:0.75rem;padding:1rem;
+                             background:linear-gradient(135deg,#ede7f6,#e8eaf6);
+                             border-radius:12px;border:1px solid #b39ddb;text-align:center;">
+                     <div style="font-size:0.8rem;font-weight:600;color:#6c63ff;margin-bottom:0.4rem;">
+                         📊 Your Grade
+                     </div>
+                     <div style="font-size:2rem;font-weight:700;color:#4527a0;">
+                         ${gradeData.grade}
+                     </div>
+                 </div>` : `
+                 <div style="margin-top:0.75rem;padding:0.6rem;background:#f5f5f5;
+                             border-radius:8px;color:#999;font-size:0.82rem;text-align:center;">
+                     ⏳ Grade not available 
+                 </div>`}
+                 
+                 ${hasChecked ? `
+                     <div style="margin-top:0.75rem; padding:0.75rem;
+                                 background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+                                 border-radius:10px; border:1px solid #a5d6a7;">
+                         <div style="font-weight:600; color:#2e7d32; margin-bottom:0.5rem; font-size:0.9rem;">
+                             Your checked paper is ready!
+                         </div>
+                         <a href="${submission.checked_paper_url}" target="_blank"
+                             style="display:block; width:100%; padding:0.6rem;
+                                    background:#2e7d32; color:white; border-radius:8px;
+                                    text-align:center; font-weight:600; font-size:0.85rem;
+                                    text-decoration:none;">
+                             ⬇️ Download Checked Paper
+                         </a>
+                     </div>
+                 ` : `
+                     <div style="margin-top:0.75rem; padding:0.6rem; background:#fff8e1;
+                                 border-radius:8px; border:1px solid #ffe082;
+                                 color:#f57f17; font-size:0.82rem; text-align:center;">
+                         Checked paper not available yet – available soon
+                     </div>
+                 `}
+             </div>`;
+        }
+
+        // ── FIX 5: Session expire ho gayi, submit nahi ki ──
+        if (expiredWorksheetIds.has(Number(worksheet.id))) {
+            return `
+            <div class="worksheet-card" style="opacity:0.85; border: 1.5px solid #ff4d6d33;">
+                <h3>${worksheet.title}</h3>
+                <p>${worksheet.description}</p>
+                <div class="worksheet-actions">
+                    <button class="btn-view" disabled
+                        style="opacity:0.5;cursor:not-allowed;background:#ff4d6d;color:white;">
+                        ⏰ Session Expired
+                    </button>
                 </div>
-                <a href="${submission.checked_paper_url}" target="_blank"
-                    style="display:block; width:100%; padding:0.6rem;
-                           background:#2e7d32; color:white; border-radius:8px;
-                           text-align:center; font-weight:600; font-size:0.85rem;
-                           text-decoration:none;">
-                    ⬇️ Download Checked Paper
-                </a>
-            </div>
-        ` : `
-            <div style="margin-top:0.75rem; padding:0.6rem; background:#fff8e1;
-                        border-radius:8px; border:1px solid #ffe082;
-                        color:#f57f17; font-size:0.82rem; text-align:center;">
-                Checked paper not available yet – available soon
-            </div>
-        `}
-    </div>`;
+                <div class="submission-status" style="color:#ff4d6d; font-weight:600;">
+                    🔒 Time limit crossed — Not submitted
+                </div>
+                <div style="margin-top:0.6rem; padding:0.6rem; background:#fff0f0;
+                            border-radius:8px; border:1px solid #ff4d6d55;
+                            color:#c0392b; font-size:0.82rem; text-align:center;">
+                    120-minute window expired. Contact your instructor for help.
+                </div>
+            </div>`;
         }
 
         // Admin ne abhi open nahi kiya
@@ -859,9 +1031,16 @@ async function loadWorksheets() {
             <h3>${worksheet.title}</h3>
             <p>${worksheet.description}</p>
             <div class="worksheet-actions">
-            
+                    ${section1Urls[worksheet.id] 
+                ? `<button class="btn-view" onclick="window.open('${section1Urls[worksheet.id]}', '_blank')">
+                    View Section - I
+                </button>`
+                : `<button class="btn-view" disabled style="opacity:0.5;cursor:not-allowed;background:#aaa;color:#555;">
+                    🔒 Section I Not Available
+                </button>`
+            }
                 <button class="btn-view" onclick="openTimedPDF(${worksheet.id})">
-                    View Worksheet
+                    View Section -II
                 </button>
                 <input type="file" id="upload-${worksheet.id}"
                        class="upload-input" accept=".pdf,.doc,.docx"
@@ -871,6 +1050,22 @@ async function loadWorksheets() {
         </div>`;
 
     }).join('');
+}
+async function fetchSection1Url(worksheetId) {
+    if (supabaseClient) {
+        try {
+            const { data } = await supabaseClient
+                .from('admin_worksheets')
+                .select('section1_url')
+                .eq('subject', currentSubject)
+                .eq('worksheet_number', worksheetId)
+                .single();
+            if (data?.section1_url) return data.section1_url;
+        } catch (e) {
+            console.warn('Section1 URL fetch failed');
+        }
+    }
+    return null;
 }
 
 async function handleUpload(event, worksheetId) {

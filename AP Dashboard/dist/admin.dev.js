@@ -14,7 +14,6 @@ var students = [];
 var submissions = [];
 var currentUploadSubmissionId = null; // Modal ke liye — konsi submission ka paper upload ho raha hai
 
-var grades = [];
 var currentGradeSubmission = null; // Initialize admin dashboard
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -43,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function loadAdminData() {
-  var _ref, studentsData, studentsError, _ref2, submissionsData, submissionsError, _ref3, gd;
+  var _ref, studentsData, studentsError, _ref2, submissionsData, submissionsError;
 
   return regeneratorRuntime.async(function loadAdminData$(_context) {
     while (1) {
@@ -55,7 +54,7 @@ function loadAdminData() {
           _context.prev = 3;
 
           if (!supabaseClient) {
-            _context.next = 24;
+            _context.next = 19;
             break;
           }
 
@@ -93,24 +92,16 @@ function loadAdminData() {
             console.log('✓ Submissions:', submissions.length);
           }
 
-          _context.next = 21;
-          return regeneratorRuntime.awrap(supabaseClient.from('admin_worksheets').select('subject, worksheet_number, grade, graded_by, graded_at'));
-
-        case 21:
-          _ref3 = _context.sent;
-          gd = _ref3.data;
-          if (gd) grades = gd;
-
-        case 24:
-          _context.next = 29;
+        case 19:
+          _context.next = 24;
           break;
 
-        case 26:
-          _context.prev = 26;
+        case 21:
+          _context.prev = 21;
           _context.t0 = _context["catch"](3);
           console.error('Supabase error:', _context.t0);
 
-        case 29:
+        case 24:
           // Fallback
           if (students.length === 0) students = JSON.parse(localStorage.getItem('students') || '[]');
           if (submissions.length === 0) submissions = JSON.parse(localStorage.getItem('submissions') || '[]');
@@ -119,12 +110,12 @@ function loadAdminData() {
           loadSubmissionsTable();
           loadSubjectAnalytics();
 
-        case 35:
+        case 30:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[3, 26]]);
+  }, null, null, [[3, 21]]);
 }
 
 function updateStats() {
@@ -191,33 +182,23 @@ function loadSubmissionsTable() {
 
     var hasChecked = !!submission.checked_paper_url;
     var checkedColumn = hasChecked ? "\n                <div style=\"display:flex; flex-direction:column; gap:0.4rem;\">\n                    <span style=\"color:#06d6a0; font-weight:600; font-size:0.8rem;\">\n                        \u2705 Uploaded\n                    </span>\n                    <div style=\"display:flex; gap:0.4rem;\">\n                        <a href=\"".concat(submission.checked_paper_url, "\" target=\"_blank\"\n                            style=\"font-size:0.75rem; color:#6c63ff; text-decoration:none;\">\n                            \uD83D\uDC41\uFE0F View\n                        </a>\n                        <button class=\"checked-upload-btn uploaded\"\n                            onclick=\"openUploadModal('").concat(submission.id, "', '").concat(studentName, "', '").concat(submission.worksheet_title, "')\">\n                            \uD83D\uDD04 Replace\n                        </button>\n                    </div>\n                </div>\n            ") : "\n                <button class=\"checked-upload-btn\"\n                    onclick=\"openUploadModal('".concat(submission.id, "', '").concat(studentName, "', '").concat(submission.worksheet_title, "')\">\n                    \uD83D\uDCE4 Upload Checked\n                </button>\n            "); // ✅ Grade column
+    // const existingGrade = grades.find(
+    //     (g) =>
+    //          g.subject === submission.subject &&
+    //         Number(g.worksheet_number) === Number(submission.worksheet_id)&&  g.grade !== null
+    // );
 
-    var existingGrade = grades.find(function (g) {
-      return g.subject === submission.subject && Number(g.worksheet_id) === Number(submission.worksheet_id) && g.grade !== null;
-    });
-    var gradeCol = existingGrade ? "\n                <div style=\"display:flex;flex-direction:column;gap:0.3rem;align-items:center;\">\n                    <span style=\"font-size:1.3rem;font-weight:700;color:#6c63ff;\">\n                        ".concat(existingGrade.grade, "\n                    </span>\n                    <button class=\"grade-btn graded\"\n                        onclick=\"openGradeModal('").concat(submission.user_id, "','").concat(studentName, "',\n                        '").concat(submission.subject, "','").concat(submission.worksheet_id, "',\n                        '").concat(submission.worksheet_title, "')\">\n                        \u270F\uFE0F Edit\n                    </button>\n                </div>") : "\n                <button class=\"grade-btn\"\n                    onclick=\"openGradeModal('".concat(submission.user_id, "','").concat(studentName, "',\n                    '").concat(submission.subject, "','").concat(submission.worksheet_id, "',\n                    '").concat(submission.worksheet_title, "')\">\n                    \uD83D\uDCCA Add Grade\n                </button>");
+    var gradeCol = submission.grade ? "\n                <div style=\"display:flex;flex-direction:column;gap:0.3rem;align-items:center;\">\n                    <span style=\"font-size:1.3rem;font-weight:700;color:#6c63ff;\">\n                        ".concat(submission.grade, "\n                    </span>\n                    <button class=\"grade-btn graded\"\n                        onclick=\"openGradeModal(\n                            '").concat(submission.user_id, "',\n                            '").concat(studentName, "',\n                            '").concat(submission.subject, "',\n                            '").concat(submission.worksheet_id, "',\n                            '").concat(submission.worksheet_title, "',\n                            '").concat(submission.id, "'\n            )\">\n                        \u270F\uFE0F Edit\n                    </button>\n                </div>") : "\n                <button class=\"grade-btn\"\n                    onclick=\"openGradeModal('".concat(submission.user_id, "',\n                        '").concat(studentName, "',\n                        '").concat(submission.subject, "',\n                        '").concat(submission.worksheet_id, "',\n                        '").concat(submission.worksheet_title, "',\n                        '").concat(submission.id, "'\n        )\">\n                    \uD83D\uDCCA Add Grade\n                </button>");
     return "\n            <tr>\n                <td><strong>".concat(studentName, "</strong></td>\n                <td>").concat(submission.subject, "</td>\n                <td>").concat(submission.worksheet_title, "</td>\n                <td>\n                    ").concat(submission.file_name, "\n                    <a href=\"").concat(submission.file_url, "\" download=\"").concat(submission.file_name, "\"\n                        target=\"_blank\" title=\"Download\">\u2B07\uFE0F</a>\n                </td>\n                <td>").concat(submissionDate, "</td>\n                <td>").concat(fileSize, "</td>\n                <td>").concat(checkedColumn, "</td>\n                <td>").concat(gradeCol, "</td>\n            </tr>\n            ");
   }).join('');
 }
 
-function openGradeModal(studentName, subject, worksheetId, worksheetTitle) {
-  currentGradeSubmission = {
-    studentName: studentName,
-    subject: subject,
-    worksheetId: worksheetId,
-    worksheetTitle: worksheetTitle
-  };
-  document.getElementById('gradeModalSubtitle').textContent = "".concat(studentName, " \u2014 ").concat(worksheetTitle, " (").concat(subject, ")"); // Existing grade pre-fill karo
-
-  var existing = grades.find(function (g) {
-    return (// g.user_id === userId &&
-      g.subject === subject && Number(g.worksheet_id) === Number(worksheetId)
-    );
-  });
-  document.getElementById('gradeInput').value = existing ? existing.grade : '';
-  document.getElementById('confirmGradeBtn').disabled = false;
-  document.getElementById('confirmGradeBtn').textContent = '💾 Save Grade';
-  document.getElementById('gradeModal').classList.add('active');
+function openGradeModal(submissionId, studentName, worksheetTitle) {
+  currentUploadSubmissionId = submissionId;
+  document.getElementById('modalSubtitle').textContent = "".concat(studentName, " \u2014 ").concat(worksheetTitle);
+  document.getElementById('checkedPaperFile').value = '';
+  document.getElementById('uploadProgress').style.display = 'none';
+  document.getElementById('uploadModal').classList.add('active');
 }
 
 function closeGradeModal() {
@@ -226,7 +207,7 @@ function closeGradeModal() {
 }
 
 function saveGrade() {
-  var grade, btn, _ref4, error;
+  var grade, btn, _ref3, error;
 
   return regeneratorRuntime.async(function saveGrade$(_context2) {
     while (1) {
@@ -248,15 +229,15 @@ function saveGrade() {
           btn.textContent = 'Saving...';
           _context2.prev = 7;
           _context2.next = 10;
-          return regeneratorRuntime.awrap(supabaseClient.from('admin_worksheets').update({
+          return regeneratorRuntime.awrap(supabaseClient.from('submissions').update({
             grade: grade,
             graded_by: currentUser.full_name || 'Admin',
             graded_at: new Date().toISOString()
-          }).eq('subject', currentGradeSubmission.subject).eq('worksheet_id', Number(currentGradeSubmission.worksheetId)));
+          }).eq('id', currentGradeSubmission.submissionId));
 
         case 10:
-          _ref4 = _context2.sent;
-          error = _ref4.error;
+          _ref3 = _context2.sent;
+          error = _ref3.error;
 
           if (!error) {
             _context2.next = 14;
@@ -266,34 +247,41 @@ function saveGrade() {
           throw error;
 
         case 14:
-          btn.textContent = '✅ Saved!';
-          setTimeout(function () {
-            closeGradeModal();
-            loadAdminData();
-          }, 700);
-          alert("\u2705 Grade save ho gaya!\n".concat(currentGradeSubmission.studentName, ": ").concat(grade));
-          _context2.next = 24;
+          alert('✅ Grade saved!');
+          closeGradeModal();
+          _context2.next = 18;
+          return regeneratorRuntime.awrap(loadAdminData());
+
+        case 18:
+          _context2.next = 25;
           break;
 
-        case 19:
-          _context2.prev = 19;
+        case 20:
+          _context2.prev = 20;
           _context2.t0 = _context2["catch"](7);
           alert('Error: ' + _context2.t0.message);
           btn.disabled = false;
-          btn.textContent = '💾 Save Grade';
+          btn.textContent = 'Save Grade';
 
-        case 24:
+        case 25:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[7, 19]]);
+  }, null, null, [[7, 20]]);
 } // ══════════════════════════════════════════
 //  CHECKED PAPER UPLOAD
 // ══════════════════════════════════════════
 
 
-function openUploadModal(submissionId, studentName, worksheetTitle) {
+function openUploadModal(userId, studentName, subject, worksheetId, worksheetTitle) {
+  currentGradeSubmission = {
+    userId: userId,
+    studentName: studentName,
+    subject: subject,
+    worksheetId: worksheetId,
+    worksheetTitle: worksheetTitle
+  };
   currentUploadSubmissionId = submissionId;
   document.getElementById('modalSubtitle').textContent = "".concat(studentName, " \u2014 ").concat(worksheetTitle);
   document.getElementById('checkedPaperFile').value = '';
@@ -309,7 +297,7 @@ function closeUploadModal() {
 }
 
 function confirmCheckedUpload() {
-  var file, allowedTypes, confirmBtn, progress, filePath, fileUrl, _ref5, uploadData, uploadError, _supabaseClient$stora, urlData, _ref6, updateError;
+  var file, allowedTypes, confirmBtn, progress, filePath, fileUrl, _ref4, uploadData, uploadError, _supabaseClient$stora, urlData, _ref5, updateError;
 
   return regeneratorRuntime.async(function confirmCheckedUpload$(_context3) {
     while (1) {
@@ -360,9 +348,9 @@ function confirmCheckedUpload() {
           }));
 
         case 19:
-          _ref5 = _context3.sent;
-          uploadData = _ref5.data;
-          uploadError = _ref5.error;
+          _ref4 = _context3.sent;
+          uploadData = _ref4.data;
+          uploadError = _ref4.error;
 
           if (!uploadError) {
             _context3.next = 24;
@@ -385,8 +373,8 @@ function confirmCheckedUpload() {
           }).eq('id', currentUploadSubmissionId));
 
         case 29:
-          _ref6 = _context3.sent;
-          updateError = _ref6.error;
+          _ref5 = _context3.sent;
+          updateError = _ref5.error;
 
           if (!updateError) {
             _context3.next = 33;

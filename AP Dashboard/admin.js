@@ -4,8 +4,9 @@ let currentUser = null
 let students = []
 let submissions = []
 let currentUploadSubmissionId = null // Modal ke liye — konsi submission ka paper upload ho raha hai
-let grades = [];
 let currentGradeSubmission = null;
+
+
 // Initialize admin dashboard
 document.addEventListener('DOMContentLoaded', function () {
     console.log('=== ADMIN PAGE LOADING ===')
@@ -75,9 +76,8 @@ async function loadAdminData() {
                 localStorage.setItem('submissions', JSON.stringify(submissions))
                 console.log('✓ Submissions:', submissions.length)
             }
-            const { data: gd} = await supabaseClient
-                .from('admin_worksheets') .select('subject, worksheet_number, grade, graded_by, graded_at')
-            if (gd) grades = gd
+           
+
         }
     } catch (error) {
         console.error('Supabase error:', error)
@@ -219,30 +219,39 @@ function loadSubmissionsTable() {
             `;
 
             // ✅ Grade column
-            const existingGrade = grades.find(
-                (g) =>
-                     g.subject === submission.subject &&
-                    Number(g.worksheet_id) === Number(submission.worksheet_id)&&  g.grade !== null
-            );
+            // const existingGrade = grades.find(
+            //     (g) =>
+            //          g.subject === submission.subject &&
+            //         Number(g.worksheet_number) === Number(submission.worksheet_id)&&  g.grade !== null
+            // );
 
-            const gradeCol = existingGrade
+            const gradeCol = submission.grade
                 ? `
                 <div style="display:flex;flex-direction:column;gap:0.3rem;align-items:center;">
                     <span style="font-size:1.3rem;font-weight:700;color:#6c63ff;">
-                        ${existingGrade.grade}
+                        ${submission.grade}
                     </span>
                     <button class="grade-btn graded"
-                        onclick="openGradeModal('${submission.user_id}','${studentName}',
-                        '${submission.subject}','${submission.worksheet_id}',
-                        '${submission.worksheet_title}')">
+                        onclick="openGradeModal(
+                            '${submission.user_id}',
+                            '${studentName}',
+                            '${submission.subject}',
+                            '${submission.worksheet_id}',
+                            '${submission.worksheet_title}',
+                            '${submission.id}'
+            )">
                         ✏️ Edit
                     </button>
                 </div>`
                 : `
                 <button class="grade-btn"
-                    onclick="openGradeModal('${submission.user_id}','${studentName}',
-                    '${submission.subject}','${submission.worksheet_id}',
-                    '${submission.worksheet_title}')">
+                    onclick="openGradeModal('${submission.id}',
+                        '${studentName}',
+                        '${submission.subject}',
+                        '${submission.worksheet_id}',
+                        '${submission.worksheet_title}',
+                        '${submission.id}'
+        )">
                     📊 Add Grade
                 </button>`;
 
@@ -266,21 +275,24 @@ function loadSubmissionsTable() {
         .join('');
 }
 
-function openGradeModal(studentName, subject, worksheetId, worksheetTitle) {
-    currentGradeSubmission = { studentName, subject, worksheetId, worksheetTitle };
-    document.getElementById('gradeModalSubtitle').textContent =
-        `${studentName} — ${worksheetTitle} (${subject})`;
+function openGradeModal(submissionId, studentName, worksheetTitle) {
+     submissionId = Number(submissionId);
+      currentGradeSubmission = {
+        submissionId,
+        studentName,
+        worksheetTitle
+    };
 
-    // Existing grade pre-fill karo
-    const existing = grades.find(g =>
-        // g.user_id === userId &&
-        g.subject === subject &&
-        Number(g.worksheet_id) === Number(worksheetId)
-    );
-    document.getElementById('gradeInput').value = existing ? existing.grade : '';
-    document.getElementById('confirmGradeBtn').disabled = false;
-    document.getElementById('confirmGradeBtn').textContent = '💾 Save Grade';
+
+    document.getElementById('gradeModalSubtitle').textContent =
+        `${studentName} — ${worksheetTitle}`;
+
+    const existing = submissions.find(s => s.id == submissionId);
+
+    document.getElementById('gradeInput').value = existing?.grade || '';
+
     document.getElementById('gradeModal').classList.add('active');
+
 }
 
 function closeGradeModal() {
@@ -297,28 +309,28 @@ async function saveGrade() {
     btn.textContent = 'Saving...';
 
     try {
-       const { error } = await supabaseClient
-            .from('admin_worksheets')
+        const { error } = await supabaseClient
+            .from('submissions')
             .update({
                 grade: grade,
                 graded_by: currentUser.full_name || 'Admin',
                 graded_at: new Date().toISOString()
             })
-            
-            .eq('subject', currentGradeSubmission.subject)
-            .eq('worksheet_id', Number(currentGradeSubmission.worksheetId));
+            .eq('id', currentGradeSubmission.submissionId);
 
 
-        if (error) throw error;
+       if (error) throw error;
 
-        btn.textContent = '✅ Saved!';
-        setTimeout(() => { closeGradeModal(); loadAdminData(); }, 700);
-        alert(`✅ Grade save ho gaya!\n${currentGradeSubmission.studentName}: ${grade}`);
+        alert('✅ Grade saved!');
+
+        closeGradeModal();
+        await loadAdminData();
+
 
     } catch (err) {
         alert('Error: ' + err.message);
         btn.disabled = false;
-        btn.textContent = '💾 Save Grade';
+        btn.textContent = 'Save Grade';
     }
 }
 
@@ -327,7 +339,14 @@ async function saveGrade() {
 //  CHECKED PAPER UPLOAD
 // ══════════════════════════════════════════
 
-function openUploadModal(submissionId, studentName, worksheetTitle) {
+function openUploadModal(userId, studentName, subject, worksheetId, worksheetTitle) {
+    currentGradeSubmission = {
+        userId,
+        studentName,
+        subject,
+        worksheetId,
+        worksheetTitle
+    }
     currentUploadSubmissionId = submissionId
     document.getElementById(
         'modalSubtitle'
