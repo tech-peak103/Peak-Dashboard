@@ -53,8 +53,10 @@ const subjectTopics = {
 //  PDF OVERLAY TIMER LOGIC
 // ══════════════════════════════════════════
 
-const TIMER_DURATION_MS = 60 * 60 * 1000; // 60 minutes
-let pdfTimerInterval = null;
+function getTimerDuration(worksheetId) {
+    if (Number(worksheetId) === 1) return 120 * 60 * 1000; // Worksheet 1: 120 min
+    return 60 * 60 * 1000; // Baaki sab: 60 min
+}let pdfTimerInterval = null;
 let pdfExpiresAt = null;
 let fiveMinWarnShown = false;
 let currentOpenWorksheetId = null;
@@ -63,9 +65,12 @@ let currentOpenRecordId = null;
 // ── Toast live countdown interval ──
 let toastCountdownInterval = null;
 
+
+
 // ── CREATE session in worksheet_opens (backend) ──
 async function createBackendSession(worksheetId, pdfUrl) {
-    const expiresAt = new Date(Date.now() + TIMER_DURATION_MS).toISOString();
+ const duration = getTimerDuration(worksheetId);
+    const expiresAt = new Date(Date.now() + duration).toISOString();
 
     const record = {
         user_id: currentUser.user_id,
@@ -182,7 +187,7 @@ async function fetchPdfUrl(worksheetId) {
 
 // ── Check if already submitted ──
 async function checkIfSubmitted(worksheetId) {
-    if (supabaseClient) {
+    if (supabaseClient) {   
         try {
             const { data } = await supabaseClient
                 .from('submissions')
@@ -375,10 +380,11 @@ function tickPDFTimer() {
     document.getElementById('timerDisplay').textContent =
         `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
-    const pct = (remaining / TIMER_DURATION_MS) * 100;
+    const duration = getTimerDuration(currentOpenWorksheetId);
+    const pct = duration > 0 ? (remaining / duration) * 100 : 100;    
     const fill = document.getElementById('pdfProgressFill');
-    fill.style.width = pct + '%';
-
+        fill.style.width = pct + '%';
+    
     const wrapper = document.getElementById('timerWrapper');
     if (secondsLeft <= 300) {
         wrapper.classList.remove('warn');
