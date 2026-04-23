@@ -275,8 +275,8 @@ function loadSubmissionsTable() {
         .join('');
 }
 
-function openGradeModal(submissionId, studentName, worksheetTitle) {
-     submissionId = Number(submissionId);
+function openGradeModal(submissionId, studentName, subject, worksheetId, worksheetTitle, rowId) {
+        submissionId = Number(rowId || submissionId);
       currentGradeSubmission = {
         submissionId,
         studentName,
@@ -309,7 +309,7 @@ async function saveGrade() {
     btn.textContent = 'Saving...';
 
     try {
-        const { error } = await supabaseClient
+        const { error: subError } = await supabaseClient
             .from('submissions')
             .update({
                 grade: grade,
@@ -319,8 +319,19 @@ async function saveGrade() {
             .eq('id', currentGradeSubmission.submissionId);
 
 
-       if (error) throw error;
-
+        if (subError) throw subError;
+const submission = submissions.find(s => s.id == currentGradeSubmission.submissionId);
+        if (submission) {
+            await supabaseClient
+                .from('admin_worksheets')
+                .update({
+                    grade: grade,
+                    graded_by: currentUser.full_name || 'Admin',
+                    graded_at: new Date().toISOString()
+                })
+                .eq('subject', submission.subject)
+                .eq('worksheet_number', submission.worksheet_id);
+        }
         alert('✅ Grade saved!');
 
         closeGradeModal();
@@ -339,14 +350,8 @@ async function saveGrade() {
 //  CHECKED PAPER UPLOAD
 // ══════════════════════════════════════════
 
-function openUploadModal(userId, studentName, subject, worksheetId, worksheetTitle) {
-    currentGradeSubmission = {
-        userId,
-        studentName,
-        subject,
-        worksheetId,
-        worksheetTitle
-    }
+function openUploadModal(submissionId, studentName, worksheetTitle) {
+    
     currentUploadSubmissionId = submissionId
     document.getElementById(
         'modalSubtitle'
